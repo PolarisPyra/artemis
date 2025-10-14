@@ -1,0 +1,14 @@
+{
+    "name": "ARTEMiS",
+    "dockerComposeFile": ["../docker-compose-dev.yml"],
+    "service": "artemis-dev",
+    "workspaceFolder": "/artemis",
+    "postAttachCommand": "./dev/bootstrap.sh",
+    "updateRemoteUserUID": true,
+    "containerUser": "artemis",
+    "customizations": {
+        "vscode": {
+            "extensions": ["detachhead.basedpyright", "charliermarsh.ruff"]
+        }
+    }
+}

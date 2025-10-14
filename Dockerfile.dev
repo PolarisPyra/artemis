@@ -1,0 +1,30 @@
+FROM ubuntu:25.04
+
+WORKDIR /artemis
+
+RUN apt update && apt upgrade -y
+RUN apt install -y git locales sudo curl gh just fzf parallel fd-find bat yq mysql-client
+
+# `fd` is called `find-fd` on ubuntu. Awesome.
+RUN ln -s $(which fdfind) /usr/bin/fd
+
+# setup locales
+RUN echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && echo "LC_ALL=en_US.UTF-8\nLANG=en_US.UTF-8" > /etc/default/locale && locale-gen
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
+# rename ubuntu user to tachi and give them sudo
+RUN usermod -l artemis ubuntu          && \
+	usermod -d /home/artemis -m artemis  && \
+	echo "artemis ALL = NOPASSWD : ALL" >> /etc/sudoers
+
+RUN mkdir .venv && chown artemis:1000 .venv
+
+USER artemis
+
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN mkdir -p $HOME/.cache/uv
+ENV UV_LINK_MODE=copy
+
+CMD ["/bin/bash"]

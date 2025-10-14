@@ -1,0 +1,44 @@
+[project]
+name = "artemis"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "aiomysql>=0.2.0",
+    "alembic>=1.14.1",
+    "asyncio>=3.4.3",
+    "bcrypt>=4.3.0",
+    "coloredlogs>=15.0.1",
+    "inflection>=0.5.1",
+    "jinja2>=3.1.5",
+    "pillow>=11.1.0",
+    "protobuf>=5.29.3",
+    "pycryptodome>=3.21.0",
+    "pyjwt==2.8.0",
+    "pylibmc>=1.6.3 ; sys_platform != 'win32'",
+    "pyopenssl>=25.0.0",
+    "python-multipart>=0.0.20",
+    "pytz>=2025.1",
+    "pyyaml>=6.0.2",
+    "service-identity>=24.2.0",
+    "sqlalchemy==1.4.46",
+    "starlette>=0.46.0",
+    "unitypy==1.23.0",
+    "uvicorn>=0.34.0",
+    "wacky>=1.0.2",
+    "websockets>=15.0",
+    "wheel>=0.45.1",
+    "xsdata==24.11",
+]
+
+[project.optional-dependencies]
+recommendation-builder = ["implicit>=0.7.2", "pandas>=2.2.3", "rich>=13.9.4"]
+
+[tool.basedpyright]
+typeCheckingMode = "basic"
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.31.0",
+    "mypy>=1.15.0",
+    "ruff>=0.9.9",
+]
