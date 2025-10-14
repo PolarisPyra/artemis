@@ -179,3 +179,7 @@ titles/ongeki/img
 mariadb
 
 BOOTSTRAP_OK
+
+# recommendations
+recommendation_weights.npz
+recommendations.json
