@@ -1,0 +1,41 @@
+services:
+  mysql:
+    image: "mysql:9"
+    restart: "unless-stopped"
+    ports:
+      - "3306:3306"
+    volumes:
+      - "artemis-mysql:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: "artemis-root-insecure-you-might-want-to-change-this"
+      MYSQL_DATABASE: "aime"
+      MYSQL_USER: "aime"
+      MYSQL_PASSWORD: "aime"
+
+  memcached:
+    image: "memcached:1-alpine"
+    command:
+      - "--max-item-size=128m"
+      - "--memory-limit=1024"
+    restart: "unless-stopped"
+    expose:
+      - "11211"
+
+  artemis-dev:
+    user: "1000:1000"
+    tty: true
+    container_name: "artemis-dev"
+    build:
+      dockerfile: "Dockerfile.dev"
+    ports:
+      - "8080:8080" # server
+      - "22345:22345" # aimedb
+    volumes:
+      - "./:/artemis"
+      - "/:/host-pc"
+      - "/artemis/.venv"
+      - "artemis-dev-uv-cache:/home/artemis/.cache/uv"
+
+volumes:
+  artemis-mysql:
+  artemis-dev-uv-cache:

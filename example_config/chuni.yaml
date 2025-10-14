@@ -1,0 +1,39 @@
+server:
+  enable: True
+  loglevel: "info"
+  news_msg: ""
+
+team:
+  name: ARTEMiS # If this is set, all players that are not on a team will use this one by default.
+
+mods:
+  use_login_bonus: True
+  # stock_tickets allows specified ticket IDs to be auto-stocked at login. Format is a comma-delimited string of ticket IDs
+  # note: quanity is not refreshed on "continue" after set - only on subsequent login
+  stock_tickets: 
+  stock_count: 99
+  
+version:
+  11:
+    rom: 2.00.00
+    data: 2.00.00
+  12:
+    rom: 2.05.00
+    data: 2.05.00
+  13:
+    rom: 2.10.00
+    data: 2.10.00
+  14:
+    rom: 2.15.00
+    data: 2.15.00
+  15:
+    rom: 2.20.00
+    data: 2.20.00
+
+crypto:
+  encrypted_only: False
+
+matching:
+  enable: False
+  match_time_limit: 60
+  match_error_limit: 9999
