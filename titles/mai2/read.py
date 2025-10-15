@@ -1,3 +1,5 @@
+import asyncio
+import hmac
 import os
 import re
 import xml.etree.ElementTree as ET
@@ -8,11 +10,14 @@ import codecs
 
 import UnityPy
 from UnityPy.classes import Sprite
+import yaml
 
 from core.config import CoreConfig
 from read import BaseReader
-from titles.mai2.const import Mai2Constants
-from titles.mai2.database import Mai2Data
+
+from .config import Mai2Config
+from .const import Mai2Constants
+from .database import Mai2Data
 
 
 class Mai2Reader(BaseReader):
@@ -25,7 +30,16 @@ class Mai2Reader(BaseReader):
         extra: Optional[str],
     ) -> None:
         super().__init__(config, version, bin_dir, opt_dir, extra)
+
         self.data = Mai2Data(config)
+        self.game_cfg = Mai2Config()
+
+        cfg_dir = os.environ["ARTEMIS_CFG_DIR"]
+
+        if os.path.exists(f"{cfg_dir}/{Mai2Constants.CONFIG_NAME}"):
+            self.game_cfg.update(
+                yaml.safe_load(open(f"{cfg_dir}/{Mai2Constants.CONFIG_NAME}"))
+            )
 
         try:
             self.logger.info(
@@ -62,7 +76,7 @@ class Mai2Reader(BaseReader):
                 await self.disable_events(f"{dir}/information", f"{dir}/scoreRanking")
                 await self.read_music(f"{dir}/music")
                 await self.read_tickets(f"{dir}/ticket")
-                self.extract_asset_bundle_images(f"{dir}/AssetBundleImages")
+                await self.extract_asset_bundle_images(f"{dir}/AssetBundleImages")
 
         else:
             if not os.path.exists(f"{self.bin_dir}/tables"):
@@ -381,7 +395,7 @@ class Mai2Reader(BaseReader):
             return
         # TODO
 
-    def extract_asset_bundle_images(self, assets_dir: str):
+    async def extract_asset_bundle_images(self, assets_dir: str):
         if not os.path.exists(assets_dir):
             return
 
@@ -403,18 +417,64 @@ class Mai2Reader(BaseReader):
                     "ui_frame_",
                     "ui_icon_",
                     "ui_jacket_",
-                    "ui_plate_"
+                    "ui_plate_",
                 )
             ):
                 continue
 
-            if lower_name.startswith(("ui_frame_", "ui_jacket_")) and lower_name.endswith("_s"):
+            if lower_name.startswith(
+                ("ui_frame_", "ui_jacket_")
+            ) and lower_name.endswith("_s"):
                 continue
 
-            if lower_name.startswith("ui_chara_") and lower_name.endswith(("star", "star_s", "base", "base_s", "frame", "frame_s", "level", "level_s", "lframe", "rframe", "lbase", "rbase")):
+            if lower_name.startswith("ui_chara_") and lower_name.endswith(
+                (
+                    "star",
+                    "star_s",
+                    "base",
+                    "base_s",
+                    "frame",
+                    "frame_s",
+                    "level",
+                    "level_s",
+                    "lframe",
+                    "rframe",
+                    "lbase",
+                    "rbase",
+                )
+            ):
                 continue
 
-            asset_type = lower_name.removeprefix("ui_").split("_")[0]
+            parts = lower_name.removeprefix("ui_").split("_")
+            asset_type = parts[0]
+            asset_id = parts[1]
 
-            self.logger.info("Extracted %s", s.m_Name)
-            s.image.save(f"{output}/{asset_type}/{s.m_Name}.webp", "WEBP", quality=85, method=6)
+            if asset_type == "jacket":
+                name = await asyncio.to_thread(self.obfuscate_filename, s.m_Name)
+
+                await self.data.static.update_game_music_jacket(
+                    int(asset_id), f"{name}.webp"
+                )
+            else:
+                name = s.m_Name
+
+            self.logger.info("Extracted %s -> %s", s.m_Name, name)
+
+            s.image.save(
+                f"{output}/{asset_type}/{name}.webp",
+                "WEBP",
+                quality=85,
+                method=6,
+            )
+
+    def obfuscate_filename(self, filename: str):
+        if self.game_cfg.read.asset_hmac_key is None:
+            return filename
+
+        asset_hmac_key = self.game_cfg.read.asset_hmac_key.encode("utf-8")
+        basename, ext = os.path.splitext(filename)
+        basename = hmac.digest(asset_hmac_key, basename.encode("utf-8"), "sha256")[
+            :16
+        ].hex()
+
+        return f"{basename}{ext}"

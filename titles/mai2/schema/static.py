@@ -1,7 +1,15 @@
 from core.data.schema.base import BaseData, metadata
 
 from typing import Optional, Dict, List
-from sqlalchemy import Table, Column, UniqueConstraint, PrimaryKeyConstraint, and_
+from sqlalchemy import (
+    Table,
+    Column,
+    UniqueConstraint,
+    PrimaryKeyConstraint,
+    and_,
+    text,
+    update,
+)
 from sqlalchemy.types import Integer, String, TIMESTAMP, Boolean, JSON, Float
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import func, select
@@ -37,6 +45,7 @@ music = Table(
     Column("addedVersion", String(255)),
     Column("difficulty", Float),
     Column("noteDesigner", String(255)),
+    Column("jacketPath", String(255), default=None, server_default=text("NULL")),
     UniqueConstraint("songId", "chartId", "version", name="mai2_static_music_uk"),
     mysql_charset="utf8mb4",
 )
@@ -165,6 +174,23 @@ class Mai2StaticData(BaseData):
             self.logger.warning(f"Failed to insert song {song_id} chart {chart_id}")
             return None
         return result.lastrowid
+
+    async def update_game_music_jacket(self, song_id: int, jacket_path: str):
+        sql = (
+            update(music)
+            .where(music.c.songId == song_id)
+            .values(jacketPath=jacket_path)
+        )
+        result = await self.execute(sql)
+
+        if result is None:
+            self.logger.warning(
+                "update_game_music_jacket: failed to set jacket for songId=%r jacketPath=%r",
+                song_id,
+                jacket_path,
+            )
+
+        return result.last_updated_params()
 
     async def put_game_ticket(
         self,

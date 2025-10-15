@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 from core.config import CoreConfig
 
@@ -97,9 +97,21 @@ class Mai2CryptoConfig:
         )
 
 
+class Mai2ReadConfig:
+    def __init__(self, parent_config: "Mai2Config") -> None:
+        self.__config = parent_config
+
+    @property
+    def asset_hmac_key(self) -> Optional[str]:
+        return CoreConfig.get_config_field(
+            self.__config, "mai2", "read", "asset_hmac_key", default=None
+        )
+
+
 class Mai2Config(dict):
     def __init__(self) -> None:
         self.server = Mai2ServerConfig(self)
         self.deliver = Mai2DeliverConfig(self)
         self.uploads = Mai2UploadsConfig(self)
         self.crypto = Mai2CryptoConfig(self)
+        self.read = Mai2ReadConfig(self)
