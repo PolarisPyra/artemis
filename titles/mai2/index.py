@@ -31,6 +31,9 @@ from .festival import Mai2Festival
 from .festivalplus import Mai2FestivalPlus
 from .buddies import Mai2Buddies
 from .buddiesplus import Mai2BuddiesPlus
+from .prism import Mai2Prism
+from .prismplus import Mai2PrismPlus
+from .circle import Mai2Circle
 
 
 class Mai2Servlet(BaseServlet):
@@ -67,6 +70,9 @@ class Mai2Servlet(BaseServlet):
             Mai2FestivalPlus,
             Mai2Buddies,
             Mai2BuddiesPlus,
+            Mai2Prism,
+            Mai2PrismPlus,
+            Mai2Circle,
         ]
 
         self.logger = logging.getLogger("mai2")
@@ -345,8 +351,14 @@ class Mai2Servlet(BaseServlet):
                 internal_ver = Mai2Constants.VER_MAIMAI_DX_FESTIVAL_PLUS
             elif version >= 140 and version < 145:  # BUDDiES
                 internal_ver = Mai2Constants.VER_MAIMAI_DX_BUDDIES
-            elif version >= 145:  # BUDDiES PLUS
+            elif version >= 145 and version < 150:  # BUDDiES PLUS
                 internal_ver = Mai2Constants.VER_MAIMAI_DX_BUDDIES_PLUS
+            elif version >= 150 and version < 155:
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_PRISM
+            elif version >= 155 and version < 160:
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_PRISM_PLUS
+            elif version >= 160 and version < 165:
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_CIRCLE
         elif game_code == "SDGA":  # Int
             if version < 105:  # 1.0
                 internal_ver = Mai2Constants.VER_MAIMAI_DX
@@ -364,6 +376,14 @@ class Mai2Servlet(BaseServlet):
                 internal_ver = Mai2Constants.VER_MAIMAI_DX_FESTIVAL
             elif version >= 135 and version < 140:  # FESTiVAL PLUS
                 internal_ver = Mai2Constants.VER_MAIMAI_DX_FESTIVAL_PLUS
+            elif version >= 140 and version < 145:  # BUDDiES
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_BUDDIES
+            elif version >= 145 and version < 150:  # BUDDiES PLUS
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_BUDDIES_PLUS
+            elif version >= 150 and version < 155:
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_PRISM
+            elif version >= 155 and version < 160:
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_PRISM_PLUS
 
         if all(c in string.hexdigits for c in endpoint) and len(endpoint) == 32:
             # If we get a 32 character long hex string, it's a hash and we're

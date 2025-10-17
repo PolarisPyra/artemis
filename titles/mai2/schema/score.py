@@ -147,6 +147,8 @@ playlog = Table(
     Column("extNum2", Integer),
     Column("extNum4", Integer),
     Column("extBool1", Boolean),  # new with buddies
+    Column("extBool2", Boolean),  # new with prism IsRandomSelect
+    Column("extBool3", Boolean),  # new with prism+ IsTrackSkip
     Column("trialPlayAchievement", Integer),
     mysql_charset="utf8mb4",
 )
@@ -292,6 +294,34 @@ best_score_old: Table = Table(
     Column("fullCombo", Integer),
     Column("maxFever", Integer),
     UniqueConstraint("user", "musicId", "level", name="maimai_score_best_uk"),
+    mysql_charset="utf8mb4",
+)
+
+kaleidxscope: Table = Table(
+    "mai2_score_kaleidxscope",
+    metadata,
+    Column("id", Integer, primary_key=True, nullable=False),
+    Column(
+        "user",
+        ForeignKey("aime_user.id", ondelete="cascade", onupdate="cascade"),
+        nullable=False,
+    ),
+    Column("gateId", Integer),
+    Column("isGateFound", Boolean),
+    Column("isKeyFound", Boolean),
+    Column("isClear", Boolean),
+    Column("totalRestLife", Integer),
+    Column("totalAchievement", Integer),
+    Column("totalDeluxscore", Integer),
+    Column("bestAchievement", Integer),
+    Column("bestDeluxscore", Integer),
+    Column("bestAchievementDate", String(25)),
+    Column("bestDeluxscoreDate", String(25)),
+    Column("playCount", Integer),
+    Column("clearDate", String(25)),
+    Column("lastPlayDate", String(25)),
+    Column("isInfoWatched", Boolean),
+    UniqueConstraint("user", "gateId", name="mai2_score_best_uk"),
     mysql_charset="utf8mb4",
 )
 
@@ -453,3 +483,24 @@ class Mai2ScoreData(BaseData):
             self.logger.warning(f"aime_id {aime_id} has no playlog ")
             return None
         return result.scalar()
+
+    async def get_user_kaleidxscope_list(self, user_id: int) -> Optional[List[Row]]:
+        sql = kaleidxscope.select(kaleidxscope.c.user == user_id)
+        result = await self.execute(sql)
+        if result is None:
+            return None
+        return result.fetchall()
+
+    async def put_user_kaleidxscope(
+        self, user_id: int, user_kaleidxscope_data: Dict
+    ) -> Optional[int]:
+        user_kaleidxscope_data["user"] = user_id
+        sql = insert(kaleidxscope).values(**user_kaleidxscope_data)
+        conflict = sql.on_duplicate_key_update(**user_kaleidxscope_data)
+        result = await self.execute(conflict)
+        if result is None:
+            self.logger.error(
+                f"put_user_kaleidxscope:  Failed to insert! user_id {user_id}"
+            )
+            return None
+        return result.lastrowid
