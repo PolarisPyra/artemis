@@ -27,16 +27,13 @@ parser = XmlParser(config=config)
 @dataclass
 class StringID:
     id: Optional[int] = field(
-        default=None,
-        metadata={"type": "Element", "name": "id", "nillable": True}
+        default=None, metadata={"type": "Element", "name": "id", "nillable": True}
     )
     string: Optional[str] = field(
-        default=None,
-        metadata={"type": "Element", "name": "str", "nillable": True}
+        default=None, metadata={"type": "Element", "name": "str", "nillable": True}
     )
     data: Optional[str] = field(
-        default=None,
-        metadata={"type": "Element", "name": "data", "nillable": True}
+        default=None, metadata={"type": "Element", "name": "data", "nillable": True}
     )
 
 
@@ -64,15 +61,17 @@ class StringIDList:
 
 @dataclass
 class EventSubstance:
-    type: int = field(metadata={"type": "Element", "name": "type"})
+    type: int = field(default=0, metadata={"type": "Element", "name": "type"})
+
 
 @dataclass
 class EventData:
     data_name: str = field(default="", metadata={"type": "Element", "name": "dataName"})
-    name: StringID = field(default_factory=StringID, metadata={"type": "Element", "name": "name"})
+    name: StringID = field(
+        default_factory=StringID, metadata={"type": "Element", "name": "name"}
+    )
     text: Optional[str] = field(
-        default=None,
-        metadata={"type": "Element", "name": "text", "nillable": True}
+        default=None, metadata={"type": "Element", "name": "text", "nillable": True}
     )
     dds_banner_name: StringID = field(
         default_factory=StringID, metadata={"type": "Element", "name": "ddsBannerName"}
@@ -82,7 +81,8 @@ class EventData:
     )
     priority: int = field(default=0, metadata={"type": "Element", "name": "priority"})
     substances: EventSubstance = field(
-        default_factory=EventSubstance, metadata={"type": "Element", "name": "substances"}
+        default_factory=EventSubstance,
+        metadata={"type": "Element", "name": "substances"},
     )
     net_open_name: Optional[StringID] = field(
         default=None, metadata={"type": "Element", "name": "netOpenName"}
@@ -94,6 +94,7 @@ class EventData:
         default=False, metadata={"type": "Element", "name": "teamOnly"}
     )
     is_kop: bool = field(default=False, metadata={"type": "Element", "name": "isKop"})
+
 
 @dataclass
 class MusicFumenData:
@@ -242,17 +243,27 @@ class CharaData:
     release_tag_name: StringID = field(
         default_factory=StringID, metadata={"type": "Element", "name": "releaseTagName"}
     )
-    net_open_name: StringID = field(default_factory=StringID, metadata={"type": "Element", "name": "netOpenName"})
-    name: StringID = field(default_factory=StringID, metadata={"type": "Element", "name": "name"})
+    net_open_name: StringID = field(
+        default_factory=StringID, metadata={"type": "Element", "name": "netOpenName"}
+    )
+    name: StringID = field(
+        default_factory=StringID, metadata={"type": "Element", "name": "name"}
+    )
     explain_text: Optional[str] = field(
-        default=None, metadata={"type": "Element", "name": "explainText", "nillable": True}
+        default=None,
+        metadata={"type": "Element", "name": "explainText", "nillable": True},
     )
     sort_name: str = field(default="", metadata={"type": "Element", "name": "sortName"})
-    works: StringID = field(default_factory=StringID, metadata={"type": "Element", "name": "works"})
-    illustrator_name: StringID = field(
-        default_factory=StringID, metadata={"type": "Element", "name": "illustratorName"}
+    works: StringID = field(
+        default_factory=StringID, metadata={"type": "Element", "name": "works"}
     )
-    default_have: bool = field(default=False, metadata={"type": "Element", "name": "defaultHave"})
+    illustrator_name: StringID = field(
+        default_factory=StringID,
+        metadata={"type": "Element", "name": "illustratorName"},
+    )
+    default_have: bool = field(
+        default=False, metadata={"type": "Element", "name": "defaultHave"}
+    )
     rare_type: int = field(default=0, metadata={"type": "Element", "name": "rareType"})
     default_images: StringID = field(
         default_factory=StringID, metadata={"type": "Element", "name": "defaultImages"}
@@ -260,6 +271,7 @@ class CharaData:
     disable_flag: bool = field(
         default=False, metadata={"type": "Element", "name": "disableFlag"}
     )
+
 
 @dataclass
 class DDSImageData:
@@ -297,12 +309,20 @@ class SkillData:
 @dataclass
 class TicketData:
     data_name: str = field(default="", metadata={"type": "Element", "name": "dataName"})
-    name: StringID = field(default_factory=StringID, metadata={"type": "Element", "name": "name"})
+    name: StringID = field(
+        default_factory=StringID, metadata={"type": "Element", "name": "name"}
+    )
     type: int = field(default=0, metadata={"type": "Element", "name": "type"})
     target: int = field(default=0, metadata={"type": "Element", "name": "target"})
-    explain_text: str = field(default="", metadata={"type": "Element", "name": "explainText"})
-    stock_max_num: int = field(default=0, metadata={"type": "Element", "name": "stockMaxNum"})
-    charge_bonus: int = field(default=0, metadata={"type": "Element", "name": "chargeBonus"})
+    explain_text: str = field(
+        default="", metadata={"type": "Element", "name": "explainText"}
+    )
+    stock_max_num: int = field(
+        default=0, metadata={"type": "Element", "name": "stockMaxNum"}
+    )
+    charge_bonus: int = field(
+        default=0, metadata={"type": "Element", "name": "chargeBonus"}
+    )
     charge_bonus_team: int = field(
         default=0, metadata={"type": "Element", "name": "chargeBonusTeam"}
     )
@@ -327,6 +347,7 @@ class TicketData:
         metadata={"type": "Element", "name": "addPlayUnlockChallenge"},
         default=None,
     )
+
 
 @dataclass
 class LoginBonusDataInfo:
@@ -1082,8 +1103,8 @@ class ChuniReader(BaseReader):
                     trophy_img.save(
                         f"titles/chuni/assets/img/trophy/{image_path}",
                         "WEBP",
-                        quality=85,  
-                        method=6   
+                        quality=85,
+                        method=6,
                     )
 
                 self.logger.info("Converted trophy %s", trophy_xml.name.id)

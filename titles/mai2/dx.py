@@ -303,6 +303,14 @@ class Mai2DX(Mai2Base):
                     intimate["intimateCountRewarded"],
                 )
 
+        # added in PRiSM
+        if "userKaleidxScopeList" in upsert and len(upsert["userKaleidxScopeList"]) > 0:
+            for kaleidxscope in upsert["userKaleidxScopeList"]:
+                await self.data.score.put_user_kaleidxscope(user_id, kaleidxscope)
+
+        if "userCircleData" in upsert:
+            pass
+
         return {"returnCode": 1, "apiName": "UpsertUserAllApi"}
 
     async def handle_get_user_data_api_request(self, data: Dict) -> Dict:
