@@ -1,7 +1,7 @@
 """web permissions
 
 Revision ID: 84aca4066926
-Revises: 6c6e2e43254d
+Revises: 642638571861
 Create Date: 2025-10-18 15:50:41.508421
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
 revision = '84aca4066926'
-down_revision = '6c6e2e43254d'
+down_revision = '642638571861'
 branch_labels = None
 depends_on = None
 
