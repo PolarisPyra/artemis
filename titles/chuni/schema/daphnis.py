@@ -158,6 +158,21 @@ option: Table = Table(
     mysql_charset="utf8mb4",
 )
 
+web_permissions: Table = Table(
+    "daphnis_web_permissions",
+    metadata,
+    Column("id", Integer, primary_key=True, nullable=False),
+    Column(
+        "user",
+        ForeignKey("aime_user.id", ondelete="cascade", onupdate="cascade"),
+        nullable=False,
+    ),
+    Column("username", String(25), nullable=True),
+    Column("status", Integer, nullable=False),
+    UniqueConstraint("user", name="daphnis_web_permissions_uk"),
+    mysql_charset="utf8mb4",
+)
+
 recommendations: Table = Table(
     "daphnis_user_music_recommendations",
     metadata,
@@ -509,3 +524,43 @@ class DaphnisStaticData(BaseData):
             return None
 
         return result.inserted_primary_key.id
+
+    async def put_web_permission(
+        self,
+        user_id: int,
+        username: str,
+        status: int,
+    ):
+        query = insert(web_permissions).values(
+            user=user_id,
+            username=username,
+            status=status,
+        )
+        query = query.on_duplicate_key_update(
+            username=query.inserted.username,
+            status=query.inserted.status,
+        )
+        result = await self.execute(query)
+
+        if result is None:
+            return None
+
+        return result.lastrowid
+
+    async def get_web_permission(self, user_id: int) -> Optional[Row]:
+        query = web_permissions.select().where(web_permissions.c.user == user_id)
+        result = await self.execute(query)
+
+        if result is None:
+            return None
+
+        return result.fetchone()
+
+    async def get_all_web_permissions(self) -> Optional[list[Row]]:
+        query = web_permissions.select()
+        result = await self.execute(query)
+
+        if result is None:
+            return None
+
+        return result.fetchall()
