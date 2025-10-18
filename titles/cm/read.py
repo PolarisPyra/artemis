@@ -207,6 +207,10 @@ class CardMakerReader(BaseReader):
             "1.30": Mai2Constants.VER_MAIMAI_DX_FESTIVAL,
             "1.35": Mai2Constants.VER_MAIMAI_DX_FESTIVAL_PLUS,
             "1.40": Mai2Constants.VER_MAIMAI_DX_BUDDIES,
+            "1.45": Mai2Constants.VER_MAIMAI_DX_BUDDIES_PLUS,
+            "1.50": Mai2Constants.VER_MAIMAI_DX_PRISM,
+            "1.55": Mai2Constants.VER_MAIMAI_DX_PRISM_PLUS,
+            "1.60": Mai2Constants.VER_MAIMAI_DX_CIRCLE,
         }
 
         for root, dirs, files in os.walk(base_dir):
