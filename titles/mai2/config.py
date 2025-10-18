@@ -108,6 +108,23 @@ class Mai2ReadConfig:
         )
 
 
+class Mai2OnlineChartsConfig:
+    def __init__(self, parent: "Mai2Config") -> None:
+        self.__config = parent
+
+    @property
+    def enable(self) -> bool:
+        return CoreConfig.get_config_field(
+            self.__config, "mai2", "chart_deliver", "enable", default=False
+        )
+
+    @property
+    def chart_folder(self) -> str:
+        return CoreConfig.get_config_field(
+            self.__config, "mai2", "chart_deliver", "chart_folder", default=""
+        )
+
+
 class Mai2Config(dict):
     def __init__(self) -> None:
         self.server = Mai2ServerConfig(self)
@@ -115,3 +132,4 @@ class Mai2Config(dict):
         self.uploads = Mai2UploadsConfig(self)
         self.crypto = Mai2CryptoConfig(self)
         self.read = Mai2ReadConfig(self)
+        self.charts = Mai2OnlineChartsConfig(self)
