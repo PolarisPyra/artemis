@@ -523,23 +523,6 @@ class ChuniProfileData(BaseData):
                 f"put_profile_data: Failed to update! aime_id: {aime_id}"
             )
             return None
-        
-        # Auto-create web permissions entry for new profiles
-        # Import here to avoid circular dependency
-        from titles.chuni.schema.daphnis import DaphnisStaticData
-        daphnis_data = DaphnisStaticData(self.config, self.session)
-        
-        # Check if web permission already exists
-        existing_perm = await daphnis_data.get_web_permission(aime_id)
-        if existing_perm is None:
-            # Create default web permission (status 0 = pending/inactive)
-            await daphnis_data.put_web_permission(
-                user_id=aime_id,
-                username=profile_data.get("userName", None),
-                status=0,
-            )
-            self.logger.info(f"Created web permission entry for user {aime_id}")
-        
         return result.lastrowid
 
     async def get_profile_preview(self, aime_id: int, version: int) -> Optional[Row]:
