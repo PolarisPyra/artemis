@@ -528,7 +528,7 @@ class DaphnisStaticData(BaseData):
     async def put_web_permission(
         self,
         user_id: int,
-        username: str,
+        username: Optional[str],
         status: int,
     ):
         query = insert(web_permissions).values(

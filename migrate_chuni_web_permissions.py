@@ -96,7 +96,7 @@ async def main():
             failed_count += 1
             continue
 
-        username = user_record.username if user_record.username else ""
+        username = user_record.username if user_record.username else None
 
         # Create web permission entry
         try:
@@ -106,7 +106,7 @@ async def main():
                 status=0,  # 0 = inactive/pending by default
             )
             created_count += 1
-            logger.info(f"✓ Created web permission for user {user_id} (username: {username if username else 'None'})")
+            logger.info(f"✓ Created web permission for user {user_id} (username: {username if username else 'NULL'})")
         except Exception as e:
             logger.error(f"✗ Failed to create web permission for user {user_id}: {e}")
             failed_count += 1
