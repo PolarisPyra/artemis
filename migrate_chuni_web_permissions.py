@@ -9,6 +9,7 @@ from sqlalchemy import select
 
 from core.config import CoreConfig
 from core.data.schema import metadata
+from core.data.schema.user import aime_user
 from titles.chuni.database import ChuniData
 from titles.chuni.schema.profile import profile
 from titles.chuni.schema.daphnis import web_permissions
@@ -75,33 +76,33 @@ async def main():
 
     logger.info(f"Need to create web permissions for {len(users_to_migrate)} users")
 
-    # Get the latest profile for each user to extract their username
+    # Get aime_user data for each user to extract their username
     created_count = 0
     failed_count = 0
 
     for user_id in users_to_migrate:
-        # Get the most recent profile for this user
-        sql = (
-            select(profile)  # type: ignore
-            .where(profile.c.user == user_id)  # type: ignore
-            .order_by(profile.c.version.desc())  # type: ignore
-            .limit(1)
-        )
+        # Get the aime_user record for this user
+        sql = select(aime_user).where(aime_user.c.id == user_id)  # type: ignore
         result = await data.base.execute(sql)
 
         if result is None:
-            logger.warning(f"Failed to get profile for user {user_id}")
+            logger.warning(f"Failed to get aime_user for user {user_id}")
             failed_count += 1
             continue
 
-        user_profile = result.fetchone()
-        username = user_profile.userName if user_profile else ""
+        user_record = result.fetchone()
+        if user_record is None:
+            logger.warning(f"No aime_user record found for user {user_id}")
+            failed_count += 1
+            continue
+
+        username = user_record.username if user_record.username else ""
 
         # Create web permission entry
         try:
             await data.daphnis.put_web_permission(
                 user_id=user_id,
-                username=username if username else "",
+                username=username,
                 status=0,  # 0 = inactive/pending by default
             )
             created_count += 1
