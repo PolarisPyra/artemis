@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-"""
-Standalone script to create daphnis_web_permissions entries for existing Chunithm users.
-
-This script finds all Chunithm profiles that don't have a web permissions entry
-and creates one for them with status 0 (inactive/pending).
-
-Usage:
-    python migrate_chuni_web_permissions.py
-"""
 
 import asyncio
 import logging
@@ -54,7 +44,7 @@ async def main():
 
     # Find all unique user IDs from Chunithm profiles
     logger.info("Finding all Chunithm users...")
-    sql = select(profile.c.user).distinct()
+    sql = select(profile.c.user).distinct()  # type: ignore
     result = await data.base.execute(sql)
 
     if result is None:
@@ -66,7 +56,7 @@ async def main():
 
     # Find users that already have web permissions
     logger.info("Checking existing web permissions...")
-    sql = select(web_permissions.c.user)
+    sql = select(web_permissions.c.user)  # type: ignore
     result = await data.base.execute(sql)
 
     if result is None:
@@ -92,9 +82,9 @@ async def main():
     for user_id in users_to_migrate:
         # Get the most recent profile for this user
         sql = (
-            select(profile)
-            .where(profile.c.user == user_id)
-            .order_by(profile.c.version.desc())
+            select(profile)  # type: ignore
+            .where(profile.c.user == user_id)  # type: ignore
+            .order_by(profile.c.version.desc())  # type: ignore
             .limit(1)
         )
         result = await data.base.execute(sql)
@@ -105,17 +95,17 @@ async def main():
             continue
 
         user_profile = result.fetchone()
-        username = user_profile.userName if user_profile else None
+        username = user_profile.userName if user_profile else ""
 
         # Create web permission entry
         try:
             await data.daphnis.put_web_permission(
                 user_id=user_id,
-                username=username,
+                username=username if username else "",
                 status=0,  # 0 = inactive/pending by default
             )
             created_count += 1
-            logger.info(f"✓ Created web permission for user {user_id} (username: {username})")
+            logger.info(f"✓ Created web permission for user {user_id} (username: {username if username else 'None'})")
         except Exception as e:
             logger.error(f"✗ Failed to create web permission for user {user_id}: {e}")
             failed_count += 1
