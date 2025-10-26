@@ -580,52 +580,66 @@ class OngekiReader(BaseReader):
         self.logger.info("Reading assets from %s", assets_dir)
 
         output = "titles/ongeki/img"
-        env = UnityPy.Environment(assets_dir)
 
-        for obj in env.objects:
-            if obj.type.name != "Texture2D":
+        for f in os.listdir(assets_dir):
+            if f.startswith(("ui_card_chara", "ui_card_icon")):
                 continue
 
-            t: Texture2D = obj.read()
-            lower_name = t.m_Name.lower()
-
-            if not lower_name.startswith(("ui_jacket", "ui_card")):
-                t.image.close()
+            if not f.startswith(("ui_jacket", "ui_card")) or f.endswith("_s"):
                 continue
 
-            if lower_name.startswith(("ui_jacket", "ui_card")) and lower_name.endswith(
-                "_s"
-            ):
-                t.image.close()
-                continue
+            env = UnityPy.Environment()
+            env.load_file(os.path.join(assets_dir, f))
 
-            _, asset_type, asset_id = lower_name.split("_", 2)
+            for obj in env.objects:
+                if obj.type.name != "Texture2D":
+                    continue
 
-            if not asset_id.isnumeric():
-                self.logger.warning(
-                    "Invalid asset ID found for %s: %s", t.m_Name, asset_id
+                t: Texture2D = obj.read()
+                lower_name = t.m_Name.lower()
+
+                if not lower_name.startswith(("ui_jacket", "ui_card")):
+                    t.image.close()
+                    continue
+
+                if lower_name.startswith(
+                    ("ui_jacket", "ui_card")
+                ) and lower_name.endswith("_s"):
+                    t.image.close()
+                    continue
+
+                _, asset_type, asset_id = lower_name.split("_", 2)
+
+                try:
+                    asset_id = int(asset_id)
+                except ValueError:
+                    self.logger.warning(
+                        "Invalid asset ID found for %s: %s", t.m_Name, asset_id
+                    )
+                    continue
+
+                self.logger.info("Extracted %s", t.m_Name)
+
+                asset_id = int(asset_id)
+                filename = self.obfuscate_filename(f"{t.m_Name}.webp")
+
+                if os.path.exists(f"{output}/{asset_type}/{filename}"):
+                    continue
+
+                if asset_type == "jacket":
+                    await self.data.static.set_chart_jacket_path(
+                        self.version, asset_id, filename
+                    )
+                if asset_type == "card":
+                    await self.data.static.set_card_image_path(asset_id, filename)
+
+                t.image.save(
+                    f"{output}/{asset_type}/{filename}",
+                    format="WEBP",
+                    quality=85,
+                    method=6,
                 )
-                continue
-
-            self.logger.info("Extracted %s", t.m_Name)
-
-            asset_id = int(asset_id)
-            filename = self.obfuscate_filename(f"{t.m_Name}.webp")
-
-            if os.path.exists(f"{output}/{asset_type}/{filename}"):
-                continue
-
-            if asset_type == "jacket":
-                await self.data.static.set_chart_jacket_path(
-                    self.version, asset_id, filename
-                )
-            if asset_type == "card":
-                await self.data.static.set_card_image_path(asset_id, filename)
-
-            t.image.save(
-                f"{output}/{asset_type}/{filename}", format="WEBP", quality=85, method=6
-            )
-            t.image.close()
+                t.image.close()
 
     def obfuscate_filename(self, filename: str):
         if self.game_cfg.read.asset_hmac_key is None:
