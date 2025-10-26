@@ -427,9 +427,7 @@ class OngekiReader(BaseReader):
 
                     # skip already existing cards
                     if (
-                        await self.data.static.get_card(
-                            OngekiConstants.VER_ONGEKI_BRIGHT_MEMORY, card_id
-                        )
+                        await self.data.static.get_card(self.version, card_id)
                         is not None
                     ):
                         self.logger.info(f"Card {card_id} already added, skipping")
@@ -628,7 +626,7 @@ class OngekiReader(BaseReader):
                 )
 
             t.image.save(
-                f"{output}/{asset_type}/{filename}", format="WEBP",quality=85, method=6
+                f"{output}/{asset_type}/{filename}", format="WEBP", quality=85, method=6
             )
             t.image.close()
 
