@@ -590,11 +590,13 @@ class OngekiReader(BaseReader):
             lower_name = t.m_Name.lower()
 
             if not lower_name.startswith(("ui_jacket", "ui_card")):
+                t.image.close()
                 continue
 
             if lower_name.startswith(("ui_jacket", "ui_card")) and lower_name.endswith(
                 "_s"
             ):
+                t.image.close()
                 continue
 
             _, asset_type, asset_id = lower_name.split("_", 2)
