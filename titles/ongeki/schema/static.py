@@ -264,10 +264,8 @@ class OngekiStaticData(BaseData):
             return None
         return result.lastrowid
 
-    async def set_card_image_path(self, version: int, card_id: int, image_path: str):
-        sql = cards.update(
-            (cards.c.version == version) & (cards.c.cardId == card_id)
-        ).values(imagePath=image_path)
+    async def set_card_image_path(self, card_id: int, image_path: str):
+        sql = cards.update(cards.c.cardId == card_id).values(imagePath=image_path)
         result = await self.execute(sql)
 
         return result is not None

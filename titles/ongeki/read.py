@@ -424,17 +424,14 @@ class OngekiReader(BaseReader):
                         card = parser.from_string(f.read(), clazz=CardData)
 
                     card_id = card.name.id
+                    version = version_ids[card.version_id.id]
 
                     # skip already existing cards
-                    if (
-                        await self.data.static.get_card(self.version, card_id)
-                        is not None
-                    ):
+                    if await self.data.static.get_card(version, card_id) is not None:
                         self.logger.info(f"Card {card_id} already added, skipping")
                         continue
 
                     rarity = OngekiConstants.RARITY_TYPES[card.rarity.value].value
-                    version = version_ids[card.version_id.id]
 
                     await self.data.static.put_card(
                         version,
@@ -621,9 +618,7 @@ class OngekiReader(BaseReader):
                     self.version, asset_id, filename
                 )
             if asset_type == "card":
-                await self.data.static.set_card_image_path(
-                    self.version, asset_id, filename
-                )
+                await self.data.static.set_card_image_path(asset_id, filename)
 
             t.image.save(
                 f"{output}/{asset_type}/{filename}", format="WEBP", quality=85, method=6
