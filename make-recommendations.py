@@ -83,10 +83,10 @@ async def main():
 
     Path("recommendations.json").write_text(json.dumps(inserted_rows))
     # query = delete(recommendations).where(recommendations.c.game == "chuni")
-    # _ = await chuni_data.daphnis.execute(query)
+    # _ = await chuni_data.cozynet.execute(query)
 
     # query = insert(recommendations).values(inserted_rows)
-    # _ = await chuni_data.daphnis.execute(query)
+    # _ = await chuni_data.cozynet.execute(query)
 
 
 if __name__ == "__main__":
