@@ -30,7 +30,7 @@ def upgrade():
         sa.UniqueConstraint('user', name='cozynet_web_permissions_uk'),
         mysql_charset='utf8mb4',
     )
-
+    
     # Populate with all existing users from aime_user
     op.execute("""
         INSERT INTO cozynet_web_permissions (user, username, status)
