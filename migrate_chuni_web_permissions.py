@@ -12,7 +12,7 @@ from core.data.schema import metadata
 from core.data.schema.user import aime_user
 from titles.chuni.database import ChuniData
 from titles.chuni.schema.profile import profile
-from titles.chuni.schema.daphnis import web_permissions
+from titles.chuni.schema.cozynet import web_permissions
 
 
 async def main():
@@ -100,7 +100,7 @@ async def main():
 
         # Create web permission entry
         try:
-            await data.daphnis.put_web_permission(
+            await data.cozynet.put_web_permission(
                 user_id=user_id,
                 username=username,
                 status=0,  # 0 = inactive/pending by default

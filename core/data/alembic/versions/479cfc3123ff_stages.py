@@ -19,7 +19,7 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        "daphnis_static_stages",
+        "cozynet_staticstages",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("version", sa.Integer(), nullable=False),
         sa.Column("opt", mysql.BIGINT(), nullable=True),
@@ -27,12 +27,12 @@ def upgrade():
         sa.Column("name", sa.String(length=255), nullable=False),
         sa.Column("imagePath", sa.String(length=255), nullable=True),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("version", "stageId", name="daphnis_static_stages_uk"),
+        sa.UniqueConstraint("version", "stageId", name="cozynet_staticstages_uk"),
         mysql_charset="utf8mb4",
     )
     op.create_foreign_key(
         None,
-        "daphnis_static_stages",
+        "cozynet_staticstages",
         "chuni_static_opts",
         ["opt"],
         ["id"],
@@ -42,4 +42,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table("daphnis_static_stages")
+    op.drop_table("cozynet_staticstages")

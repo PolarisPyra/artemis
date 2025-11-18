@@ -15,7 +15,7 @@ from sqlalchemy.engine import Row, RowMapping
 from core.data.schema import BaseData, metadata
 
 character: Table = Table(
-    "daphnis_static_character",
+    "cozynet_static_character",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -30,12 +30,12 @@ character: Table = Table(
         "opt",
         ForeignKey("chuni_static_opts.id", ondelete="SET NULL", onupdate="cascade"),
     ),
-    UniqueConstraint("version", "characterId", name="daphnis_static_character_uk"),
+    UniqueConstraint("version", "characterId", name="cozynet_static_character_uk"),
     mysql_charset="utf8mb4",
 )
 
 nameplate: Table = Table(
-    "daphnis_static_nameplate",
+    "cozynet_static_nameplate",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -48,12 +48,12 @@ nameplate: Table = Table(
         "opt",
         ForeignKey("chuni_static_opts.id", ondelete="SET NULL", onupdate="cascade"),
     ),
-    UniqueConstraint("version", "nameplateId", name="daphnis_static_nameplate_uk"),
+    UniqueConstraint("version", "nameplateId", name="cozynet_static_nameplate_uk"),
     mysql_charset="utf8mb4",
 )
 
 system_voice: Table = Table(
-    "daphnis_static_system_voice",
+    "cozynet_static_system_voice",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -65,12 +65,12 @@ system_voice: Table = Table(
         "opt",
         ForeignKey("chuni_static_opts.id", ondelete="SET NULL", onupdate="cascade"),
     ),
-    UniqueConstraint("version", "systemVoiceId", name="daphnis_static_system_voice_uk"),
+    UniqueConstraint("version", "systemVoiceId", name="cozynet_static_system_voice_uk"),
     mysql_charset="utf8mb4",
 )
 
 map_icon: Table = Table(
-    "daphnis_static_map_icon",
+    "cozynet_static_map_icon",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -83,12 +83,12 @@ map_icon: Table = Table(
         "opt",
         ForeignKey("chuni_static_opts.id", ondelete="SET NULL", onupdate="cascade"),
     ),
-    UniqueConstraint("version", "mapIconId", name="daphnis_static_map_icon_uk"),
+    UniqueConstraint("version", "mapIconId", name="cozynet_static_map_icon_uk"),
     mysql_charset="utf8mb4",
 )
 
 trophy: Table = Table(
-    "daphnis_static_trophy",
+    "cozynet_static_trophy",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -101,12 +101,12 @@ trophy: Table = Table(
         "opt",
         ForeignKey("chuni_static_opts.id", ondelete="SET NULL", onupdate="cascade"),
     ),
-    UniqueConstraint("version", "trophyId", name="daphnis_static_trophy_uk"),
+    UniqueConstraint("version", "trophyId", name="cozynet_static_trophy_uk"),
     mysql_charset="utf8mb4",
 )
 
 ticket: Table = Table(
-    "daphnis_static_ticket",
+    "cozynet_static_ticket",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -121,12 +121,12 @@ ticket: Table = Table(
         "opt",
         ForeignKey("chuni_static_opts.id", ondelete="SET NULL", onupdate="cascade"),
     ),
-    UniqueConstraint("version", "ticketId", name="daphnis_static_ticket_uk"),
+    UniqueConstraint("version", "ticketId", name="cozynet_static_ticket_uk"),
     mysql_charset="utf8mb4",
 )
 
 skill: Table = Table(
-    "daphnis_static_skill",
+    "cozynet_static_skill",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -139,12 +139,12 @@ skill: Table = Table(
         "opt",
         ForeignKey("chuni_static_opts.id", ondelete="SET NULL", onupdate="cascade"),
     ),
-    UniqueConstraint("version", "skillId", name="daphnis_static_skill_uk"),
+    UniqueConstraint("version", "skillId", name="cozynet_static_skill_uk"),
     mysql_charset="utf8mb4",
 )
 
 option: Table = Table(
-    "daphnis_user_option",
+    "cozynet_user_option",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column(
@@ -154,12 +154,12 @@ option: Table = Table(
     ),
     Column("key", String(255), nullable=False),
     Column("value", String(255), nullable=True),
-    UniqueConstraint("user", "key", name="daphnis_user_option_uk"),
+    UniqueConstraint("user", "key", name="cozynet_user_option_uk"),
     mysql_charset="utf8mb4",
 )
 
 web_permissions: Table = Table(
-    "daphnis_web_permissions",
+    "cozynet_web_permissions",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column(
@@ -169,12 +169,12 @@ web_permissions: Table = Table(
     ),
     Column("username", String(25), nullable=True),
     Column("status", Integer, nullable=False),
-    UniqueConstraint("user", name="daphnis_web_permissions_uk"),
+    UniqueConstraint("user", name="cozynet_web_permissions_uk"),
     mysql_charset="utf8mb4",
 )
 
 recommendations: Table = Table(
-    "daphnis_user_music_recommendations",
+    "cozynet_user_music_recommendations",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column(
@@ -186,14 +186,14 @@ recommendations: Table = Table(
     Column("musicId", Integer, nullable=False),
     Column("level", Integer, nullable=False),
     UniqueConstraint(
-        "user", "game", "musicId", "level", name="daphnis_user_music_recommendations_uk"
+        "user", "game", "musicId", "level", name="cozynet_user_music_recommendations_uk"
     ),
     mysql_charset="utf8mb4",
 )
 
 
 stages: Table = Table(
-    "daphnis_static_stages",
+    "cozynet_static_stages",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -204,12 +204,12 @@ stages: Table = Table(
     Column("stageId", Integer, nullable=False),
     Column("name", String(255), nullable=False),
     Column("imagePath", String(255), nullable=True),
-    UniqueConstraint("version", "stageId", name="daphnis_static_stages_uk"),
+    UniqueConstraint("version", "stageId", name="cozynet_static_stages_uk"),
     mysql_charset="utf8mb4",
 )
 
 
-class DaphnisStaticData(BaseData):
+class CozynetStaticData(BaseData):
     async def put_character(
         self,
         version: int,

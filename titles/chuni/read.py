@@ -911,7 +911,7 @@ class ChuniReader(BaseReader):
                 )
             ).with_suffix(".webp")
 
-            await self.data.daphnis.put_nameplate(
+            await self.data.cozynet.put_nameplate(
                 version=self.version,
                 nameplate_id=nameplate_xml.name.id,
                 name=nameplate_xml.name.string,
@@ -974,7 +974,7 @@ class ChuniReader(BaseReader):
                 )
             ).with_suffix(".webp")
 
-            await self.data.daphnis.put_system_voice(
+            await self.data.cozynet.put_system_voice(
                 version=self.version,
                 system_voice_id=system_voice_xml.name.id,
                 name=system_voice_xml.name.string,
@@ -1032,7 +1032,7 @@ class ChuniReader(BaseReader):
                 )
             ).with_suffix(".webp")
 
-            await self.data.daphnis.put_map_icon(
+            await self.data.cozynet.put_map_icon(
                 version=self.version,
                 map_icon_id=map_icon_xml.name.id,
                 name=map_icon_xml.name.string,
@@ -1082,7 +1082,7 @@ class ChuniReader(BaseReader):
                 original_image_path = None
                 image_path = None
 
-            await self.data.daphnis.put_trophy(
+            await self.data.cozynet.put_trophy(
                 version=self.version,
                 trophy_id=trophy_xml.name.id,
                 name=trophy_xml.name.string,
@@ -1160,7 +1160,7 @@ class ChuniReader(BaseReader):
                 / self.obfuscate_filename(dds_image_xml.dds_file_1.path)
             ).with_suffix(".webp")
 
-            await self.data.daphnis.put_character(
+            await self.data.cozynet.put_character(
                 version=self.version,
                 character_id=chara_xml.name.id,
                 name=chara_xml.name.string,
@@ -1210,7 +1210,7 @@ class ChuniReader(BaseReader):
                 self.obfuscate_filename, original_image_path
             )
 
-            await self.data.daphnis.put_ticket(
+            await self.data.cozynet.put_ticket(
                 version=self.version,
                 ticket_id=ticket_xml.name.id,
                 name=ticket_xml.name.string,
@@ -1256,7 +1256,7 @@ class ChuniReader(BaseReader):
                 self.logger.warning(f"{skill}/Skill.xml does not contain a category")
                 continue
 
-            await self.data.daphnis.put_skill(
+            await self.data.cozynet.put_skill(
                 version=self.version,
                 skill_id=skill_xml.name.id,
                 name=skill_xml.name.string,
@@ -1307,7 +1307,7 @@ class ChuniReader(BaseReader):
             else:
                 image_path = None
 
-            await self.data.daphnis.put_stage(
+            await self.data.cozynet.put_stage(
                 version=self.version,
                 stage_id=stage_xml.name.id,
                 name=stage_xml.name.string,

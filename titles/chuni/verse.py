@@ -379,7 +379,7 @@ class ChuniVerse(ChuniLuminousPlus):
         }
 
     async def handle_get_user_rec_music_api_request(self, data: Dict) -> Dict:
-        recommendations = await self.data.daphnis.get_recommendations(
+        recommendations = await self.data.cozynet.get_recommendations(
             int(data["userId"]), "chuni"
         )
 

@@ -5,7 +5,7 @@ from titles.chuni.schema import (
     ChuniProfileData,
     ChuniScoreData,
     ChuniStaticData,
-    DaphnisStaticData,
+    CozynetStaticData,
 )
 from titles.chuni.schema.client import ChuniClientData
 
@@ -18,5 +18,5 @@ class ChuniData(Data):
         self.profile = ChuniProfileData(cfg, self.session)
         self.score = ChuniScoreData(cfg, self.session)
         self.static = ChuniStaticData(cfg, self.session)
-        self.daphnis = DaphnisStaticData(cfg, self.session)
+        self.cozynet = CozynetStaticData(cfg, self.session)
         self.client = ChuniClientData(cfg, self.session)

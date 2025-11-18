@@ -1,5 +1,5 @@
 from titles.chuni.schema.client import ChuniClientData
-from titles.chuni.schema.daphnis import DaphnisStaticData
+from titles.chuni.schema.cozynet import CozynetStaticData
 from titles.chuni.schema.profile import ChuniProfileData
 from titles.chuni.schema.score import ChuniScoreData
 from titles.chuni.schema.item import ChuniItemData
@@ -10,6 +10,6 @@ __all__ = [
     "ChuniScoreData",
     "ChuniItemData",
     "ChuniStaticData",
-    "DaphnisStaticData",
+    "CozynetStaticData",
     "ChuniClientData",
 ]

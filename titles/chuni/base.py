@@ -573,7 +573,7 @@ class ChuniBase:
         items: list[dict[str, Any]] = []
 
         if kind in {ItemKind.MUSIC_UNLOCK.value, ItemKind.ULTIMA_UNLOCK.value} and int(
-            await self.data.daphnis.get_option(user_id, "unlock_all_songs") or 0
+            await self.data.cozynet.get_option(user_id, "unlock_all_songs") or 0
         ):
             rows = await self.data.static.get_music(
                 self.version,
@@ -603,9 +603,9 @@ class ChuniBase:
                 for row in rows[:max_ct]
             ]
         elif kind == ItemKind.TICKET.value and int(
-            await self.data.daphnis.get_option(user_id, "max_tickets") or 0
+            await self.data.cozynet.get_option(user_id, "max_tickets") or 0
         ):
-            tickets = await self.data.daphnis.get_ticket(
+            tickets = await self.data.cozynet.get_ticket(
                 self.version, type=[0, 1, 2, 3, 5], can_be_stocked=True
             )
             rows = await self.data.item.get_items(
@@ -1033,14 +1033,14 @@ class ChuniBase:
 
         if "userItemList" in upsert:
             unlocked_all_songs = int(
-                await self.data.daphnis.get_option(user_id, "unlock_all_songs") or 0
+                await self.data.cozynet.get_option(user_id, "unlock_all_songs") or 0
             )
             max_tickets = int(
-                await self.data.daphnis.get_option(user_id, "max_tickets") or 0
+                await self.data.cozynet.get_option(user_id, "max_tickets") or 0
             )
 
             # only save premium tickets if the user has chosen to unlock all non-premium tickets
-            not_saved_tickets = await self.data.daphnis.get_ticket(
+            not_saved_tickets = await self.data.cozynet.get_ticket(
                 user_id, type=[0, 1, 2, 3, 5], can_be_stocked=True
             )
             not_saved_ticket_ids = (
