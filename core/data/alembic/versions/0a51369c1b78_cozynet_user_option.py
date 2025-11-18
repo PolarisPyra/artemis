@@ -1,4 +1,4 @@
-"""daphnis_user_option
+"""cozynet_user_option
 
 Revision ID: 0a51369c1b78
 Revises: e8db52e6b7fa
@@ -19,7 +19,7 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        "daphnis_user_option",
+        "cozynet_user_option",
         sa.Column("id", sa.Integer(), primary_key=True, nullable=False),
         sa.Column("user", sa.Integer(), nullable=False),
         sa.Column("key", sa.String(255), nullable=False),
@@ -31,4 +31,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table("daphnis_user_option")
+    op.drop_table("cozynet_user_option")

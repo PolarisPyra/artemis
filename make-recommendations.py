@@ -11,7 +11,7 @@ from sqlalchemy import select
 
 from core.config import CoreConfig
 from titles.chuni.database import ChuniData
-from titles.chuni.schema.daphnis import recommendations
+from titles.chuni.schema.cozynet import recommendations
 from titles.chuni.schema.score import best_score
 
 
