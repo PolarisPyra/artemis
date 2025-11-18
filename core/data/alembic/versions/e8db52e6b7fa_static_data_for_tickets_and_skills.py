@@ -1,7 +1,7 @@
 """static data for tickets and skills
 
 Revision ID: e8db52e6b7fa
-Revises: 84aca4066926
+Revises: 6140c87aa666
 Create Date: 2024-12-19 21:15:22.678364
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "e8db52e6b7fa"
-down_revision = "84aca4066926"
+down_revision = "6140c87aa666"
 branch_labels = None
 depends_on = None
 

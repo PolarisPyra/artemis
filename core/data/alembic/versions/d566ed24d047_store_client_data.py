@@ -1,7 +1,7 @@
 """store client data
 
 Revision ID: d566ed24d047
-Revises: 84aca4066926
+Revises: e8db52e6b7fa
 Create Date: 2024-12-20 14:58:52.600106
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "d566ed24d047"
-down_revision = "84aca4066926"
+down_revision = "e8db52e6b7fa"
 branch_labels = None
 depends_on = None
 
