@@ -15,7 +15,7 @@ from sqlalchemy.engine import Row, RowMapping
 from core.data.schema import BaseData, metadata
 
 character: Table = Table(
-    "cozynet_static_character",
+    "cozynet_static_chuni_character",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -35,7 +35,7 @@ character: Table = Table(
 )
 
 nameplate: Table = Table(
-    "cozynet_static_nameplate",
+    "cozynet_static_chuni_nameplate",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
