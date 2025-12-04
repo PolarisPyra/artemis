@@ -559,7 +559,6 @@ class ChuniBase:
         """
         This is handled via the webui, which we don't have right now
         """
-
         return {"userId": data["userId"], "length": 0, "userFavoriteMusicList": []}
 
     async def handle_get_user_item_api_request(self, data: dict) -> dict:
@@ -605,16 +604,23 @@ class ChuniBase:
         elif kind == ItemKind.TICKET.value and int(
             await self.data.cozynet.get_option(user_id, "max_tickets") or 0
         ):
-            tickets = await self.data.cozynet.get_ticket(
-                self.version, type=[0, 1, 2, 3, 5], can_be_stocked=True
+            tickets = (
+                await self.data.cozynet.get_ticket(
+                    self.version, type=[0, 1, 2, 3, 5], can_be_stocked=True
+                )
+                or []
             )
-            rows = await self.data.item.get_items(
-                user_id, kind=ItemKind.TICKET.value, limit=max_ct + 1, offset=next_idx
+            rows = (
+                await self.data.item.get_items(
+                    user_id,
+                    kind=ItemKind.TICKET.value,
+                    limit=max_ct + 1,
+                    offset=next_idx,
+                )
+                or []
             )
 
-            if (tickets is None or len(tickets) == 0) and (
-                rows is None or len(rows) == 0
-            ):
+            if len(tickets) == 0 and len(rows) == 0:
                 return {
                     "userId": user_id,
                     "nextIndex": -1,
