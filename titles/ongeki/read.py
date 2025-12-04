@@ -355,7 +355,7 @@ class OngekiReader(BaseReader):
             exit(1)
 
     async def read(self) -> None:
-        for img_dir in {"jacket", "card"}:
+        for img_dir in {"jacket", "card", "userplate"}:
             if not os.path.exists(f"titles/ongeki/img/{img_dir}"):
                 os.makedirs(f"titles/ongeki/img/{img_dir}")
 
