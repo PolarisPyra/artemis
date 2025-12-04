@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from sqlalchemy import Column, Table, UniqueConstraint
+from sqlalchemy import Column, Table, UniqueConstraint, text
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.engine import Row
 from sqlalchemy.schema import ForeignKey
@@ -49,6 +49,7 @@ playlog = Table(
         ForeignKey("aime_user.id", ondelete="cascade", onupdate="cascade"),
         nullable=False,
     ),
+    Column("version", Integer, default=None, server_default=text("NULL")),
     Column("sortNumber", Integer),
     Column("placeId", Integer),
     Column("placeName", String(255)),
@@ -215,10 +216,12 @@ class OngekiScoreData(BaseData):
             return None
         return result.lastrowid
 
-    async def put_playlog(self, aime_id: int, playlog_data: Dict) -> Optional[int]:
+    async def put_playlog(
+        self, aime_id: int, playlog_data: Dict, *, version: int | None = None
+    ) -> Optional[int]:
         playlog_data["user"] = aime_id
 
-        sql = insert(playlog).values(**playlog_data)
+        sql = insert(playlog).values(**playlog_data, version=version)
 
         result = await self.execute(sql)
         if result is None:

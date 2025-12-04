@@ -1043,7 +1043,9 @@ class OngekiBase:
 
         if "userPlaylogList" in upsert:
             for playlog in upsert["userPlaylogList"]:
-                await self.data.score.put_playlog(user_id, playlog)
+                await self.data.score.put_playlog(
+                    user_id, playlog, version=self.version
+                )
 
         if "userActivityList" in upsert:
             for act in upsert["userActivityList"]:
@@ -1058,7 +1060,10 @@ class OngekiBase:
                     act["param4"],
                 )
 
-        if "userRecentRatingList" in upsert and self.version < OngekiConstants.VER_ONGEKI_REFRESH:
+        if (
+            "userRecentRatingList" in upsert
+            and self.version < OngekiConstants.VER_ONGEKI_REFRESH
+        ):
             await self.data.profile.put_profile_recent_rating(
                 user_id, upsert["userRecentRatingList"]
             )
