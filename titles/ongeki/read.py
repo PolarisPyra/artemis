@@ -618,7 +618,7 @@ class OngekiReader(BaseReader):
         output = "titles/ongeki/img"
 
         for f in os.listdir(assets_dir):
-            if f.startswith(("ui_card_chara", "ui_card_icon")):
+            if f.startswith(("ui_card_chara", "ui_card_icon", "ui_userplate_icon")):
                 continue
 
             if not f.startswith(("ui_jacket", "ui_card", "ui_userplate")) or f.endswith(
