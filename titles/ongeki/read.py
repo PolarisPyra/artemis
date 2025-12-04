@@ -311,6 +311,21 @@ class RewardData:
     reward_item: RewardItem = element(name="RewardItem", default_factory=RewardItem)
 
 
+@dataclass
+class NamePlateData:
+    data_name: str = element(name="dataName", default="")
+    name: StringID = element(name="Name", default_factory=StringID)
+    disabled: bool = element(name="Disabled", default=False)
+    possessing_from_the_beginning: bool = element(
+        name="PossessingFromTheBeginning", default=False
+    )
+    is_locked_at_the_beginning: bool = element(
+        name="IsLockedAtTheBeginning", default=False
+    )
+    description: str | None = element(name="Description", default=None)
+    sort_order: int = element(name="SortOrder", default=0)
+
+
 class OngekiReader(BaseReader):
     def __init__(
         self,
@@ -358,6 +373,7 @@ class OngekiReader(BaseReader):
             await self.read_music(f"{dir}/music", opt_id)
             await self.read_card(f"{dir}/card", opt_id)
             await self.read_reward(f"{dir}/reward", opt_id)
+            await self.read_nameplates(f"{dir}/nameplate", opt_id)
             await self.extract_assets(f"{dir}/assets")
 
         # terrible hack that's basically
@@ -573,6 +589,26 @@ class OngekiReader(BaseReader):
                     )
                     self.logger.info(f"Added reward {rewardId}")
 
+    async def read_nameplates(self, base_dir: str, opt_id: int | None) -> None:
+        self.logger.info(f"Reading nameplates from {base_dir}...")
+
+        for root, dirs, files in os.walk(base_dir):
+            for dir in dirs:
+                if os.path.exists(f"{root}/{dir}/NamePlate.xml"):
+                    with open(
+                        f"{root}/{dir}/NamePlate.xml", "r", encoding="utf-8"
+                    ) as f:
+                        nameplate = parser.from_string(f.read(), clazz=NamePlateData)
+
+                        await self.data.cozynet.put_nameplate(
+                            self.version,
+                            opt_id,
+                            nameplate.name.id,
+                            nameplate.name.string,
+                            nameplate.description,
+                        )
+                        self.logger.info(f"Added nameplate {nameplate.name.id}")
+
     async def extract_assets(self, assets_dir: str) -> None:
         if not os.path.exists(assets_dir):
             return
@@ -585,7 +621,9 @@ class OngekiReader(BaseReader):
             if f.startswith(("ui_card_chara", "ui_card_icon")):
                 continue
 
-            if not f.startswith(("ui_jacket", "ui_card")) or f.endswith("_s"):
+            if not f.startswith(("ui_jacket", "ui_card", "ui_userplate")) or f.endswith(
+                "_s"
+            ):
                 continue
 
             env = UnityPy.Environment()
@@ -598,12 +636,12 @@ class OngekiReader(BaseReader):
                 t: Texture2D = obj.read()
                 lower_name = t.m_Name.lower()
 
-                if not lower_name.startswith(("ui_jacket", "ui_card")):
+                if not lower_name.startswith(("ui_jacket", "ui_card", "ui_userplate")):
                     t.image.close()
                     continue
 
                 if lower_name.startswith(
-                    ("ui_jacket", "ui_card")
+                    ("ui_jacket", "ui_card", "ui_userplate")
                 ) and lower_name.endswith("_s"):
                     t.image.close()
                     continue
@@ -630,8 +668,10 @@ class OngekiReader(BaseReader):
                     await self.data.static.set_chart_jacket_path(
                         self.version, asset_id, filename
                     )
-                if asset_type == "card":
+                elif asset_type == "card":
                     await self.data.static.set_card_image_path(asset_id, filename)
+                elif asset_type == "userplate":
+                    await self.data.cozynet.set_nameplate_image_path(asset_id, filename)
 
                 t.image.save(
                     f"{output}/{asset_type}/{filename}",
