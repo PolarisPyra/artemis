@@ -1,10 +1,11 @@
 from typing import Dict, List, Optional, cast
-from sqlalchemy import Table, Column, UniqueConstraint, PrimaryKeyConstraint, and_, text
-from sqlalchemy.types import Integer, String, TIMESTAMP, Boolean, JSON, Float
+
+from sqlalchemy import Column, PrimaryKeyConstraint, Table, UniqueConstraint, and_, text
+from sqlalchemy.dialects.mysql import BIGINT, insert
+from sqlalchemy.engine import Row
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import func, select
-from sqlalchemy.engine import Row
-from sqlalchemy.dialects.mysql import BIGINT, insert
+from sqlalchemy.types import JSON, TIMESTAMP, Boolean, Float, Integer, String
 
 from core.data.schema import BaseData, metadata
 from core.data.schema.arcade import machine
@@ -460,7 +461,7 @@ class OngekiStaticData(BaseData):
         artist: str,
         genre: str,
         level: float,
-        note_count: int,
+        note_count: int | None,
         opt_id: int | None,
     ) -> Optional[int]:
         sql = insert(music).values(

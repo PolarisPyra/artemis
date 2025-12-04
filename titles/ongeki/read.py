@@ -12,8 +12,8 @@ from xsdata.formats.dataclass.parsers import XmlParser
 from xsdata.formats.dataclass.parsers.config import ParserConfig
 from xsdata.models.mixins import array_element, element
 
-from read import BaseReader
 from core.config import CoreConfig
+from read import BaseReader
 
 from .config import OngekiConfig
 from .const import OngekiConstants
@@ -500,7 +500,7 @@ class OngekiReader(BaseReader):
                         ):
                             continue
 
-                        notecount = -1
+                        notecount: int | None = None
 
                         with open(
                             f"{root}/{dir}/{chart_path}",
@@ -514,8 +514,8 @@ class OngekiReader(BaseReader):
                                     notecount = int(parameters[0])
                                     break
 
-                        if notecount == -1:
-                            self.logger.error(
+                        if notecount is None:
+                            self.logger.warning(
                                 "%s/%s: invalid chart file: cannot find notecount",
                                 dir,
                                 chart_path,
