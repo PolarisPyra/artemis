@@ -53,7 +53,7 @@ nameplate: Table = Table(
 )
 
 system_voice: Table = Table(
-    "cozynet_static_system_voice",
+    "cozynet_static_chuni_system_voice",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -70,7 +70,7 @@ system_voice: Table = Table(
 )
 
 map_icon: Table = Table(
-    "cozynet_static_map_icon",
+    "cozynet_static_chuni_map_icon",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -88,7 +88,7 @@ map_icon: Table = Table(
 )
 
 trophy: Table = Table(
-    "cozynet_static_trophy",
+    "cozynet_static_chuni_trophy",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -106,7 +106,7 @@ trophy: Table = Table(
 )
 
 ticket: Table = Table(
-    "cozynet_static_ticket",
+    "cozynet_static_chuni_ticket",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -126,7 +126,7 @@ ticket: Table = Table(
 )
 
 skill: Table = Table(
-    "cozynet_static_skill",
+    "cozynet_static_chuni_skill",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
@@ -193,7 +193,7 @@ recommendations: Table = Table(
 
 
 stages: Table = Table(
-    "cozynet_static_stages",
+    "cozynet_static_chuni_stages",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("version", Integer, nullable=False),
