@@ -536,7 +536,6 @@ class OngekiReader(BaseReader):
                                 dir,
                                 chart_path,
                             )
-                            continue
 
                         if idx == 4 and not music.is_lunatic:
                             self.logger.warning(

@@ -481,7 +481,7 @@ class OngekiStaticData(BaseData):
             artist=artist,
             genre=genre,
             level=level,
-            noteCount=note_count,
+            noteCount=func.coalesce(note_count, music.c.noteCount),
             opt=func.coalesce(music.c.opt, opt_id),
         )
 
