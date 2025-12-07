@@ -1007,6 +1007,7 @@ class ChuniProfileData(BaseData):
             return result.fetchall()
 
     async def put_linked_verse(self, aime_id: int, linked_verse_data: Dict):
+        linked_verse_data = self.fix_bools(linked_verse_data)
         sql = insert(linked_verse).values(user=aime_id, **linked_verse_data)
         conflict = sql.on_duplicate_key_update(**linked_verse_data)
         result = await self.execute(conflict)
