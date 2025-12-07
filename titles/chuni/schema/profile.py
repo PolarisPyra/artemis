@@ -1,11 +1,12 @@
 import json
 from typing import Dict, List, Optional, cast
-from sqlalchemy import Table, Column, UniqueConstraint, and_, text
-from sqlalchemy.types import Integer, String, Boolean, JSON, BigInteger
-from sqlalchemy.schema import ForeignKey
-from sqlalchemy.engine import Row
-from sqlalchemy.sql import select
+
+from sqlalchemy import Column, Table, UniqueConstraint, and_, text
 from sqlalchemy.dialects.mysql import insert
+from sqlalchemy.engine import Row
+from sqlalchemy.schema import ForeignKey
+from sqlalchemy.sql import select
+from sqlalchemy.types import JSON, BigInteger, Boolean, Integer, String
 
 from core.data.schema import BaseData, metadata
 
@@ -486,6 +487,7 @@ linked_verse: Table = Table(
     Column("clearUserId1", Integer),
     Column("clearUserId2", Integer),
     Column("clearUserId3", Integer),
+    Column("clearUserName0", String(20)),
     Column("clearUserName1", String(20)),
     Column("clearUserName2", String(20)),
     Column("clearUserName3", String(20)),
