@@ -3,41 +3,42 @@ import logging
 import zlib
 from logging.handlers import TimedRotatingFileHandler
 from os import path
-from typing import Tuple, Dict, List
+from typing import Dict, List, Tuple
 
 import coloredlogs
 import inflection
 import yaml
 from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
-from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Hash import SHA1
+from Crypto.Protocol.KDF import PBKDF2
+from Crypto.Util.Padding import pad
 from starlette.requests import Request
-from starlette.routing import Route
 from starlette.responses import Response
+from starlette.routing import Route
 
 from core import CoreConfig, Utils
 from core.data import Data
 from core.title import BaseServlet
-from .config import ChuniConfig
-from .const import ChuniConstants
-from .base import ChuniBase
-from .plus import ChuniPlus
+
 from .air import ChuniAir
 from .airplus import ChuniAirPlus
-from .star import ChuniStar
-from .starplus import ChuniStarPlus
 from .amazon import ChuniAmazon
 from .amazonplus import ChuniAmazonPlus
+from .base import ChuniBase
+from .config import ChuniConfig
+from .const import ChuniConstants
 from .crystal import ChuniCrystal
 from .crystalplus import ChuniCrystalPlus
-from .paradise import ChuniParadise
-from .new import ChuniNew
-from .newplus import ChuniNewPlus
-from .sun import ChuniSun
-from .sunplus import ChuniSunPlus
 from .luminous import ChuniLuminous
 from .luminousplus import ChuniLuminousPlus
+from .new import ChuniNew
+from .newplus import ChuniNewPlus
+from .paradise import ChuniParadise
+from .plus import ChuniPlus
+from .star import ChuniStar
+from .starplus import ChuniStarPlus
+from .sun import ChuniSun
+from .sunplus import ChuniSunPlus
 from .verse import ChuniVerse
 from .xverse import ChuniXVerse
 
@@ -112,7 +113,8 @@ class ChuniServlet(BaseServlet):
                 range(125, 130): ChuniConstants.VER_CHUNITHM_SUN_PLUS,
                 range(130, 135): ChuniConstants.VER_CHUNITHM_LUMINOUS,
                 range(135, 140): ChuniConstants.VER_CHUNITHM_LUMINOUS_PLUS,
-                range(140, 145): ChuniConstants.VER_CHUNITHM_VERSE,
+                range(140, 150): ChuniConstants.VER_CHUNITHM_VERSE,
+                range(150, 155): ChuniConstants.VER_CHUNITHM_X_VERSE,
             },
         }
         self.version_map: Dict[str, Dict[int, int]] = {
@@ -168,8 +170,8 @@ class ChuniServlet(BaseServlet):
             ChuniConstants.VER_CHUNITHM_LUMINOUS_PLUS: 56,
             f"{ChuniConstants.VER_CHUNITHM_LUMINOUS_PLUS}_int": 56,
             ChuniConstants.VER_CHUNITHM_VERSE: 42,
-	        ChuniConstants.VER_CHUNITHM_X_VERSE: 14
-
+            ChuniConstants.VER_CHUNITHM_X_VERSE: 14,
+            f"{ChuniConstants.VER_CHUNITHM_X_VERSE}_int": 96,
         }
 
         for version, keys in self.game_cfg.crypto.keys.items():
@@ -201,18 +203,7 @@ class ChuniServlet(BaseServlet):
             ]
 
             for method in method_list:
-                if method == "handle_get_user_uc_api_request":
-                    method_fixed = "GetUserUCApi"
-                elif method == "handle_get_game_uc_condition_api_request":
-                    method_fixed = "GetGameUCConditionApi"
-                elif method == "handle_get_user_lv_api_request":
-                    method_fixed = "GetUserLVApi"
-                elif method == "handle_get_game_lv_condition_open_api_request":
-                    method_fixed = "GetGameLVConditionOpenApi"
-                elif method == "handle_get_game_lv_condition_unlock_api_request":
-                    method_fixed = "GetGameLVConditionUnlockApi"
-                else:
-                    method_fixed = inflection.camelize(method)[6:-7]
+                method_fixed = inflection.camelize(method)[6:-7]
 
                 # This only applies for CHUNITHM NEW International and later for some reason.
                 # CHUNITHM SUPERSTAR (PLUS) did not add "Exp" to the endpoint when hashing.

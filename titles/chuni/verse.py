@@ -2,12 +2,12 @@ from datetime import datetime, timedelta
 from typing import Any, Dict
 
 from core.config import CoreConfig
+from titles.chuni.config import ChuniConfig
 from titles.chuni.const import (
     ChuniConstants,
     MapAreaConditionLogicalOperator,
     MapAreaConditionType,
 )
-from titles.chuni.config import ChuniConfig
 from titles.chuni.luminousplus import ChuniLuminousPlus
 
 
@@ -313,7 +313,7 @@ class ChuniVerse(ChuniLuminousPlus):
             "gameCourseLevelList": course_level_list,
         }
 
-    async def handle_get_game_uc_condition_api_request(self, data: Dict) -> Dict:
+    async def handle_get_game_u_c_condition_api_request(self, data: Dict) -> Dict:
         events = await self.data.static.get_enabled_events(self.version)
 
         if events is None:
@@ -356,7 +356,7 @@ class ChuniVerse(ChuniLuminousPlus):
             "gameUnlockChallengeConditionList": conditions,
         }
 
-    async def handle_get_user_uc_api_request(self, data: Dict) -> Dict:
+    async def handle_get_user_u_c_api_request(self, data: Dict) -> Dict:
         user_id = int(data["userId"])
         unlock_challenges = await self.data.profile.get_unlock_challenge(user_id)
 

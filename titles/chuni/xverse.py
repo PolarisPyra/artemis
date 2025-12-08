@@ -95,7 +95,7 @@ class ChuniXVerse(ChuniVerse):
             "userCMissionList": user_mission_list,
         }
 
-    async def handle_get_game_lv_condition_open_api_request(self, data: Dict) -> Dict:
+    async def handle_get_game_l_v_condition_open_api_request(self, data: Dict) -> Dict:
         return {
             "length": 1,
             "gameLinkedVerseConditionOpenList": [
@@ -115,13 +115,15 @@ class ChuniXVerse(ChuniVerse):
             ],
         }
 
-    async def handle_get_game_lv_condition_unlock_api_request(self, data: Dict) -> Dict:
+    async def handle_get_game_l_v_condition_unlock_api_request(
+        self, data: Dict
+    ) -> Dict:
         return {
             "length": 0,
             "gameLinkedVerseConditionUnlockList": [],
         }
 
-    async def handle_get_user_lv_api_request(self, data: Dict) -> Dict:
+    async def handle_get_user_l_v_api_request(self, data: Dict) -> Dict:
         user_id = int(data["userId"])
         rows = await self.data.profile.get_linked_verse(user_id) or []
         linked_verses = []
