@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import zlib
 from logging.handlers import TimedRotatingFileHandler
 from os import path
@@ -43,6 +44,13 @@ from .verse import ChuniVerse
 from .xverse import ChuniXVerse
 
 HONEYPOT_HEADER_NAME = "X-Cozynet-Version"
+STRICT_UNDERSCORE_RE = re.compile(r"([A-Z])([A-Z])")
+
+
+def strict_underscore(name: str) -> str:
+    # Insert underscores between *all* capital letters
+    name = STRICT_UNDERSCORE_RE.sub(r"\1_\2", name)
+    return inflection.underscore(name)
 
 
 class ChuniServlet(BaseServlet):
@@ -455,7 +463,7 @@ class ChuniServlet(BaseServlet):
         elif game_code == ChuniConstants.GAME_CODE_INT and version < 110:
             endpoint = endpoint.removesuffix("Exp")
 
-        func_to_find = "handle_" + inflection.underscore(endpoint) + "_request"
+        func_to_find = "handle_" + strict_underscore(endpoint) + "_request"
         handler_cls = self.versions[internal_ver](self.core_cfg, self.game_cfg)
 
         if (handler := getattr(handler_cls, func_to_find, None)) is not None:
