@@ -1,18 +1,17 @@
 """add clearUserName0 to linked verse
 
 Revision ID: 385398a9b353
-Revises: eda950e4a6a3
+Revises: 68fb40abfea8
 Create Date: 2025-12-07 14:10:10.999661
 
 """
 
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
 revision = "385398a9b353"
-down_revision = "eda950e4a6a3"
+down_revision = "68fb40abfea8"
 branch_labels = None
 depends_on = None
 
