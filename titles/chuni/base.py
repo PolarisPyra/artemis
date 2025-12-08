@@ -1202,7 +1202,7 @@ class ChuniBase:
             # musicId, orderId
             music_ids = set(int(m["musicId"]) for m in upsert["userFavoriteMusicList"])
             current_favorites = await self.data.item.get_all_favorites(
-                user_id, self.version, fav_kind=FavoriteItemKind.MUSIC
+                user_id, self.version, fav_kind=FavoriteItemKind.MUSIC.value
             )
 
             if current_favorites is None:
