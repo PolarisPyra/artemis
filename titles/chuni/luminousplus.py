@@ -2,13 +2,13 @@ from datetime import timedelta
 from typing import Dict
 
 from core.config import CoreConfig
-from titles.chuni.luminous import ChuniLuminous
+from titles.chuni.config import ChuniConfig
 from titles.chuni.const import (
     ChuniConstants,
     MapAreaConditionLogicalOperator,
     MapAreaConditionType,
 )
-from titles.chuni.config import ChuniConfig
+from titles.chuni.luminous import ChuniLuminous
 
 
 class ChuniLuminousPlus(ChuniLuminous):
@@ -135,6 +135,78 @@ class ChuniLuminousPlus(ChuniLuminous):
 
         # Mystic Rainbow of LUMINOUS PLUS Area 5 unlocks when LUMINOUS ep. VII is finished.
         add_mystic_area_condition(15506, 3020707, 3229605)
+
+        # 1UM1N0U5 ep. 111 continues. The map is automatically unlocked after finishing
+        # LUMINOUS ep. III in LUMINOUS PLUS.
+        if ep_111 := event_by_id.get(15009):
+            start_date = ep_111["startDate"].strftime(self.date_time_format)
+
+            map_area_condition_list.append(
+                {
+                    "mapAreaId": 3229207,
+                    "length": 1,
+                    "mapAreaConditionList": [
+                        {
+                            "type": MapAreaConditionType.MAP_CLEARED.value,
+                            "conditionId": 3020703,
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": start_date,
+                            "endDate": "2099-12-31 00:00:00",
+                        },
+                    ],
+                }
+            )
+
+        # ■・■■■■■■・■
+        # Finish LUMINOUS ep. IV and obtain the title 「ここは…何処なんだ…？」.
+        if re_fiction_o := event_by_id.get(15032):
+            start_date = re_fiction_o["startDate"].strftime(self.date_time_format)
+
+            map_area_condition_list.append(
+                {
+                    "mapAreaId": 3229501,
+                    "length": 2,
+                    "mapAreaConditionList": [
+                        {
+                            "type": MapAreaConditionType.MAP_CLEARED.value,
+                            "conditionId": 3020704,
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": start_date,
+                            "endDate": "2099-12-31 00:00:00",
+                        },
+                        {
+                            "type": MapAreaConditionType.TROPHY_OBTAINED.value,
+                            "conditionId": 7105,
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": start_date,
+                            "endDate": "2099-12-31 00:00:00",
+                        },
+                    ],
+                }
+            )
+
+        # The Conductor's Path
+        # ALL JUSTICE CRITICAL 其のエメラルドを見よ MASTER.
+        if the_conductors_path := event_by_id.get(15033):
+            start_date = the_conductors_path["startDate"].strftime(
+                self.date_time_format
+            )
+
+            map_area_condition_list.append(
+                {
+                    "mapAreaId": 3229701,
+                    "length": 1,
+                    "mapAreaConditionList": [
+                        {
+                            "type": MapAreaConditionType.ALL_JUSTICE_CRITICAL.value,
+                            "conditionId": 260003,
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": start_date,
+                            "endDate": "2099-12-31 00:00:00",
+                        }
+                    ],
+                }
+            )
 
         # LUMINOUS ep. Ascension
         if ep_ascension := event_by_id.get(15512):
@@ -264,13 +336,12 @@ class ChuniLuminousPlus(ChuniLuminous):
                         ],
                     },
                     # Equip the trophy 第壱の石版【V】 to unlock Laur's map area
-                    # TODO: There's probably a different condition type here, since you're not supposed to be able to access the map area again after unequipping it
                     {
                         "mapAreaId": 2208802,
                         "length": 1,
                         "mapAreaConditionList": [
                             {
-                                "type": MapAreaConditionType.TROPHY_OBTAINED.value,
+                                "type": MapAreaConditionType.TROPHY_EQUIPPED.value,
                                 "conditionId": 7107,  # 第壱の石板【V】
                                 "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
                                 "startDate": start_date,
@@ -279,13 +350,12 @@ class ChuniLuminousPlus(ChuniLuminous):
                         ],
                     },
                     # Equip the trophy 第弐の石板【Λ】 to unlock Kanon Oguni's map area
-                    # TODO: There's probably a different condition type here, since you're not supposed to be able to access the map area again after unequipping it
                     {
                         "mapAreaId": 2208803,
                         "length": 1,
                         "mapAreaConditionList": [
                             {
-                                "type": MapAreaConditionType.TROPHY_OBTAINED.value,
+                                "type": MapAreaConditionType.TROPHY_EQUIPPED.value,
                                 "conditionId": 7104,  # 第弐の石板【Λ】
                                 "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
                                 "startDate": start_date,
