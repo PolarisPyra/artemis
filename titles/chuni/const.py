@@ -88,32 +88,183 @@ class ChuniConstants:
 
 
 class MapAreaConditionType(IntEnum):
-    """Condition types for the GetGameMapAreaConditionApi endpoint. Incomplete.
+    """
+    Condition IDs for the `GetGameMapAreaConditionApi`, `GetGameUCConditionApi`
+    and `GetGameLVConditionOpenApi` requests.
+    - "Item" or "locked item" refers to the map area, unlock challenge or
+    Linked VERSE locked using this system.
+    - "Chart ID" refers to musicID \\* 100 + difficulty, where difficulty is 0 for BASIC
+    up to 6 for WORLD'S END. For example, Halcyon ULTIMA is 17305.
 
-    For the MAP_CLEARED/MAP_AREA_CLEARED/TROPHY_OBTAINED conditions, the conditionId
-    is the map/map area/trophy.
-
-    For the RANK_*/ALL_JUSTICE conditions, the conditionId is songId * 100 + difficultyId.
-    For example, Halcyon [ULTIMA] would be 173 * 100 + 4 = 17304.
+    The complete list can be obtained by searching for the string `"RankSSS+"` and following
+    its only reference in a reverse-engineering suite e.g. Ghidra.
     """
 
-    ALWAYS_UNLOCKED = 0
+    INVALID = 0
+    """
+    Invalid condition type. Should cause the hidden item to be automatically unlocked,
+    but seemingly only works with map areas.
+    """
 
     MAP_CLEARED = 1
+    """Finish the map with ID `conditionId`."""
+
     MAP_AREA_CLEARED = 2
+    """Finish the map area with ID `conditionId`."""
 
     TROPHY_OBTAINED = 3
+    """Unlock the trophy with ID `conditionId`."""
+
+    TROPHY_EQUIPPED = 4
+    """
+    Equip the trophy with ID `conditionId`. The item is locked again when the trophy is
+    unequipped.
+    """
+
+    NAMEPLATE_OBTAINED = 5
+    """Unlock the nameplate with ID `conditionId`."""
+
+    NAMEPLATE_EQUIPPED = 6
+    """
+    Equip the nameplate with ID `conditionId`. The item is locked again when the nameplate
+    is unequipped.
+    """
+
+    CHARACTER_OBTAINED = 7
+    """Unlock the character with ID `conditionId`."""
+
+    CHARACTER_EQUIPPED = 8
+    """
+    Equip the character with ID `conditionId`. The item is locked again when the character
+    is unequipped.
+    """
+
+    CHARACTER_TRANSFORM_EQUIPPED = 9
+    """
+    Equip the character, with the character transform ID `conditionId`. The item is locked again
+    if the incorrect character is equipped, or the correct character is equipped with the wrong
+    transform.
+    """
+
+    MUSIC_OBTAINED = 10
+    """Unlock the music with ID `conditionId`."""
+
+    AVATAR_ACCESSORY_OBTAINED = 11
+    """Unlock the avatar accessory with ID `conditionId`."""
+
+    AVATAR_ACCESSORY_EQUIPPED = 12
+    """
+    Equip the avatar accessory with ID `conditionId`. The item is locked again when the avatar
+    accessory is unequipped.
+    """
+
+    MAP_ICON_OBTAINED = 13
+    """Unlock the map icon with ID `conditionId`."""
+
+    MAP_ICON_EQUIPPED = 14
+    """
+    Equip the map icon with ID `conditionId`. The item is locked again when the map icon is
+    unequipped.
+    """
+
+    SYSTEM_VOICE_OBTAINED = 15
+    """Unlock the system voice with ID `conditionId`."""
+
+    SYSTEM_VOICE_EQUIPPED = 16
+    """
+    Equip the system voice with ID `conditionId`. The item is locked again when the system voice
+    is unequipped.
+    """
+
+    ALL_JUSTICE_CRITICAL = 17
+    """Obtain ALL JUSTICE CRITICAL on the chart given by `conditionId`."""
 
     RANK_SSSP = 18
+    """Obtain rank SSS+ on the chart given by `conditionId`."""
+
     RANK_SSS = 19
+    """Obtain rank SSS on the chart given by `conditionId`."""
+
     RANK_SSP = 20
+    """Obtain rank SS+ on the chart given by `conditionId`."""
+
     RANK_SS = 21
+    """Obtain rank SS on the chart given by `conditionId`."""
+
     RANK_SP = 22
+    """Obtain rank S+ on the chart given by `conditionId`."""
+
     RANK_S = 23
+    """Obtain rank S on the chart given by `conditionId`."""
+
+    RANK_AAA = 24
+    """Obtain rank AAA on the chart given by `conditionId`."""
+
+    RANK_AA = 25
+    """Obtain rank AA on the chart given by `conditionId`."""
+
+    RANK_A = 26
+    """Obtain rank A on the chart given by `conditionId`."""
+
+    MINIMUM_BEST_30_AVERAGE = 27
+    """Obtain a best 30 average of at least `conditionId / 100`."""
 
     ALL_JUSTICE = 28
+    """Obtain ALL JUSTICE on the chart given by `conditionId`."""
+
+    FULL_COMBO = 29
+    """Obtain FULL COMBO on the chart given by `conditionId`."""
+
+    UNLOCK_CHALLENGE_DISCOVERED = 30
+    """Discover/unlock the unlock challenge with ID `conditionId`."""
+
+    UNLOCK_CHALLENGE_CLEARED = 31
+    """Clear the unlock challenge with ID `conditionId`."""
 
     MINIMUM_RATING = 32
+    """Obtain a rating of at least `conditionId / 100`."""
+
+
+class LinkedVerseUnlockConditionType(IntEnum):
+    """
+    For conditions where it's sensible to have a list of items (basically everything
+    except team course+minimum character rank), a list can be separated using either:
+        - Semicolon (`;`), which indicates that *all* items in this list must meet
+        the condition.
+        - Underscore (`_`), which indicates that *at least one* item in this list
+        must meet the condition.
+    """
+
+    PLAY_SONGS = 33
+    """
+    Play songs given by `conditionList`, where `conditionList` is a
+    list of song IDs.
+    """
+
+    COURSE_CLEAR_AND_CLASS_EMBLEM = 34
+    """
+    Obtain a class emblem (by clearing all courses of a given class) on **any**
+    of the classes given by `conditionList`, where `conditionList` is an
+    underscore-separated list of class IDs (1 for CLASS I to 6 for CLASS ∞).
+    """
+
+    TROPHY_OBTAINED = 35
+    """
+    Obtain trophies given by `conditionList`, where `conditionList` is a
+    list of trophy IDs.
+    """
+
+    PLAY_SONGS_IN_FAVORITE = 36
+    """
+    Play songs given by `conditionList` **from the favorites folder**, where
+    `conditionList` is a list of song IDs.
+    """
+
+    # TODO: does this only include the character rank?
+    CLEAR_TEAM_COURSE_WITH_CHARACTER_OF_MINIMUM_RANK = 37
+    """
+    Clear a team course while equipping a character of minimum rank.
+    """
 
 
 class MapAreaConditionLogicalOperator(Enum):
