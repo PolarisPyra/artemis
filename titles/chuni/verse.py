@@ -248,7 +248,11 @@ class ChuniVerse(ChuniLuminousPlus):
         # Mystic Rainbow of VERSE Area 3 unlocks when VERSE ep. II is finished.
         add_mystic_area_condition(16209, 3020799, 3230403)
 
+        # Mystic Rainbow of VERSE Area 4 unlocks when VERSE ep. III is finished.
         add_mystic_area_condition(16455, 3020800, 3230404)
+
+        # Mystic Rainbow of VERSE Area 5 unlocks when VERSE ep. IV is finished.
+        add_mystic_area_condition(16607, 3020802, 3230405)
 
         return {
             "length": len(map_area_condition_list),
@@ -308,6 +312,30 @@ class ChuniVerse(ChuniLuminousPlus):
                 )
             )
 
+        if i_wanna := events_by_id.get(16510):
+            start_date = i_wanna["startDate"]
+            start_date = datetime(
+                start_date.year, start_date.month, start_date.day, 0, 0, 0
+            )
+
+            # I Wanna skipped straight from 50 life master to 150 life basic.
+            course_level_list.append(
+                generate_course_levels(
+                    start_date, [300020, 300021, 300022, 300022, 300022]
+                )
+            )
+
+        if crossmythos_rhapsodia := events_by_id.get(16608):
+            start_date = crossmythos_rhapsodia["startDate"]
+            start_date = datetime(
+                start_date.year, start_date.month, start_date.day, 0, 0, 0
+            )
+            course_level_list.append(
+                generate_course_levels(
+                    start_date, [300023, 300024, 300025, 300026, 300027]
+                )
+            )
+
         return {
             "length": len(course_level_list),
             "gameCourseLevelList": course_level_list,
@@ -350,6 +378,29 @@ class ChuniVerse(ChuniLuminousPlus):
 
         # Crush the Dystopia
         add_always_unlocked_unlock_challenge(events_by_id, conditions, 16307, 10004)
+
+        # I Wanna
+        add_always_unlocked_unlock_challenge(events_by_id, conditions, 16510, 10005)
+
+        # Crossmythos Rhapsodia (unlocks when VERSE ep. IV is completed)
+        if crossmythos_rhapsodia := events_by_id.get(16608):
+            conditions.append(
+                {
+                    "unlockChallengeId": 10006,
+                    "length": 1,
+                    "conditionList": [
+                        {
+                            "type": MapAreaConditionType.MAP_CLEARED.value,
+                            "conditionId": 3020802,
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": crossmythos_rhapsodia["startDate"].strftime(
+                                self.date_time_format
+                            ),
+                            "endDate": "2099-12-31 00:00:00",
+                        }
+                    ],
+                }
+            )
 
         return {
             "length": len(conditions),
@@ -437,6 +488,10 @@ class ChuniVerse(ChuniLuminousPlus):
 
         user_id = int(data["userId"])
         b30_average = await self.data.profile.get_best30_average(user_id, self.version)
+
+        if b30_average is None:
+            return {"length": 0, "userRecRatingList": []}
+
         b30_target = (b30_average + 10) // 10 * 10
         recommendations = CHUNIREC_BEST_ENTRIES.get(b30_target)
 
