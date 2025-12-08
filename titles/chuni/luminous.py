@@ -2,13 +2,13 @@ from datetime import timedelta
 from typing import Dict
 
 from core.config import CoreConfig
-from titles.chuni.sunplus import ChuniSunPlus
+from titles.chuni.config import ChuniConfig
 from titles.chuni.const import (
     ChuniConstants,
     MapAreaConditionLogicalOperator,
     MapAreaConditionType,
 )
-from titles.chuni.config import ChuniConfig
+from titles.chuni.sunplus import ChuniSunPlus
 
 
 class ChuniLuminous(ChuniSunPlus):
@@ -381,14 +381,14 @@ class ChuniLuminous(ChuniSunPlus):
                     MapAreaConditionType.RANK_SSP.value,
                     MapAreaConditionType.RANK_SP.value,
                     MapAreaConditionType.RANK_S.value,
-                    MapAreaConditionType.ALWAYS_UNLOCKED.value,
+                    MapAreaConditionType.INVALID.value,
                 ]
             ):
                 start = (start_date + timedelta(days=14 * (i + 1))).strftime(
                     self.date_time_format
                 )
 
-                if typ != MapAreaConditionType.ALWAYS_UNLOCKED.value:
+                if typ != MapAreaConditionType.INVALID.value:
                     end = (
                         start_date + timedelta(days=14 * (i + 2)) - timedelta(seconds=1)
                     ).strftime(self.date_time_format)
