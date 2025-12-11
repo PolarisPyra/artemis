@@ -519,9 +519,24 @@ class ChuniXVerse(ChuniVerse):
                 }
             )
 
-        if _gate_new := events_by_id.get(18081):
-            # TODO
-            pass
+        if gate_new := events_by_id.get(18081):
+            conditions.append(
+                {
+                    "linkedVerseId": 10007,
+                    "length": 1,
+                    "conditionList": [
+                        {
+                            "type": LinkedVerseUnlockConditionType.AVATAR_ACCESSORY_EQUIPPED.value,
+                            "conditionList": "6104401_6204401_6504401_6704401",
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": gate_new["startDate"].strftime(
+                                self.date_time_format
+                            ),
+                            "endDate": "2099-12-31 00:00:00",
+                        }
+                    ],
+                }
+            )
 
         return {
             "length": len(conditions),
