@@ -321,6 +321,19 @@ class ChuniXVerse(ChuniVerse):
                 )
             )
 
+        if gate_new := events_by_id.get(18081):
+            start_date = gate_new["startDate"].replace(
+                hour=0, minute=0, second=0, microsecond=0, tzinfo=None
+            )
+
+            course_level_list.append(
+                generate_course_levels(
+                    start_date,
+                    [500601, 500602, 500603, 500604, 500605],
+                    self.date_time_format,
+                )
+            )
+
         return {
             "length": len(course_level_list),
             "gameCourseLevelList": course_level_list,
@@ -366,6 +379,11 @@ class ChuniXVerse(ChuniVerse):
         # Linked GATE PARADISE - VERSE ep. PARADISE
         add_linked_gate_opened_by_map(
             conditions, events_by_id, 17485, 10006, 3020808, self.date_time_format
+        )
+
+        # Linked GATE NEW - VERSE ep. NEW
+        add_linked_gate_opened_by_map(
+            conditions, events_by_id, 18081, 10007, 3020810, self.date_time_format
         )
 
         return {
@@ -500,6 +518,10 @@ class ChuniXVerse(ChuniVerse):
                     ],
                 }
             )
+
+        if _gate_new := events_by_id.get(18081):
+            # TODO
+            pass
 
         return {
             "length": len(conditions),
