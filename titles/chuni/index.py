@@ -42,6 +42,7 @@ from .sun import ChuniSun
 from .sunplus import ChuniSunPlus
 from .verse import ChuniVerse
 from .xverse import ChuniXVerse
+from .xversex import ChuniXVerseX
 
 HONEYPOT_HEADER_NAME = "X-Cozynet-Version"
 STRICT_UNDERSCORE_RE = re.compile(r"([A-Z])([A-Z])")
@@ -86,6 +87,7 @@ class ChuniServlet(BaseServlet):
             ChuniLuminousPlus,
             ChuniVerse,
             ChuniXVerse,
+            ChuniXVerseX,
         ]
 
         version_to_internal_version = {
@@ -110,7 +112,8 @@ class ChuniServlet(BaseServlet):
                 range(220, 225): ChuniConstants.VER_CHUNITHM_LUMINOUS,
                 range(225, 230): ChuniConstants.VER_CHUNITHM_LUMINOUS_PLUS,
                 range(230, 240): ChuniConstants.VER_CHUNITHM_VERSE,
-                range(240, 250): ChuniConstants.VER_CHUNITHM_X_VERSE,
+                range(240, 245): ChuniConstants.VER_CHUNITHM_X_VERSE,
+                range(245, 250): ChuniConstants.VER_CHUNITHM_X_VERSE_X,
             },
             ChuniConstants.GAME_CODE_INT: {
                 range(100, 105): ChuniConstants.VER_CHUNITHM_CRYSTAL_PLUS,  # SUPERSTAR
@@ -180,6 +183,7 @@ class ChuniServlet(BaseServlet):
             ChuniConstants.VER_CHUNITHM_VERSE: 42,
             ChuniConstants.VER_CHUNITHM_X_VERSE: 14,
             f"{ChuniConstants.VER_CHUNITHM_X_VERSE}_int": 96,
+            ChuniConstants.VER_CHUNITHM_X_VERSE_X: 49,
         }
 
         for version, keys in self.game_cfg.crypto.keys.items():
@@ -375,7 +379,7 @@ class ChuniServlet(BaseServlet):
             default_internal_ver = ChuniConstants.VER_CHUNITHM_VERSE
             version_map = self.version_map[ChuniConstants.GAME_CODE_NEW]
         elif game_code == ChuniConstants.GAME_CODE_INT:
-            default_internal_ver = ChuniConstants.VER_CHUNITHM_LUMINOUS_PLUS
+            default_internal_ver = ChuniConstants.VER_CHUNITHM_VERSE
             version_map = self.version_map[ChuniConstants.GAME_CODE_INT]
         else:
             self.logger.warning("Received request for unknown game code %s", game_code)

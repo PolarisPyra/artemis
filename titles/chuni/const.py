@@ -28,6 +28,7 @@ class ChuniConstants:
     VER_CHUNITHM_LUMINOUS_PLUS = 16
     VER_CHUNITHM_VERSE = 17
     VER_CHUNITHM_X_VERSE = 18
+    VER_CHUNITHM_X_VERSE_X = 19
 
     VERSION_NAMES = [
         "CHUNITHM",
@@ -49,6 +50,7 @@ class ChuniConstants:
         "CHUNITHM LUMINOUS PLUS",
         "CHUNITHM VERSE",
         "CHUNITHM X-VERSE",
+        "CHUNITHM X-VERSE-X",
     ]
 
     SCORE_RANK_INTERVALS_OLD = [
