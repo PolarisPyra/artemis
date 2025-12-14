@@ -361,7 +361,7 @@ class ChuniXVerseX(ChuniXVerse):
                     "conditionList": [
                         {
                             "type": LinkedVerseUnlockConditionType.PLAY_SONGS.value,
-                            "conditionList": "180;407;788;2704;2050",
+                            "conditionList": "180_384_2355;407_2353;788_629_600;2704;2050_2354",
                             "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
                             "startDate": gate_paradise["startDate"].strftime(
                                 self.date_time_format
