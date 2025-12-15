@@ -5,6 +5,7 @@ class ChuniConstants:
     GAME_CODE = "SDBT"
     GAME_CODE_NEW = "SDHD"
     GAME_CODE_INT = "SDGS"
+    GAME_CODE_CN = "SDHJ"
 
     CONFIG_NAME = "chuni.yaml"
 
