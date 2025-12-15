@@ -1,5 +1,6 @@
 class IDACConstants:
     GAME_CODE = "SDGT"
+    GAME_CODE_CN = "SDJJ"
 
     CONFIG_NAME = "idac.yaml"
 
