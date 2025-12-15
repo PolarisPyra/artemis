@@ -127,6 +127,12 @@ class ChuniServlet(BaseServlet):
                 range(140, 150): ChuniConstants.VER_CHUNITHM_VERSE,
                 range(150, 155): ChuniConstants.VER_CHUNITHM_X_VERSE,
             },
+            ChuniConstants.GAME_CODE_CN: {
+                range(100, 110): ChuniConstants.VER_CHUNITHM_NEW, # 中二节奏
+                range(110, 120): ChuniConstants.VER_CHUNITHM_NEW_PLUS, # 中二节奏2024, why the fuck are you like this wahlap
+                range(120, 130): ChuniConstants.VER_CHUNITHM_LUMINOUS, # 中二节奏2025
+                range(130, 140): ChuniConstants.VER_CHUNITHM_VERSE, # 中二节奏2026
+            }
         }
         self.version_map: Dict[str, Dict[int, int]] = {
             game_code: {
@@ -381,6 +387,9 @@ class ChuniServlet(BaseServlet):
         elif game_code == ChuniConstants.GAME_CODE_INT:
             default_internal_ver = ChuniConstants.VER_CHUNITHM_VERSE
             version_map = self.version_map[ChuniConstants.GAME_CODE_INT]
+        elif game_code == ChuniConstants.GAME_CODE_CN:
+            default_internal_ver = ChuniConstants.VER_CHUNITHM_VERSE
+            version_map = self.version_map[ChuniConstants.GAME_CODE_CN]    
         else:
             self.logger.warning("Received request for unknown game code %s", game_code)
             return Response(default_error_response, headers=headers)
@@ -466,6 +475,8 @@ class ChuniServlet(BaseServlet):
             endpoint = endpoint.removesuffix("C3Exp")
         elif game_code == ChuniConstants.GAME_CODE_INT and version < 110:
             endpoint = endpoint.removesuffix("Exp")
+        elif game_code == ChuniConstants.GAME_CODE_CN and version >= 100:
+            endpoint = endpoint.removesuffix("C3Chn")   
 
         func_to_find = "handle_" + strict_underscore(endpoint) + "_request"
         handler_cls = self.versions[internal_ver](self.core_cfg, self.game_cfg)

@@ -384,6 +384,30 @@ class Mai2Servlet(BaseServlet):
                 internal_ver = Mai2Constants.VER_MAIMAI_DX_PRISM
             elif version >= 155 and version < 160:
                 internal_ver = Mai2Constants.VER_MAIMAI_DX_PRISM_PLUS
+        elif game_code == "SDGB": # China!
+            if version < 105:  # 1.0
+                internal_ver = Mai2Constants.VER_MAIMAI_DX
+            elif version >= 105 and version < 110:  # PLUS
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_PLUS
+            elif version >= 110 and version < 115:  # Splash
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_SPLASH
+            elif version >= 115 and version < 120:  # Splash PLUS
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_SPLASH_PLUS
+            elif version >= 120 and version < 125:  # UNiVERSE
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_UNIVERSE
+            elif version >= 125 and version < 130:  # UNiVERSE PLUS
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_UNIVERSE_PLUS
+            elif version >= 130 and version < 135:  # FESTiVAL
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_FESTIVAL
+            elif version >= 135 and version < 140:  # FESTiVAL PLUS
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_FESTIVAL_PLUS
+            elif version >= 140 and version < 145:  # BUDDiES
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_BUDDIES
+            elif version >= 145 and version < 150:  # BUDDiES PLUS
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_BUDDIES_PLUS
+            elif version >= 150 and version < 155:
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_PRISM
+            
 
         if all(c in string.hexdigits for c in endpoint) and len(endpoint) == 32:
             # If we get a 32 character long hex string, it's a hash and we're
@@ -449,6 +473,8 @@ class Mai2Servlet(BaseServlet):
         endpoint = (
             endpoint.replace("MaimaiExp", "")
             if game_code == Mai2Constants.GAME_CODE_DX_INT
+            else endpoint.replace("MaimaiChn", "")
+            if game_code == Mai2Constants.GAME_CODE_DX_CN
             else endpoint
         )
         func_to_find = "handle_" + inflection.underscore(endpoint) + "_request"
