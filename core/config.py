@@ -477,6 +477,27 @@ class MuchaConfig:
                 self.__config, "core", "mucha", "loglevel", default="info"
             )
         )
+class ChimedbConfig:
+    def __init__(self, parent_config: "CoreConfig") -> None:
+        self.__config = parent_config
+
+    @property
+    def enable(self) -> bool:
+        return CoreConfig.get_config_field(
+            self.__config, "core", "chimedb", "enable", default=True
+        )
+    @property
+    def loglevel(self) -> int:
+        return CoreConfig.str_to_loglevel(
+            CoreConfig.get_config_field(
+                self.__config, "core", "chimedb", "loglevel", default="info"
+            )
+        )
+    @property
+    def key(self) -> str:
+        return CoreConfig.get_config_field(
+            self.__config, "core", "chimedb", "key", default=""
+        )
 
 
 class CoreConfig(dict):
@@ -488,6 +509,7 @@ class CoreConfig(dict):
         self.allnet = AllnetConfig(self)
         self.billing = BillingConfig(self)
         self.aimedb = AimedbConfig(self)
+        self.chimedb = ChimedbConfig(self)
         self.mucha = MuchaConfig(self)
 
     @classmethod

@@ -44,6 +44,7 @@ allnet:
   loglevel: "info"
   allow_online_updates: False
   update_cfg_folder: ""
+  
 
 billing:
   standalone: True
@@ -61,6 +62,11 @@ aimedb:
   key: ""
   id_secret: ""
   id_lifetime_seconds: 86400
+
+chimedb:
+  enable: True
+  loglevel: "info"
+  key: ""
 
 mucha:
   loglevel: "info"

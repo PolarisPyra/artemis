@@ -11,6 +11,7 @@ from typing import List
 
 from core import CoreConfig, TitleServlet, MuchaServlet
 from core.allnet import AllnetServlet, BillingServlet
+from core.chimedb import ChimeServlet
 from core.frontend import FrontendServlet
 
 
@@ -94,7 +95,13 @@ if not cfg.allnet.standalone:
             Route("/report-api/Report", allnet.handle_dlorder_report, methods=["POST"]),
             Route("/dl/ini/{file:str}", allnet.handle_dlorder_ini),
         ]
-
+if cfg.chimedb.enable:
+    chimedb = ChimeServlet(cfg, cfg_dir)
+    route_lst += [
+        Route("/wc_aime/api/alive_check", chimedb.handle_qr_alive, methods=["POST"]),
+        Route("/qrcode/api/alive_check", chimedb.handle_qr_alive, methods=["POST"]),
+        Route("/wc_aime/api/get_data", chimedb.handle_qr_lookup, methods=["POST"])
+    ]
 for code, game in title.title_registry.items():
     route_lst += game.get_routes()
 
