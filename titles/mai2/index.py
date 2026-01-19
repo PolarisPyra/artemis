@@ -384,6 +384,8 @@ class Mai2Servlet(BaseServlet):
                 internal_ver = Mai2Constants.VER_MAIMAI_DX_PRISM
             elif version >= 155 and version < 160:
                 internal_ver = Mai2Constants.VER_MAIMAI_DX_PRISM_PLUS
+            elif version >= 160:
+                internal_ver = Mai2Constants.VER_MAIMAI_DX_CIRCLE   
         elif game_code == "SDGB": # China!
             if version < 105:  # 1.0
                 internal_ver = Mai2Constants.VER_MAIMAI_DX
@@ -405,7 +407,7 @@ class Mai2Servlet(BaseServlet):
                 internal_ver = Mai2Constants.VER_MAIMAI_DX_BUDDIES
             elif version >= 145 and version < 150:  # BUDDiES PLUS
                 internal_ver = Mai2Constants.VER_MAIMAI_DX_BUDDIES_PLUS
-            elif version >= 150 and version < 155:
+            elif version >= 150 and version < 155: # WUMENG2025
                 internal_ver = Mai2Constants.VER_MAIMAI_DX_PRISM
             
 

@@ -74,9 +74,7 @@ class Mai2Circle(Mai2PrismPlus):
             "userCirclePointDataList": [],  # circleId: int, userName: str, aggrDate: str, point: int, recordDate: str, rewardGet: bool
         }
 
-    async def handle_get_user_circle_point_ranking_api_request(
-        self, data: Dict
-    ) -> Dict:
+    async def handle_get_user_circle_point_ranking_api_request(self, data: Dict) -> Dict:
         user_id: int = data["userId"]
         circle_id: int = data["circleId"]
 
