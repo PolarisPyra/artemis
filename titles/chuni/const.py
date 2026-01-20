@@ -263,10 +263,14 @@ class LinkedVerseUnlockConditionType(IntEnum):
     `conditionList` is a list of song IDs.
     """
 
-    # TODO: does this only include the character rank?
     CLEAR_TEAM_COURSE_WITH_CHARACTER_OF_MINIMUM_RANK = 37
     """
     Clear a team course while equipping a character of minimum rank.
+    """
+
+    AVATAR_ACCESSORY_EQUIPPED = 40
+    """
+    Equip avatar accessories whose IDs are specified by `conditionList`.
     """
 
 
