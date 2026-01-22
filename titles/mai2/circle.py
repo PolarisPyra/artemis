@@ -120,9 +120,7 @@ class Mai2Circle(Mai2PrismPlus):
             },
         }
 
-    async def handle_upsert_user_place_circle_regist_api_request(
-        self, data: Dict
-    ) -> Dict:
+    async def handle_upsert_user_place_circle_regist_api_request(self, data: Dict) -> Dict:
         user_id: int = data["userId"]
         circle_id: int = data["circleId"]
 
