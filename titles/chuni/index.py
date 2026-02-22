@@ -353,7 +353,7 @@ class ChuniServlet(BaseServlet):
                 return Response(default_error_response, headers=headers)
 
             machine_data = machine.data if machine.data is not None else {}
-            max_allowed_version = machine_data.get("max_chuni_version", 244)
+            max_allowed_version = machine_data.get("max_chuni_version", 249)
 
             if max_allowed_version is not None and version > max_allowed_version:
                 self.logger.warning(
