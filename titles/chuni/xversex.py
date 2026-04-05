@@ -81,6 +81,31 @@ class ChuniXVerseX(ChuniXVerse):
             )
 
         add_mystic_area_condition(18080, 3020810, 3232002)
+        add_mystic_area_condition(18405, 3020811, 3232003)
+        add_mystic_area_condition(18552, 3020812, 3232004)
+
+        # Secret AREA: LUMINOUS: Obtain the "MISSION still in progress" title by getting
+        # 100pt from カイナン・メルヴィアス's CHUNITHM mission
+        if secret_area_luminous_flag := events_by_id.get(18559):
+            start_date = (
+                secret_area_luminous_flag["startDate"]
+                .replace(hour=0, minute=0, second=0)
+                .strftime(self.date_time_format)
+            )
+            condition = {
+                "type": MapAreaConditionType.TROPHY_OBTAINED.value,
+                "conditionId": 10122,
+                "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                "startDate": start_date,
+                # TODO: base this on the next CMission flag, similar to MISSION in progress
+                # in LUMINOUS
+                "endDate": "2099-12-31 00:00:00",
+            }
+
+            map_area_condition_list.extend(
+                {"mapAreaId": map_area_id, "length": 1, "condition": [condition]}
+                for map_area_id in (3232101, 3232102)
+            )
 
         return {
             "length": len(map_area_condition_list),
@@ -187,6 +212,32 @@ class ChuniXVerseX(ChuniXVerse):
                 )
             )
 
+        if gate_sun := events_by_id.get(18406):
+            start_date = gate_sun["startDate"].replace(
+                hour=0, minute=0, second=0, microsecond=0, tzinfo=None
+            )
+
+            course_level_list.append(
+                generate_course_levels(
+                    start_date,
+                    [500701, 500702, 500703, 500704, 500705],
+                    self.date_time_format,
+                )
+            )
+
+        if gate_luminous := events_by_id.get(18553):
+            start_date = gate_luminous["startDate"].replace(
+                hour=0, minute=0, second=0, microsecond=0, tzinfo=None
+            )
+
+            course_level_list.append(
+                generate_course_levels(
+                    start_date,
+                    [500801, 500802, 500803, 500804, 500805],
+                    self.date_time_format,
+                )
+            )
+
         return {
             "length": len(course_level_list),
             "gameCourseLevelList": course_level_list,
@@ -237,6 +288,16 @@ class ChuniXVerseX(ChuniXVerse):
         # Linked GATE NEW - VERSE ep. NEW
         add_linked_gate_opened_by_map(
             conditions, events_by_id, 18081, 10007, 3020810, self.date_time_format
+        )
+
+        # Linked GATE SUN - VERSE ep. SUN
+        add_linked_gate_opened_by_map(
+            conditions, events_by_id, 18406, 10008, 3020811, self.date_time_format
+        )
+
+        # Linked GATE LUMINOUS - VERSE ep. LUMINOUS
+        add_linked_gate_opened_by_map(
+            conditions, events_by_id, 18553, 10009, 3020812, self.date_time_format
         )
 
         return {
@@ -383,6 +444,46 @@ class ChuniXVerseX(ChuniXVerse):
                             "conditionList": "6104401;6204401;6704401",
                             "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
                             "startDate": gate_new["startDate"].strftime(
+                                self.date_time_format
+                            ),
+                            "endDate": "2099-12-31 00:00:00",
+                        }
+                    ],
+                }
+            )
+
+        if gate_sun := events_by_id.get(18406):
+            conditions.append(
+                {
+                    "linkedVerseId": 10008,
+                    "length": 1,
+                    "conditionList": [
+                        {
+                            "type": LinkedVerseUnlockConditionType.PLAY_SONGS_IN_ONLINE_BATTLE.value,
+                            # I'm so Happy, U&iVERSE, RELOAD, Mutation, Stardust:RAY
+                            # Songs that were shared through online battle
+                            "conditionList": "2597;2556;2326;2327;2266",
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": gate_sun["startDate"].strftime(
+                                self.date_time_format
+                            ),
+                            "endDate": "2099-12-31 00:00:00",
+                        }
+                    ],
+                }
+            )
+
+        if gate_luminous := events_by_id.get(18553):
+            conditions.append(
+                {
+                    "linkedVerseId": 10009,
+                    "length": 1,
+                    "conditionList": [
+                        {
+                            "type": LinkedVerseUnlockConditionType.MAP_CLEARED.value,
+                            "conditionList": "3020815",  # Secret AREA: LUMINOUS
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": gate_luminous["startDate"].strftime(
                                 self.date_time_format
                             ),
                             "endDate": "2099-12-31 00:00:00",

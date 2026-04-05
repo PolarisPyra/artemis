@@ -273,6 +273,17 @@ class LinkedVerseUnlockConditionType(IntEnum):
     Equip avatar accessories whose IDs are specified by `conditionList`.
     """
 
+    PLAY_SONGS_IN_ONLINE_BATTLE = 41
+    """
+    Play songs given by `conditionList` **in online battle**, where `conditionList`
+    is a list of song IDs.
+    """
+
+    MAP_CLEARED = 42
+    """
+    Finish maps whose IDs are specified by `conditionList`.
+    """
+
 
 class MapAreaConditionLogicalOperator(Enum):
     AND = 1
