@@ -14,6 +14,9 @@ services:
       CFG_CORE_MEMCACHED_HOSTNAME: ma.memcached
       CFG_CORE_AIMEDB_KEY: <INSERT AIMEDB KEY HERE>
       CFG_CHUNI_SERVER_LOGLEVEL: debug
+      # Party broker (titles/ongeki/party.py). Must match cozynet's .env.
+      COZYNET_API_KEY: dev-cozynet-api-key-change-me
+      LOBBY_SECRET: dev-lobby-secret-change-me
 
     ports:
       - "80:80"
