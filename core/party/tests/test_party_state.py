@@ -30,7 +30,6 @@ async def test_create_lobby_happy_path(broker, fake_data):
     assert lobby.host_user_id == 1
     assert lobby.game == GAME
     assert lobby.game_version == "1.55"
-    assert lobby.status == "waiting"
     assert lobby.members[1].seat == 1
     assert broker.user_to_lobby[(GAME, 1)] == lobby.id
 
@@ -140,46 +139,6 @@ async def test_cannot_kick_host(broker, fake_data):
     assert exc.value.code == "cannot_kick_host"
 
 
-async def test_start_requires_two_cabinets(broker, fake_data, fake_ws):
-    await _swipe_in(broker, fake_data, 1, "A69E01A0000001", "1.55", "alice")
-    lobby = await broker.create_lobby(GAME, 1)
-    lobby.cabinets[1] = fake_ws
-    with pytest.raises(PartyError) as exc:
-        await broker.start_lobby(GAME, lobby.id, 1)
-    assert exc.value.code == "not_enough_cabinets"
-
-
-async def test_start_transitions_to_active(broker, fake_data):
-    from core.party.tests.conftest import FakeWebSocket
-
-    await _swipe_in(broker, fake_data, 1, "A69E01A0000001", "1.55", "alice")
-    await _swipe_in(broker, fake_data, 2, "A69E01A0000002", "1.55", "bob")
-    lobby = await broker.create_lobby(GAME, 1)
-    await broker.join_lobby(GAME, lobby.id, 2)
-    ws1, ws2 = FakeWebSocket(), FakeWebSocket()
-    lobby.cabinets[1] = ws1
-    lobby.cabinets[2] = ws2
-
-    await broker.start_lobby(GAME, lobby.id, 1)
-    assert lobby.status == "active"
-    roles = sorted(m["role"] for ws in (ws1, ws2) for m in ws.messages_of_type("lobbyStart"))
-    assert roles == ["client", "host"]
-
-
-async def test_start_rejects_non_host(broker, fake_data):
-    from core.party.tests.conftest import FakeWebSocket
-
-    await _swipe_in(broker, fake_data, 1, "A69E01A0000001", "1.55", "alice")
-    await _swipe_in(broker, fake_data, 2, "A69E01A0000002", "1.55", "bob")
-    lobby = await broker.create_lobby(GAME, 1)
-    await broker.join_lobby(GAME, lobby.id, 2)
-    lobby.cabinets[1] = FakeWebSocket()
-    lobby.cabinets[2] = FakeWebSocket()
-    with pytest.raises(PartyError) as exc:
-        await broker.start_lobby(GAME, lobby.id, 2)
-    assert exc.value.code == "not_host"
-
-
 async def test_bind_player_unknown_access_code(broker, fake_data):
     fake_data.arcade.add("A69E01A0000001")
     broker.keychip_to_version[(GAME, "A69E01A0000001")] = "1.55"
@@ -240,3 +199,55 @@ async def test_version_swap_kicks_previous_user(broker, fake_data):
     await broker.bind_player(GAME, "A69E01A0000001", "CARD2")
     assert broker.keychip_to_user[(GAME, "A69E01A0000001")] == 2
     assert (GAME, 1) not in broker.user_to_keychip
+
+
+async def test_cabinet_disconnect_unbinds_player_and_leaves_lobby(broker, fake_data):
+    """Game termination (cabinet WS dropping) clears presence AND removes the
+    user from any lobby. Distinct from a simple cabinet detach which would
+    leave the seat as 'pending'."""
+    from core.party.tests.conftest import FakeWebSocket
+
+    await _swipe_in(broker, fake_data, 1, "A69E01A0000001", "1.55", "alice")
+    await _swipe_in(broker, fake_data, 2, "A69E01A0000002", "1.55", "bob")
+    lobby = await broker.create_lobby(GAME, 1)
+    await broker.join_lobby(GAME, lobby.id, 2)
+
+    # Bob's cabinet has a live WS attached.
+    bob_ws = FakeWebSocket()
+    lobby.cabinets[2] = bob_ws
+    broker.parked_cabinets[(GAME, "A69E01A0000002")] = bob_ws
+
+    # Game terminates (WS closes).
+    await broker._cabinet_closed(bob_ws, GAME, "A69E01A0000002")
+
+    # Bob is no longer in the lobby (full leave, not just detach).
+    assert 2 not in lobby.members
+    assert (GAME, 2) not in broker.user_to_lobby
+    # Presence cleared — Bob is no longer "at a cabinet".
+    assert (GAME, 2) not in broker.user_to_keychip
+    assert (GAME, "A69E01A0000002") not in broker.keychip_to_user
+    # Alice is unaffected.
+    assert 1 in lobby.members
+
+
+async def test_host_cabinet_disconnect_closes_lobby(broker, fake_data):
+    """If the host's cabinet terminates, the lobby is closed (not just left
+    with an absent host)."""
+    from core.party.tests.conftest import FakeWebSocket
+
+    await _swipe_in(broker, fake_data, 1, "A69E01A0000001", "1.55", "alice")
+    await _swipe_in(broker, fake_data, 2, "A69E01A0000002", "1.55", "bob")
+    lobby = await broker.create_lobby(GAME, 1)
+    await broker.join_lobby(GAME, lobby.id, 2)
+    lobby_id = lobby.id
+
+    alice_ws = FakeWebSocket()
+    lobby.cabinets[1] = alice_ws
+    broker.parked_cabinets[(GAME, "A69E01A0000001")] = alice_ws
+
+    await broker._cabinet_closed(alice_ws, GAME, "A69E01A0000001")
+
+    assert lobby_id not in broker.lobbies
+    assert (GAME, 1) not in broker.user_to_lobby
+    assert (GAME, 2) not in broker.user_to_lobby
+    assert (GAME, "A69E01A0000001") not in broker.keychip_to_user

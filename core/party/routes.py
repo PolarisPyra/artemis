@@ -95,19 +95,6 @@ def build_routes(broker: PartyBroker) -> List[Route]:
             return JSONResponse({"error": e.code, "message": e.message}, status_code=e.status)
         return JSONResponse({"ok": True})
 
-    async def route_start_lobby(request: Request) -> Response:
-        deny = _check_internal_auth(broker, request)
-        if deny is not None:
-            return deny
-        user_id, deny = _require_on_behalf_of(request)
-        if deny is not None:
-            return deny
-        try:
-            lobby = await broker.start_lobby(_game(request), request.path_params.get("id", ""), user_id)
-        except PartyError as e:
-            return JSONResponse({"error": e.code, "message": e.message}, status_code=e.status)
-        return JSONResponse(lobby.to_json())
-
     async def route_kick_member(request: Request) -> Response:
         deny = _check_internal_auth(broker, request)
         if deny is not None:
@@ -160,7 +147,6 @@ def build_routes(broker: PartyBroker) -> List[Route]:
         Route("/internal/party/{game:str}/lobbies", route_create_lobby, methods=["POST"]),
         Route("/internal/party/{game:str}/lobbies/{id:str}/join", route_join_lobby, methods=["POST"]),
         Route("/internal/party/{game:str}/lobbies/{id:str}/leave", route_leave_lobby, methods=["POST"]),
-        Route("/internal/party/{game:str}/lobbies/{id:str}/start", route_start_lobby, methods=["POST"]),
         Route("/internal/party/{game:str}/lobbies/{id:str}/kick", route_kick_member, methods=["POST"]),
         Route("/internal/party/{game:str}/presence", route_presence, methods=["GET"]),
         Route("/internal/party/health", route_health, methods=["GET"]),

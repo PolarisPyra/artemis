@@ -116,17 +116,6 @@ def test_presence_reflects_cabinet_binding(client, broker, fake_data):
     assert body["game"] == GAME
 
 
-def test_start_without_two_cabinets_fails(client, broker, fake_data):
-    _setup_user_at_cabinet(broker, fake_data, 1, "A69E01A0000001", "1.55", "alice")
-    created = client.post(f"/internal/party/{GAME}/lobbies?on_behalf_of=1", headers=API_KEY).json()
-    resp = client.post(
-        f"/internal/party/{GAME}/lobbies/{created['id']}/start?on_behalf_of=1",
-        headers=API_KEY,
-    )
-    assert resp.status_code == 400
-    assert resp.json()["error"] == "not_enough_cabinets"
-
-
 def test_health_reports_counts(client, broker, fake_data):
     _setup_user_at_cabinet(broker, fake_data, 1, "A69E01A0000001", "1.55", "alice")
     client.post(f"/internal/party/{GAME}/lobbies?on_behalf_of=1", headers=API_KEY)

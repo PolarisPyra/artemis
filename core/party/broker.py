@@ -51,7 +51,6 @@ class Lobby:
     game: str
     host_user_id: int
     game_version: str
-    status: str = "waiting"  # waiting | active | closed
     members: Dict[int, Member] = field(default_factory=dict)
     cabinets: Dict[int, WebSocket] = field(default_factory=dict)
     watchers: Set[WebSocket] = field(default_factory=set)
@@ -63,7 +62,6 @@ class Lobby:
             "game": self.game,
             "host_user_id": self.host_user_id,
             "game_version": self.game_version,
-            "status": self.status,
             "created_at": self.created_at,
             "seats": [
                 {
@@ -112,6 +110,28 @@ class PartyBroker:
             self.logger.warning(
                 "[party] COZYNET_API_KEY is unset — all /internal/party requests will be rejected"
             )
+
+        # PARTY_LOG_LEVEL: info (default) | debug | trace.
+        # info  → lifecycle only (lobby create/join, cabinet connect, presence).
+        # debug → +1 line per forwarded data frame, per recipient.
+        # trace → debug + first-16 hex of payload, useful for end-to-end byte
+        #         matching across cabinet → broker → cabinet.
+        # Counter rollups every 30s at info+ when traffic flows.
+        raw_level = os.environ.get("PARTY_LOG_LEVEL", "info").strip().lower()
+        if raw_level == "trace":
+            self.log_level = 2
+        elif raw_level == "debug":
+            self.log_level = 1
+        else:
+            self.log_level = 0
+        if self.log_level >= 1:
+            # Force the broker logger above the handler's effective level —
+            # otherwise debug() calls get filtered out by the root config.
+            self.logger.setLevel(logging.DEBUG)
+            self.logger.info(f"[party] PARTY_LOG_LEVEL={raw_level} (data-frame logging enabled)")
+        # Counters for the 30s rollup. Keyed by (game, lobby_id) → [frames, bytes].
+        self._traffic_counters: Dict[Tuple[str, str], List[int]] = {}
+        self._last_rollup_at: float = time.time()
 
         # All state is keyed by (game, ...) so games never cross-contaminate.
         self.lobbies: Dict[str, Lobby] = {}
@@ -174,8 +194,6 @@ class PartyBroker:
         for lobby in self.lobbies.values():
             if lobby.game != game:
                 continue
-            if lobby.status != "waiting":
-                continue
             if len(lobby.members) >= MAX_SEATS:
                 continue
             out.append(lobby.to_json())
@@ -186,8 +204,6 @@ class PartyBroker:
         lobby = self._require_lobby(game, lobby_id)
         if (game, on_behalf_of) in self.user_to_lobby:
             raise PartyError("already_in_lobby", 409)
-        if lobby.status != "waiting":
-            raise PartyError("lobby_not_waiting", 409)
         if len(lobby.members) >= MAX_SEATS:
             raise PartyError("lobby_full", 409)
 
@@ -238,24 +254,11 @@ class PartyBroker:
             raise PartyError("cannot_kick_host", 400)
         await self._remove_member(lobby, target.user_id, reason="kicked")
 
-    async def start_lobby(self, game: str, lobby_id: str, on_behalf_of: int) -> Lobby:
-        lobby = self._require_lobby(game, lobby_id)
-        if on_behalf_of != lobby.host_user_id:
-            raise PartyError("not_host", 403)
-        if lobby.status != "waiting":
-            raise PartyError("lobby_not_waiting", 409)
-        attached = sum(1 for uid in lobby.members if uid in lobby.cabinets)
-        if attached < 2:
-            raise PartyError("not_enough_cabinets", 400, "At least two cabinets must be attached")
-
-        lobby.status = "active"
-        self.logger.info(f"[party] {game} lobby {lobby.id} started")
-        for uid, ws in lobby.cabinets.items():
-            role = "host" if uid == lobby.host_user_id else "client"
-            await self._send_control(ws, {"type": "lobbyStart", "role": role})
-        await self._emit_lobby_event(lobby, {"type": "lobby_started", "lobby": lobby.to_json()})
-        await self._emit_list_event(game, {"type": "lobby_updated", "lobby": lobby.to_json()})
-        return lobby
+    # No `start_lobby`: the lobby IS a virtual LAN. Cabinets in the same lobby
+    # see each other's recruits via the natural game flow (host picks song in
+    # song-select → Party.startRecruit broadcasts → forwarded by bridge →
+    # appears in peer's multiplayer tab → peer joins). The lobby has no
+    # explicit start state to transition to.
 
     # ==================================================================
     # Presence
@@ -364,7 +367,6 @@ class PartyBroker:
         await self._emit_list_event(lobby.game, {"type": "lobby_updated", "lobby": lobby.to_json()})
 
     async def _close_lobby(self, lobby: Lobby, reason: str) -> None:
-        lobby.status = "closed"
         self.logger.info(f"[party] {lobby.game} lobby {lobby.id} closed ({reason})")
         for user_id in list(lobby.members.keys()):
             await self._detach_cabinet(lobby, user_id, reason=reason)
@@ -567,18 +569,86 @@ class PartyBroker:
         if lobby_id is None:
             return
         lobby = self.lobbies.get(lobby_id)
-        if lobby is None or lobby.status != "active":
+        if lobby is None:
             return
-        payload = {"type": "data", "kind": msg.get("kind"), "src_port": msg.get("src_port"), "payload": msg.get("payload")}
+        # Forwarding is always-on while in lobby — no "active" gate. The
+        # cabinets behave like LAN peers; the game's own state machine
+        # decides when to send recruit/join/play traffic.
+        kind = msg.get("kind")
+        src_port = msg.get("src_port")
+        b64 = msg.get("payload") or ""
+        # Decode just for the byte length (and optional hex prefix). Skip when
+        # log_level is below debug — base64 decode of every frame at info level
+        # is wasted work.
+        payload_len = 0
+        hex_prefix = ""
+        if self.log_level >= 1:
+            try:
+                import base64
+                raw = base64.b64decode(b64) if b64 else b""
+                payload_len = len(raw)
+                if self.log_level >= 2:
+                    hex_prefix = raw[:16].hex(" ")
+            except Exception:
+                payload_len = -1
+
+        payload = {"type": "data", "kind": kind, "src_port": src_port, "payload": b64}
         if src_user == lobby.host_user_id:
             for uid, peer in lobby.cabinets.items():
                 if uid == src_user:
                     continue
                 await self._send_control(peer, payload)
+                self._log_forward(game, lobby, src_user, uid, kind, src_port, payload_len, hex_prefix)
         else:
             host_ws = lobby.cabinets.get(lobby.host_user_id)
             if host_ws is not None:
                 await self._send_control(host_ws, payload)
+                self._log_forward(game, lobby, src_user, lobby.host_user_id, kind, src_port, payload_len, hex_prefix)
+        self._maybe_emit_rollup()
+
+    def _log_forward(
+        self,
+        game: str,
+        lobby: Lobby,
+        src_user: int,
+        dst_user: int,
+        kind: Any,
+        src_port: Any,
+        payload_len: int,
+        hex_prefix: str,
+    ) -> None:
+        """Per-recipient debug line + counter increment for the 30s rollup."""
+        bucket = self._traffic_counters.setdefault((game, lobby.id), [0, 0])
+        bucket[0] += 1
+        if payload_len > 0:
+            bucket[1] += payload_len
+        if self.log_level >= 1:
+            short_id = lobby.id[:8]
+            base = f"[party] {game} lobby={short_id} from=user{src_user} → user{dst_user} kind={kind} port={src_port} len={payload_len}"
+            if hex_prefix:
+                base += f" hex={hex_prefix}"
+            self.logger.debug(base)
+
+    def _maybe_emit_rollup(self) -> None:
+        """Emit a 30s traffic summary at INFO if any frames flowed in the
+        window. No-op below debug level (avoids clutter on quiet deploys).
+        Called from the data-frame hot path so we don't need a background task.
+        """
+        if self.log_level < 1:
+            return
+        now = time.time()
+        if now - self._last_rollup_at < 30.0:
+            return
+        self._last_rollup_at = now
+        if not self._traffic_counters:
+            return
+        for (game, lobby_id), (frames, bytes_) in self._traffic_counters.items():
+            if frames == 0:
+                continue
+            self.logger.info(
+                f"[party] {game} lobby={lobby_id[:8]} 30s traffic: frames={frames} bytes={bytes_}"
+            )
+        self._traffic_counters.clear()
 
     async def _cabinet_closed(self, ws: WebSocket, game: str, keychip: str) -> None:
         self.logger.info(f"[party] {game} cabinet {keychip} disconnected")
@@ -586,11 +656,12 @@ class PartyBroker:
             self.parked_cabinets.pop((game, keychip), None)
         user_id = self.keychip_to_user.get((game, keychip))
         if user_id is not None:
-            lobby_id = self.user_to_lobby.get((game, user_id))
-            if lobby_id is not None:
-                lobby = self.lobbies.get(lobby_id)
-                if lobby is not None and lobby.cabinets.get(user_id) is ws:
-                    await self._detach_cabinet(lobby, user_id, reason="cabinet_disconnected")
+            # Cabinet WS dropped → treat the same as the player having logged
+            # out. Clears presence ("at cabinet" → gray on web), removes from
+            # lobby, closes lobby if they were host. A WS reconnect within a
+            # few seconds requires re-swiping; that's correct for true
+            # cabinet termination, mildly annoying for transient blips.
+            await self._unbind_user(game, user_id, notify=True)
         self.cabinet_to_key.pop(id(ws), None)
         if ws.client_state != WebSocketState.DISCONNECTED:
             try:
