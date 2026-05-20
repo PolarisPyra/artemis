@@ -83,6 +83,7 @@ class ChuniXVerseX(ChuniXVerse):
         add_mystic_area_condition(18080, 3020810, 3232002)
         add_mystic_area_condition(18405, 3020811, 3232003)
         add_mystic_area_condition(18552, 3020812, 3232004)
+        add_mystic_area_condition(18682, 3020813, 3232005)
 
         # Secret AREA: LUMINOUS: Obtain the "MISSION still in progress" title by getting
         # 100pt from カイナン・メルヴィアス's CHUNITHM mission
@@ -238,6 +239,65 @@ class ChuniXVerseX(ChuniXVerse):
                 )
             )
 
+        if gate_verse := events_by_id.get(18683):
+            start_date = gate_verse["startDate"].replace(
+                hour=0, minute=0, second=0, microsecond=0, tzinfo=None
+            )
+
+            course_level_list.append(
+                generate_course_levels(
+                    start_date,
+                    [500901, 500902, 500903, 500904, 500905],
+                    self.date_time_format,
+                )
+            )
+
+        if gate_xverse := events_by_id.get(18685):
+            start_date = gate_xverse["startDate"].replace(
+                hour=0, minute=0, second=0, microsecond=0, tzinfo=None
+            )
+
+            course_level_list.append(
+                generate_course_levels(
+                    start_date,
+                    [501001, 501002, 501003, 501004, 501005],
+                    self.date_time_format,
+                )
+            )
+
+        if gate_reverse := events_by_id.get(18684):
+            start_date = gate_reverse["startDate"].replace(
+                hour=0, minute=0, second=0, microsecond=0, tzinfo=None
+            )
+
+            course_level_list.append(
+                generate_course_levels(
+                    start_date,
+                    [501101, 501102, 501103, 501104, 501105, 501106],
+                    self.date_time_format,
+                )
+            )
+
+        if gate_universe := events_by_id.get(18686):
+            start_date = gate_universe["startDate"].replace(
+                hour=0, minute=0, second=0, microsecond=0, tzinfo=None
+            )
+
+            course_level_list.append(
+                generate_course_levels(
+                    start_date,
+                    [501201, 501202, 501203, 501204, 501205, 501206],
+                    self.date_time_format,
+                )
+            )
+            course_level_list.append(
+                generate_course_levels(
+                    start_date,
+                    [501301, 501302, 501303, 501304, 501305, 501306],
+                    self.date_time_format,
+                )
+            )
+
         return {
             "length": len(course_level_list),
             "gameCourseLevelList": course_level_list,
@@ -299,6 +359,90 @@ class ChuniXVerseX(ChuniXVerse):
         add_linked_gate_opened_by_map(
             conditions, events_by_id, 18553, 10009, 3020812, self.date_time_format
         )
+
+        # Linked GATE VERSE - VERSE ep. VERSE
+        add_linked_gate_opened_by_map(
+            conditions, events_by_id, 18683, 10010, 3020813, self.date_time_format
+        )
+
+        # Clear all 10 Linked GATEs from ORIGIN to VERSE
+        if gate_xverse := events_by_id.get(18685):
+            start_date = gate_xverse["startDate"].strftime(self.date_time_format)
+
+            conditions.append(
+                {
+                    "linkedVerseId": 10011,
+                    "length": 10,
+                    "conditionList": [
+                        {
+                            "type": 31,
+                            "conditionId": condition_id,
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": start_date,
+                            "endDate": "2099-12-31 23:59:59",
+                        }
+                        for condition_id in range(10001, 10011)
+                    ],
+                }
+            )
+
+        if gate_reverse := events_by_id.get(18684):
+            conditions.append(
+                {
+                    "linkedVerseId": 10012,
+                    "length": len(range(2968, 2979)),
+                    "conditionList": [
+                        {
+                            "type": 10,
+                            "conditionId": condition_id,
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": gate_reverse["startDate"].strftime(
+                                self.date_time_format
+                            ),
+                            "endDate": "2099-12-31 23:59:59",
+                        }
+                        for condition_id in range(2968, 2979)
+                    ],
+                }
+            )
+
+        if gate_universe := events_by_id.get(18686):
+            start_date = gate_universe["startDate"].strftime(self.date_time_format)
+
+            conditions.append(
+                {
+                    "linkedVerseId": 10013,
+                    "length": 1,
+                    "conditionList": [
+                        {
+                            "type": 31,
+                            "conditionId": 10012,
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": gate_universe["startDate"].strftime(
+                                self.date_time_format
+                            ),
+                            "endDate": "2099-12-31 23:59:59",
+                        }
+                    ],
+                }
+            )
+            conditions.append(
+                {
+                    "linkedVerseId": 10014,
+                    "length": 1,
+                    "conditionList": [
+                        {
+                            "type": 31,
+                            "conditionId": 10013,
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": gate_universe["startDate"].strftime(
+                                self.date_time_format
+                            ),
+                            "endDate": "2099-12-31 23:59:59",
+                        }
+                    ],
+                }
+            )
 
         return {
             "length": len(conditions),
@@ -486,6 +630,101 @@ class ChuniXVerseX(ChuniXVerse):
                             "startDate": gate_luminous["startDate"].strftime(
                                 self.date_time_format
                             ),
+                            "endDate": "2099-12-31 00:00:00",
+                        }
+                    ],
+                }
+            )
+
+        if gate_verse := events_by_id.get(18683):
+            conditions.append(
+                {
+                    "linkedVerseId": 10010,
+                    "length": 1,
+                    "conditionList": [
+                        {
+                            "type": LinkedVerseUnlockConditionType.PLAY_SONGS_IN_RECOMMENDED_FOLDER.value,
+                            "conditionList": "2802;2705;2712",  # Lock-on Rush, Theatore Creatore, Crossmythos Rhapsodia
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": gate_verse["startDate"].strftime(
+                                self.date_time_format
+                            ),
+                            "endDate": "2099-12-31 00:00:00",
+                        }
+                    ],
+                }
+            )
+
+        if gate_xverse := events_by_id.get(18685):
+            # This is probably not the correct condition, but officially gate X-VERSE opens immediately
+            # after all 10 gates are cleared, so we can probably use this unlock condition.
+            conditions.append(
+                {
+                    "linkedVerseId": 10011,
+                    "length": 1,
+                    "conditionList": [
+                        {
+                            "type": 31,
+                            "conditionList": "10001;10002;10003;10004;10005;10006;10007;10008;10009;10010",
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": gate_xverse["startDate"].strftime(
+                                self.date_time_format
+                            ),
+                            "endDate": "2099-12-31 00:00:00",
+                        }
+                    ],
+                }
+            )
+
+        if gate_reverse := events_by_id.get(18684):
+            # Gate RE:VERSE opens after playing all 10 Linked MUSIC tracks.
+            conditions.append(
+                {
+                    "linkedVerseId": 10012,
+                    "length": 1,
+                    "conditionList": [
+                        {
+                            "type": 44,
+                            "conditionList": "2968;2969;2970;2971;2972;2973;2974;2975;2976;2977;2978",
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": gate_reverse["startDate"].strftime(
+                                self.date_time_format
+                            ),
+                            "endDate": "2099-12-31 00:00:00",
+                        }
+                    ],
+                }
+            )
+
+        if gate_universe := events_by_id.get(18686):
+            # Gate UNIVERSE opens after gate RE:VERSE is cleared, again notes from gate X-VERSE applies.
+            start_date = gate_universe["startDate"].strftime(self.date_time_format)
+
+            conditions.append(
+                {
+                    "linkedVerseId": 10013,
+                    "length": 1,
+                    "conditionList": [
+                        {
+                            "type": LinkedVerseUnlockConditionType.SPECIAL_CLEAR.value,
+                            "conditionList": "10012",
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": start_date,
+                            "endDate": "2099-12-31 00:00:00",
+                        }
+                    ],
+                }
+            )
+            conditions.append(
+                {
+                    "linkedVerseId": 10014,
+                    "length": 1,
+                    "conditionList": [
+                        {
+                            "type": LinkedVerseUnlockConditionType.SPECIAL_CLEAR.value,
+                            "conditionList": "10013",
+                            "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
+                            "startDate": start_date,
                             "endDate": "2099-12-31 00:00:00",
                         }
                     ],
