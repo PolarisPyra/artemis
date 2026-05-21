@@ -17,17 +17,17 @@ from .verse import ChuniVerse
 def generate_course_levels(
     start_date: datetime, course_ids: list[int], date_time_format: str
 ) -> Dict:
-    if len(course_ids) != 5:
-        raise ValueError("Expected 5 Linked VERSE course IDs")
+    if len(course_ids) > 6:
+        raise ValueError("Expected at most 6 Linked VERSE course IDs")
 
     start_date = start_date.replace(hour=7, minute=0, second=0, microsecond=0)
-    deltas = [0, 7, 7, 7, 7]
+    deltas = [0, 7, 7, 7, 7, 7]
     current_date = datetime.utcnow()
 
     for i, course_id in enumerate(course_ids):
         period_start_date = start_date + timedelta(days=sum(deltas[0 : i + 1]))
 
-        if i < 4:
+        if i < len(course_ids) - 1:
             period_end_date = start_date + timedelta(days=sum(deltas[0 : i + 2]))
         else:
             period_end_date = datetime(2099, 12, 31, 23, 59, 59)
