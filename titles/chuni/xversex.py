@@ -390,10 +390,10 @@ class ChuniXVerseX(ChuniXVerse):
             conditions.append(
                 {
                     "linkedVerseId": 10012,
-                    "length": len(range(2968, 2979)),
+                    "length": len(range(10001, 10012)),
                     "conditionList": [
                         {
-                            "type": 10,
+                            "type": 31,
                             "conditionId": condition_id,
                             "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
                             "startDate": gate_reverse["startDate"].strftime(
@@ -401,7 +401,7 @@ class ChuniXVerseX(ChuniXVerse):
                             ),
                             "endDate": "2099-12-31 23:59:59",
                         }
-                        for condition_id in range(2968, 2979)
+                        for condition_id in range(10001, 10012)
                     ],
                 }
             )
@@ -684,7 +684,7 @@ class ChuniXVerseX(ChuniXVerse):
                     "length": 1,
                     "conditionList": [
                         {
-                            "type": 44,
+                            "type": LinkedVerseUnlockConditionType.PLAY_SONGS.value,
                             "conditionList": "2968;2969;2970;2971;2972;2973;2974;2975;2976;2977;2978",
                             "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
                             "startDate": gate_reverse["startDate"].strftime(
@@ -706,7 +706,7 @@ class ChuniXVerseX(ChuniXVerse):
                     "length": 1,
                     "conditionList": [
                         {
-                            "type": LinkedVerseUnlockConditionType.SPECIAL_CLEAR.value,
+                            "type": LinkedVerseUnlockConditionType.LINKED_GATE_CLEARED_SPECIAL.value,
                             "conditionList": "10012",
                             "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
                             "startDate": start_date,
@@ -721,7 +721,7 @@ class ChuniXVerseX(ChuniXVerse):
                     "length": 1,
                     "conditionList": [
                         {
-                            "type": LinkedVerseUnlockConditionType.SPECIAL_CLEAR.value,
+                            "type": LinkedVerseUnlockConditionType.LINKED_GATE_CLEARED_SPECIAL.value,
                             "conditionList": "10013",
                             "logicalOpe": MapAreaConditionLogicalOperator.AND.value,
                             "startDate": start_date,

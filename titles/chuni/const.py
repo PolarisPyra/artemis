@@ -284,6 +284,23 @@ class LinkedVerseUnlockConditionType(IntEnum):
     Finish maps whose IDs are specified by `conditionList`.
     """
 
+    PLAY_SONGS_IN_RECOMMENDED_FOLDER = 43
+    """
+    Play songs given by `conditionList` **from the recommended music folder**, where
+    `conditionList` is a list of song IDs.
+    """
+
+    UNLOCKED_SONGS = 44
+    """
+    Unlock songs given by `conditionList`, where `conditionList` is a list of song IDs.
+    """
+
+    LINKED_GATE_CLEARED_SPECIAL = 45
+    """
+    Clear Linked GATEs given by `conditionList`, where `conditionList` is a list of
+    Linked GATE IDs.
+    """
+
 
 class MapAreaConditionLogicalOperator(Enum):
     AND = 1
