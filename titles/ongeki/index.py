@@ -3,6 +3,7 @@ from starlette.routing import Route
 from starlette.responses import Response
 import json
 import inflection
+import time
 import yaml
 import string
 import logging
@@ -155,7 +156,50 @@ class OngekiServlet(BaseServlet):
             f"{self.core_cfg.server.hostname}{t_port}/",
         )
 
-    async def render_POST(self, request: Request) -> bytes:
+    async def render_POST(self, request: Request) -> Response:
+        # Time every request end-to-end so the ONGEKI endpoints can be
+        # performance tested. _render_POST fills `timings` with the per-phase
+        # breakdown (decode = request decrypt/decompress/parse, handler = the
+        # version handler, encode = response serialize/compress/encrypt). The
+        # total and each available phase are logged and attached to every
+        # response via the X-Response-Time/X-Handler-Time and Server-Timing
+        # headers, regardless of which path produced it.
+        timings: Dict[str, float] = {}
+        start = time.perf_counter()
+        resp = await self._render_POST(request, timings)
+        total_ms = (time.perf_counter() - start) * 1000
+
+        endpoint: str = request.path_params.get("endpoint", "")
+        version: int = request.path_params.get("version", 0)
+
+        decode_ms = timings.get("decode_ms")
+        handler_ms = timings.get("handler_ms")
+        encode_ms = timings.get("encode_ms")
+
+        server_timing = [f"total;dur={total_ms:.3f}"]
+        for name, value in (
+            ("decode", decode_ms),
+            ("handler", handler_ms),
+            ("encode", encode_ms),
+        ):
+            if value is not None:
+                server_timing.append(f"{name};dur={value:.3f}")
+
+        self.logger.info(
+            f"v{version} {endpoint} handled in {total_ms:.3f}ms "
+            f"(decode={decode_ms or 0:.3f}ms handler={handler_ms or 0:.3f}ms "
+            f"encode={encode_ms or 0:.3f}ms)"
+        )
+
+        resp.headers["X-Response-Time"] = f"{total_ms:.3f}"
+        if handler_ms is not None:
+            resp.headers["X-Handler-Time"] = f"{handler_ms:.3f}"
+        resp.headers["Server-Timing"] = ", ".join(server_timing)
+        return resp
+
+    async def _render_POST(
+        self, request: Request, timings: Dict[str, float]
+    ) -> Response:
         endpoint: str = request.path_params.get("endpoint", "")
         version: int = request.path_params.get("version", 0)
         if endpoint.lower() == "ping":
@@ -184,6 +228,8 @@ class OngekiServlet(BaseServlet):
             internal_ver = OngekiConstants.VER_ONGEKI_BRIGHT_MEMORY
         elif version >= 150:
             internal_ver = OngekiConstants.VER_ONGEKI_REFRESH
+
+        decode_start = time.perf_counter()
 
         if all(c in string.hexdigits for c in endpoint) and len(endpoint) == 32:
             # If we get a 32 character long hex string, it's a hash and we're
@@ -239,6 +285,8 @@ class OngekiServlet(BaseServlet):
 
             req_data = json.loads(unzip)
 
+        timings["decode_ms"] = (time.perf_counter() - decode_start) * 1000
+
         self.logger.info(f"v{version} {endpoint} request from {client_ip}")
         self.logger.debug(req_data)
 
@@ -250,7 +298,9 @@ class OngekiServlet(BaseServlet):
 
         try:
             handler = getattr(self.versions[internal_ver], func_to_find)
+            handler_start = time.perf_counter()
             resp = await handler(req_data)
+            timings["handler_ms"] = (time.perf_counter() - handler_start) * 1000
 
         except Exception as e:
             self.logger.error(f"Error handling v{version} method {endpoint} - {e}")
@@ -261,13 +311,14 @@ class OngekiServlet(BaseServlet):
 
         self.logger.debug(f"Response {resp}")
 
+        encode_start = time.perf_counter()
         resp_raw = json.dumps(resp, ensure_ascii=False).encode("utf-8")
         zipped = zlib.compress(resp_raw)
 
         if not encrtped or version < 120:
-            if version < 105:
-                return Response(resp_raw)
-            return Response(zipped)
+            resp_body = resp_raw if version < 105 else zipped
+            timings["encode_ms"] = (time.perf_counter() - encode_start) * 1000
+            return Response(resp_body)
 
         padded = pad(zipped, 16)
 
@@ -277,4 +328,6 @@ class OngekiServlet(BaseServlet):
             bytes.fromhex(self.game_cfg.crypto.keys[internal_ver][1]),
         )
 
-        return Response(crypt.encrypt(padded))
+        result = Response(crypt.encrypt(padded))
+        timings["encode_ms"] = (time.perf_counter() - encode_start) * 1000
+        return result
