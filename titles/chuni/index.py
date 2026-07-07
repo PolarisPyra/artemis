@@ -89,6 +89,7 @@ class ChuniServlet(BaseServlet):
             ChuniVerse,
             ChuniXVerse,
             ChuniXVerseX,
+            ChuniMate,
         ]
 
         version_to_internal_version = {
