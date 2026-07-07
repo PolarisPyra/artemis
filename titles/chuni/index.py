@@ -193,6 +193,7 @@ class ChuniServlet(BaseServlet):
             ChuniConstants.VER_CHUNITHM_X_VERSE: 14,
             f"{ChuniConstants.VER_CHUNITHM_X_VERSE}_int": 96,
             ChuniConstants.VER_CHUNITHM_X_VERSE_X: 49,
+            ChuniConstants.VER_CHUNITHM_MATE: 41,
         }
 
         for version, keys in self.game_cfg.crypto.keys.items():
