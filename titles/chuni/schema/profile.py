@@ -39,7 +39,6 @@ profile = Table(
     Column("lastGameId", String(25)),
     Column("totalPoint", BigInteger),
     Column("characterId", Integer),
-    Column("mateId", Integer), # new in MATE
     Column("firstGameId", String(25)),
     Column("friendCount", Integer),
     Column("lastPlaceId", Integer),

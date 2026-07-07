@@ -343,32 +343,6 @@ class ChuniBase:
             "userCharacterList": character_list,
         }
 
-    async def handle_get_user_mate_api_request(self, data):
-        user_id = int(data["userId"])
-        
-        rows = await self.data.item.get_all_mates(user_id, self.version)
-        mate_list = []
-        if rows is not None:
-            for row in rows:
-                tmp = row._asdict()
-                tmp.pop("id")
-                tmp.pop("user")
-                tmp.pop("version")
-                tmp["mateId"] = int(tmp["mateId"])
-                tmp["playCount"] = int(tmp["playCount"])
-                tmp["enterGardenCount"] = int(tmp["enterGardenCount"])
-                tmp["friendshipLevel"] = int(tmp["friendshipLevel"])
-                tmp["totalFriendshipExp"] = int(tmp["totalFriendshipExp"])
-                tmp["totalUsePoint"] = int(tmp["totalUsePoint"])
-                tmp["isValid"] = bool(tmp["isValid"])
-                mate_list.append(tmp)
-
-        return {
-            "userId": user_id,
-            "length": len(mate_list),
-            "userMateList": mate_list,
-        }
-
     async def handle_get_user_charge_api_request(self, data: dict) -> dict:
         user_charge_list = await self.data.profile.get_profile_charge(data["userId"])
 
@@ -578,31 +552,6 @@ class ChuniBase:
             "length": len(user_fav_item_list),
             "kind": kind,
             "nextIndex": next_idx,
-            "userFavoriteItemList": user_fav_item_list,
-        }
-
-    async def handle_get_user_favorite_collection_api_request(self, data: dict) -> dict:
-        user_id = int(data["userId"])
-        item_kind = int(data.get("itemKind", 1))
-
-        rows = await self.data.item.get_all_favorites(
-            user_id,
-            self.version,
-            fav_kind=item_kind,
-        )
-
-        user_fav_item_list = []
-        if rows is not None:
-            for idx, fav in enumerate(rows):
-                user_fav_item_list.append({
-                    "id": int(fav["favId"]),
-                    "orderId": idx + 1,
-                })
-
-        return {
-            "userId": user_id,
-            "itemKind": item_kind,
-            "length": len(user_fav_item_list),
             "userFavoriteItemList": user_fav_item_list,
         }
 
@@ -1279,10 +1228,6 @@ class ChuniBase:
         if "userLinkedVerseList" in upsert:
             for linked_verse in upsert["userLinkedVerseList"]:
                 await self.data.profile.put_linked_verse(user_id, linked_verse)
-
-        if "userMateList" in upsert:
-            for mate_data in upsert["userMateList"]:
-                await self.data.item.put_mate(user_id, self.version, mate_data)
 
         return {"returnCode": "1"}
 

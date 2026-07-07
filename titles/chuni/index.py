@@ -43,7 +43,6 @@ from .sunplus import ChuniSunPlus
 from .verse import ChuniVerse
 from .xverse import ChuniXVerse
 from .xversex import ChuniXVerseX
-from .mate import ChuniMate
 
 HONEYPOT_HEADER_NAME = "X-Cozynet-Version"
 STRICT_UNDERSCORE_RE = re.compile(r"([A-Z])([A-Z])")
@@ -115,7 +114,6 @@ class ChuniServlet(BaseServlet):
                 range(230, 240): ChuniConstants.VER_CHUNITHM_VERSE,
                 range(240, 245): ChuniConstants.VER_CHUNITHM_X_VERSE,
                 range(245, 250): ChuniConstants.VER_CHUNITHM_X_VERSE_X,
-                range(250, 255): ChuniConstants.VER_CHUNITHM_MATE,
             },
             ChuniConstants.GAME_CODE_INT: {
                 range(100, 105): ChuniConstants.VER_CHUNITHM_CRYSTAL_PLUS,  # SUPERSTAR

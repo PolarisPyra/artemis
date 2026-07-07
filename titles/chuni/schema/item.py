@@ -243,28 +243,6 @@ matching = Table(
     mysql_charset="utf8mb4",
 )
 
-mate = Table(
-    "chuni_item_mate",
-    metadata,
-    Column("id", Integer, primary_key=True, nullable=False),
-    Column(
-        "user",
-        ForeignKey("aime_user.id", ondelete="cascade", onupdate="cascade"),
-        nullable=False,
-    ),
-    Column("version", Integer, nullable=False),
-    Column("mateId", Integer),
-    Column("playCount", Integer),
-    Column("enterGardenCount", Integer),
-    Column("friendshipLevel", Integer),
-    Column("totalFriendshipExp", Integer),
-    Column("totalUsePoint", Integer),
-    Column("isValid", Boolean),
-    UniqueConstraint("user", "version", "mateId", name="chuni_item_mate_uk"),
-    mysql_charset="utf8mb4",
-)
-
-
 # matching_clients = Table(
 #     "chuni_item_matching_client",
 #     metadata,
@@ -825,55 +803,3 @@ class ChuniItemData(BaseData):
 
         if result:
             return result.fetchall()
-
-    async def get_all_mates(
-        self, user_id: int, version: int
-    ) -> Optional[List[Row]]:
-        sql = select(mate).where(
-            and_(
-                mate.c.version == version,
-                mate.c.user == user_id,
-            )
-        )
-        result = await self.execute(sql)
-        if result is None:
-            return None
-        return result.fetchall()
-
-    async def put_mate(
-        self, user_id: int, version: int, mate_data: dict
-    ) -> Optional[int]:
-        mate_id = int(mate_data["mateId"])
-        play_count = int(mate_data.get("playCount", 0))
-        enter_garden_count = int(mate_data.get("enterGardenCount", 0))
-        friendship_level = int(mate_data.get("friendshipLevel", 1))
-        total_friendship_exp = int(mate_data.get("totalFriendshipExp", 0))
-        total_use_point = int(mate_data.get("totalUsePoint", 0))
-        is_valid = bool(mate_data.get("isValid", True))
-
-        sql = insert(mate).values(
-            user=user_id,
-            version=version,
-            mateId=mate_id,
-            playCount=play_count,
-            enterGardenCount=enter_garden_count,
-            friendshipLevel=friendship_level,
-            totalFriendshipExp=total_friendship_exp,
-            totalUsePoint=total_use_point,
-            isValid=is_valid,
-        )
-
-        conflict = sql.on_duplicate_key_update(
-            playCount=play_count,
-            enterGardenCount=enter_garden_count,
-            friendshipLevel=friendship_level,
-            totalFriendshipExp=total_friendship_exp,
-            totalUsePoint=total_use_point,
-            isValid=is_valid,
-        )
-
-        result = await self.execute(conflict)
-        if result is None:
-            return None
-        return result.lastrowid
-

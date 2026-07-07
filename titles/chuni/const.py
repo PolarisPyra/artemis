@@ -30,7 +30,6 @@ class ChuniConstants:
     VER_CHUNITHM_VERSE = 17
     VER_CHUNITHM_X_VERSE = 18
     VER_CHUNITHM_X_VERSE_X = 19
-    VER_CHUNITHM_MATE = 19
 
     VERSION_NAMES = [
         "CHUNITHM",
@@ -53,7 +52,6 @@ class ChuniConstants:
         "CHUNITHM VERSE",
         "CHUNITHM X-VERSE",
         "CHUNITHM X-VERSE-X",
-        "CHUNITHM MATE",
     ]
 
     SCORE_RANK_INTERVALS_OLD = [
