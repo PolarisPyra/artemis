@@ -826,12 +826,8 @@ class ChuniItemData(BaseData):
         if result:
             return result.fetchall()
 
-    async def get_all_mates(
-        self, user_id: int, version: Optional[int] = None
-    ) -> Optional[List[Row]]:
+    async def get_all_mates(self, user_id: int) -> Optional[List[Row]]:
         sql = select(mate).where(mate.c.user == user_id)
-        if version is not None:
-            sql = sql.where(mate.c.version == version)
         result = await self.execute(sql)
         if result is None:
             return None

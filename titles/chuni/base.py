@@ -346,7 +346,7 @@ class ChuniBase:
     async def handle_get_user_mate_api_request(self, data):
         user_id = int(data["userId"])
         
-        rows = await self.data.item.get_all_mates(user_id, self.version)
+        rows = await self.data.item.get_all_mates(user_id)
         mate_list = []
         if rows is not None:
             for row in rows:
