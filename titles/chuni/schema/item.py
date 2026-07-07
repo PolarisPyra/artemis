@@ -827,14 +827,11 @@ class ChuniItemData(BaseData):
             return result.fetchall()
 
     async def get_all_mates(
-        self, user_id: int, version: int
+        self, user_id: int, version: Optional[int] = None
     ) -> Optional[List[Row]]:
-        sql = select(mate).where(
-            and_(
-                mate.c.version == version,
-                mate.c.user == user_id,
-            )
-        )
+        sql = select(mate).where(mate.c.user == user_id)
+        if version is not None:
+            sql = sql.where(mate.c.version == version)
         result = await self.execute(sql)
         if result is None:
             return None
@@ -876,4 +873,3 @@ class ChuniItemData(BaseData):
         if result is None:
             return None
         return result.lastrowid
-

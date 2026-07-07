@@ -28,4 +28,16 @@ class ChuniMate(ChuniXVerseX):
         return await super().handle_get_user_favorite_collection_api_request(data)
     
     async def handle_get_user_mate_api_request(self, data):
-        return await super().handle_get_user_mate_api_request(data)
+        user_id = int(data["userId"])
+
+        rows = await self.data.item.get_all_mates(user_id)
+        mate_list = []
+        if rows is not None:
+            for row in rows:
+                mate_list.append(row._asdict())
+
+        return {
+            "userId": user_id,
+            "length": len(mate_list),
+            "userMateList": mate_list,
+        }
