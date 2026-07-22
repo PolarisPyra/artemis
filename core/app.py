@@ -13,6 +13,7 @@ from core import CoreConfig, TitleServlet, MuchaServlet
 from core.allnet import AllnetServlet, BillingServlet
 from core.chimedb import ChimeServlet
 from core.frontend import FrontendServlet
+from core.party import PartyBroker, build_routes as build_party_routes
 
 
 async def dummy_rt(request: Request):
@@ -104,5 +105,11 @@ if cfg.chimedb.enable:
     ]
 for code, game in title.title_registry.items():
     route_lst += game.get_routes()
+
+# Shared multiplayer broker — game-agnostic, scoped by /internal/party/{game}/...
+# and /ws/party?game=... Any title whose bridge mod points at this Artemis
+# instance automatically gets lobby support with no per-title server code.
+party_broker = PartyBroker(core_cfg=cfg)
+route_lst += build_party_routes(party_broker)
 
 app = Starlette(cfg.server.is_develop, route_lst)
