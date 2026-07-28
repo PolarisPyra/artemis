@@ -487,29 +487,67 @@ class KonamiConfig:
 
     @property
     def enable(self) -> bool:
-        return CoreConfig.get_config_field(self.__config, "core", "konami", "enable", default=False)
+        return CoreConfig.get_config_field(
+            self.__config, "core", "konami", "enable", default=False
+        )
 
     @property
     def standalone(self) -> bool:
-        return CoreConfig.get_config_field(self.__config, "core", "konami", "standalone", default=False)
+        return CoreConfig.get_config_field(
+            self.__config, "core", "konami", "standalone", default=False
+        )
 
     @property
     def port(self) -> int:
-        return CoreConfig.get_config_field(self.__config, "core", "konami", "port", default=5730)
+        return CoreConfig.get_config_field(
+            self.__config, "core", "konami", "port", default=5730
+        )
 
     @property
     def hostname(self) -> str:
-        return CoreConfig.get_config_field(self.__config, "core", "konami", "hostname", default="localhost")
+        return CoreConfig.get_config_field(
+            self.__config, "core", "konami", "hostname", default="localhost"
+        )
 
     @property
     def loglevel(self) -> int:
         return CoreConfig.str_to_loglevel(
-            CoreConfig.get_config_field(self.__config, "core", "konami", "loglevel", default="info")
+            CoreConfig.get_config_field(
+                self.__config, "core", "konami", "loglevel", default="info"
+            )
         )
 
     @property
     def popn_force_unlock(self) -> bool:
-        return CoreConfig.get_config_field(self.__config, "core", "konami", "popn_force_unlock", default=True)
+        return CoreConfig.get_config_field(
+            self.__config, "core", "konami", "popn_force_unlock", default=True
+        )
+
+    @property
+    def ping_ip(self) -> str:
+        return CoreConfig.get_config_field(
+            self.__config, "core", "konami", "ping_ip", default="127.0.0.1"
+        )
+
+    @property
+    def matching_port(self) -> int:
+        return CoreConfig.get_config_field(
+            self.__config, "core", "konami", "matching_port", default=5700
+        )
+
+    @property
+    def enable_paseli(self) -> bool:
+        return CoreConfig.get_config_field(
+            self.__config, "core", "konami", "enable_paseli", default=True
+        )
+
+    @property
+    def maintenance_mode(self) -> bool:
+        return CoreConfig.get_config_field(
+            self.__config, "core", "konami", "maintenance_mode", default=False
+        )
+
+
 class ChimedbConfig:
     def __init__(self, parent_config: "CoreConfig") -> None:
         self.__config = parent_config
@@ -519,6 +557,7 @@ class ChimedbConfig:
         return CoreConfig.get_config_field(
             self.__config, "core", "chimedb", "enable", default=True
         )
+
     @property
     def loglevel(self) -> int:
         return CoreConfig.str_to_loglevel(
@@ -526,6 +565,7 @@ class ChimedbConfig:
                 self.__config, "core", "chimedb", "loglevel", default="info"
             )
         )
+
     @property
     def key(self) -> str:
         return CoreConfig.get_config_field(

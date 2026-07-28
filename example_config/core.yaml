@@ -75,6 +75,10 @@ konami:
   enable: False
   standalone: False
   port: 5730
-  hostname: "localhost"
-  loglevel: "info"
-  popn_force_unlock: True
+    hostname: "localhost"
+    loglevel: "info"
+    popn_force_unlock: True
+    ping_ip: "127.0.0.1"
+    matching_port: 5700
+    enable_paseli: True
+    maintenance_mode: False

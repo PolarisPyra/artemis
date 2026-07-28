@@ -79,7 +79,7 @@ class CoreKonamiPlugin(KonamiPlugin):
             {
                 "@attr": {
                     "name": "keepalive",
-                    "url": f"{info.protocol}://{host}/core/keepalive?pa={host}&ia={host}&ga={host}&ma={host}&t1=2&t2=10",
+                    "url": f"{info.protocol}://{self.data.config.konami.ping_ip}/core/keepalive?pa={self.data.config.konami.ping_ip}&ia={self.data.config.konami.ping_ip}&ga={self.data.config.konami.ping_ip}&ma={self.data.config.konami.ping_ip}&t1=2&t2=10",
                 }
             },
         ]
@@ -106,9 +106,9 @@ class CoreKonamiPlugin(KonamiPlugin):
             },
             "line": {"id": _item("str", "."), "class": _item("u8", 0)},
             "portfw": {
-                "globalip": _item("ip4", 0),
-                "globalport": _item("u16", 80),
-                "privateport": _item("u16", 80),
+                "globalip": _item("ip4", _ip4(info.client_ip)),
+                "globalport": _item("u16", self.data.config.konami.matching_port),
+                "privateport": _item("u16", self.data.config.konami.matching_port),
             },
             "public": {
                 "flag": _item("u8", 1),
@@ -134,6 +134,11 @@ class CoreKonamiPlugin(KonamiPlugin):
 
     async def message_get(self, info: EamuseInfo, data: dict, response: EamuseResponse):
         response.content = {"@attr": {"expire": "300"}}
+        if self.data.config.konami.maintenance_mode:
+            response.content["item"] = [
+                {"@attr": {"start": "0", "end": "86400", "name": "sys.mainte"}},
+                {"@attr": {"start": "0", "end": "86400", "name": "sys.eacoin.mainte"}},
+            ]
 
     async def tax_get_phase(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
@@ -145,7 +150,7 @@ class CoreKonamiPlugin(KonamiPlugin):
     ):
         response.content = {
             "@attr": {
-                "ecenable": "0",
+                "ecenable": "1" if self.data.config.konami.enable_paseli else "0",
                 "eclimit": "0",
                 "expire": "1200",
                 "limit": "0",
@@ -267,3 +272,16 @@ def _item(type_name: str, value):
         "@attr": {"__type": type_name},
         "@content": [value] if type_name != "str" else value,
     }
+
+
+def _ip4(value: str) -> int:
+    try:
+        parts = [int(part) for part in value.split(".")]
+        if len(parts) != 4 or any(part < 0 or part > 255 for part in parts):
+            return 0
+        result = 0
+        for part in parts:
+            result = (result << 8) | part
+        return result
+    except (TypeError, ValueError):
+        return 0
