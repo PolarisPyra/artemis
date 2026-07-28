@@ -68,6 +68,28 @@ def test_xml_typed_binary_and_quoted_attributes():
     ]
 
 
+def test_xml_typed_boolean_and_numeric_arrays():
+    encoded = data_to_xml(
+        {
+            "response": {
+                "playerdata": {
+                    "enabled": {"@attr": {"__type": "bool"}, "@content": [False]},
+                    "values": {
+                        "@attr": {"__type": "s16", "__count": 3},
+                        "@content": [1, -2, 3],
+                    },
+                }
+            }
+        }
+    )
+    text = encoded.decode("utf-8")
+    assert ">0<" in text
+    decoded = xml_to_data(encoded)
+    playerdata = decoded["response"]["playerdata"]
+    assert playerdata["enabled"]["@content"] == [0]
+    assert playerdata["values"]["@content"] == [1, -2, 3]
+
+
 def test_kbin_binary_round_trip():
     payload = {
         "response": {

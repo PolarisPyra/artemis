@@ -61,6 +61,21 @@ def _decode_typed_content(value: dict) -> None:
             except ValueError:
                 return
         value["@content"] = converted
+    elif type_name not in (None, "str"):
+        converted = []
+        try:
+            for item in content.split():
+                if type_name in ("float", "double", "f", "d") or type_name.endswith(
+                    "f"
+                ) or type_name.endswith("d"):
+                    converted.append(float(item))
+                elif type_name == "bool" or type_name.endswith("b"):
+                    converted.append(1 if item.lower() in ("1", "true") else 0)
+                else:
+                    converted.append(int(item, 0))
+        except (TypeError, ValueError):
+            return
+        value["@content"] = converted
 
 
 def detect_xml_encoding(raw: bytes) -> str:
@@ -104,8 +119,8 @@ def _render(name: str, value: object) -> str:
         if attrs.get("__type") == "ip4":
             raw_content = " ".join(_int_to_ip(item) for item in raw_content)
         else:
-            raw_content = " ".join(str(item) for item in raw_content)
-    content = _escape(raw_content) if "@content" in value else ""
+            raw_content = " ".join(_value_text(item) for item in raw_content)
+    content = _escape(_value_text(raw_content)) if "@content" in value else ""
     children = "".join(
         _render(key, child) for key, child in value.items() if not key.startswith("@")
     )
@@ -120,6 +135,12 @@ def _int_to_ip(value: object) -> str:
         return ".".join(str((number >> shift) & 0xFF) for shift in (24, 16, 8, 0))
     except (TypeError, ValueError):
         return "0.0.0.0"
+
+
+def _value_text(value: object) -> str:
+    if isinstance(value, bool):
+        return "1" if value else "0"
+    return str(value)
 
 
 def data_to_xml(data: dict, encoding: str = "utf-8") -> bytes:
