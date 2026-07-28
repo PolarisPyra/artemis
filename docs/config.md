@@ -52,7 +52,7 @@
 - `standalone`: Runs Konami on its own port instead of the main Artemis HTTP service. Default `False`
 - `port`: Standalone Konami service port. Default `5730`
 - `hostname`: Advertised Konami hostname. Default `localhost`
-- `popn_force_unlock`: Unlocks Pop'n songs in returned profiles. Default `True`
+- `enable_force_unlock`: Unlocks Pop'n songs in returned profiles. Default `True` (`popn_force_unlock` is accepted as a legacy alias)
 - `enable_score_sharing`: Merges Pop'n scores across stored versions when reading. Default `True`
 - `ping_ip`: Reachable address used in the e-amusement keepalive URL. Default `127.0.0.1`
 - `matching_port`: Port reported for facility matching. Default `5700`

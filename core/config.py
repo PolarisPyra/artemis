@@ -519,6 +519,11 @@ class KonamiConfig:
 
     @property
     def popn_force_unlock(self) -> bool:
+        enabled = CoreConfig.get_config_field(
+            self.__config, "core", "konami", "enable_force_unlock", default=None
+        )
+        if enabled is not None:
+            return enabled
         return CoreConfig.get_config_field(
             self.__config, "core", "konami", "popn_force_unlock", default=True
         )
