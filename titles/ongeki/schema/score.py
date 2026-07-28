@@ -7,7 +7,7 @@ from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import select
 from sqlalchemy.types import TIMESTAMP, Boolean, Float, Integer, String
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 score_best: Table = Table(
     "ongeki_score_best",

@@ -1,4 +1,4 @@
-from core.data.schema.base import BaseData, metadata
+from artemis.data.schema.base import BaseData, metadata
 
 from typing import Optional, Dict, List
 from sqlalchemy import (

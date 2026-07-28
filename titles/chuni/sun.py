@@ -1,14 +1,14 @@
 from typing import Dict, Any
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.chuni.newplus import ChuniNewPlus
 from titles.chuni.const import ChuniConstants
 from titles.chuni.config import ChuniConfig
 
 
 class ChuniSun(ChuniNewPlus):
-    def __init__(self, core_cfg: CoreConfig, game_cfg: ChuniConfig) -> None:
-        super().__init__(core_cfg, game_cfg)
+    def __init__(self, artemis_cfg: ArtemisConfig, game_cfg: ChuniConfig) -> None:
+        super().__init__(artemis_cfg, game_cfg)
         self.version = ChuniConstants.VER_CHUNITHM_SUN
 
     async def handle_cm_get_user_preview_api_request(self, data: Dict) -> Dict:

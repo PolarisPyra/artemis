@@ -11,13 +11,13 @@ from typing import List, Optional
 import coloredlogs
 import yaml
 
-from core import CoreConfig, Utils
+from artemis import ArtemisConfig, Utils
 
 
 class BaseReader:
     def __init__(
         self,
-        config: CoreConfig,
+        config: ArtemisConfig,
         version: int,
         bin_dir: Optional[str],
         opt_dir: Optional[str],
@@ -79,7 +79,7 @@ async def main():
         "--config",
         type=str,
         default="config",
-        help="Folder containing the core configuration for importing to DB. Defaults to 'config'.",
+        help="Folder containing the Artemis configuration for importing to DB. Defaults to 'config'.",
     )
     parser.add_argument(
         "--extra",
@@ -92,9 +92,9 @@ async def main():
 
     os.environ["ARTEMIS_CFG_DIR"] = args.config
 
-    config = CoreConfig()
-    if path.exists(f"{args.config}/core.yaml"):
-        config.update(yaml.safe_load(open(f"{args.config}/core.yaml")))
+    config = ArtemisConfig()
+    if path.exists(f"{args.config}/artemis.yaml"):
+        config.update(yaml.safe_load(open(f"{args.config}/artemis.yaml")))
 
     log_fmt_str = "[%(asctime)s] Reader | %(levelname)s | %(message)s"
     log_fmt = logging.Formatter(log_fmt_str)

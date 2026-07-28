@@ -13,7 +13,7 @@ from sqlalchemy.engine import Row
 from sqlalchemy.sql import func, select
 from sqlalchemy.dialects.mysql import insert
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 car = Table(
     "idac_user_car",

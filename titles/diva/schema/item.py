@@ -5,7 +5,7 @@ from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.mysql import insert
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 shop = Table(
     "diva_profile_shop",

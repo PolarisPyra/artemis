@@ -14,9 +14,9 @@ from Crypto.Hash import MD5
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 
-from core.config import CoreConfig
-from core.utils import Utils
-from core.title import BaseServlet
+from artemis.config import ArtemisConfig
+from artemis.utils import Utils
+from artemis.title import BaseServlet
 from .config import Mai2Config
 from .const import Mai2Constants
 from .base import Mai2Base
@@ -37,8 +37,8 @@ from .circle import Mai2Circle
 
 
 class Mai2Servlet(BaseServlet):
-    def __init__(self, core_cfg: CoreConfig, cfg_dir: str) -> None:
-        super().__init__(core_cfg, cfg_dir)
+    def __init__(self, artemis_cfg: ArtemisConfig, cfg_dir: str) -> None:
+        super().__init__(artemis_cfg, cfg_dir)
         self.game_cfg = Mai2Config()
         self.hash_table: Dict[int, Dict[str, str]] = {}
         if path.exists(f"{cfg_dir}/{Mai2Constants.CONFIG_NAME}"):
@@ -80,7 +80,7 @@ class Mai2Servlet(BaseServlet):
             log_fmt_str = "[%(asctime)s] Mai2 | %(levelname)s | %(message)s"
             log_fmt = logging.Formatter(log_fmt_str)
             fileHandler = TimedRotatingFileHandler(
-                "{0}/{1}.log".format(self.core_cfg.server.log_dir, "mai2"),
+                "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "mai2"),
                 encoding="utf8",
                 when="d",
                 backupCount=10,
@@ -135,7 +135,7 @@ class Mai2Servlet(BaseServlet):
 
     @classmethod
     def is_game_enabled(
-        cls, game_code: str, core_cfg: CoreConfig, cfg_dir: str
+        cls, game_code: str, artemis_cfg: ArtemisConfig, cfg_dir: str
     ) -> bool:
         game_cfg = Mai2Config()
 
@@ -196,17 +196,17 @@ class Mai2Servlet(BaseServlet):
         self, game_code: str, game_ver: int, keychip: str
     ) -> Tuple[str, str]:
         if (
-            not self.core_cfg.server.is_using_proxy
-            and Utils.get_title_port(self.core_cfg) != 80
+            not self.artemis_cfg.server.is_using_proxy
+            and Utils.get_title_port(self.artemis_cfg) != 80
         ):
             return (
-                f"http://{self.core_cfg.server.hostname}:{Utils.get_title_port(self.core_cfg)}/{game_code}/{game_ver}/",
-                f"{self.core_cfg.server.hostname}",
+                f"http://{self.artemis_cfg.server.hostname}:{Utils.get_title_port(self.artemis_cfg)}/{game_code}/{game_ver}/",
+                f"{self.artemis_cfg.server.hostname}",
             )
 
         return (
-            f"http://{self.core_cfg.server.hostname}/{game_code}/{game_ver}/",
-            f"{self.core_cfg.server.hostname}",
+            f"http://{self.artemis_cfg.server.hostname}/{game_code}/{game_ver}/",
+            f"{self.artemis_cfg.server.hostname}",
         )
 
     def setup(self):
@@ -295,7 +295,7 @@ class Mai2Servlet(BaseServlet):
         self.logger.debug(req_data)
 
         func_to_find = "handle_" + inflection.underscore(endpoint) + "_request"
-        handler_cls = self.versions[internal_ver](self.core_cfg, self.game_cfg)
+        handler_cls = self.versions[internal_ver](self.artemis_cfg, self.game_cfg)
 
         if not hasattr(handler_cls, func_to_find):
             self.logger.warning(f"Unhandled v{version} request {endpoint}")
@@ -478,7 +478,7 @@ class Mai2Servlet(BaseServlet):
             else endpoint
         )
         func_to_find = "handle_" + inflection.underscore(endpoint) + "_request"
-        handler_cls = self.versions[internal_ver](self.core_cfg, self.game_cfg)
+        handler_cls = self.versions[internal_ver](self.artemis_cfg, self.game_cfg)
 
         if not hasattr(handler_cls, func_to_find):
             self.logger.warning(f"Unhandled v{version} request {endpoint}")

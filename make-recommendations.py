@@ -9,7 +9,7 @@ import scipy.sparse as sp
 from rich.progress import track
 from sqlalchemy import select
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.chuni.database import ChuniData
 from titles.chuni.schema.cozynet import recommendations
 from titles.chuni.schema.score import best_score
@@ -17,14 +17,14 @@ from titles.chuni.schema.score import best_score
 
 async def main():
     cfg_dir = Path(os.getenv("ARTEMIS_CFG_DIR", "config"))
-    core_cfg = CoreConfig()
+    artemis_cfg = ArtemisConfig()
 
-    if (cfg_dir / "core.yaml").exists():
-        with (cfg_dir / "core.yaml").open(encoding="utf-8") as f:
-            core_cfg.update(yaml.safe_load(f))
+    if (cfg_dir / "artemis.yaml").exists():
+        with (cfg_dir / "artemis.yaml").open(encoding="utf-8") as f:
+            artemis_cfg.update(yaml.safe_load(f))
 
     print("Fetching playlogs...")
-    chuni_data = ChuniData(core_cfg)
+    chuni_data = ChuniData(artemis_cfg)
     query = (
         select(
             best_score.c.user,

@@ -5,16 +5,16 @@ from typing import Any, Dict, List
 import json
 import logging
 
-from core.config import CoreConfig
-from core.utils import Utils
+from artemis.config import ArtemisConfig
+from artemis.utils import Utils
 from titles.idac.const import IDACConstants
 from titles.idac.config import IDACConfig
 from titles.idac.base import IDACBase
 
 
 class IDACSeason2(IDACBase):
-    def __init__(self, core_cfg: CoreConfig, game_cfg: IDACConfig) -> None:
-        super().__init__(core_cfg, game_cfg)
+    def __init__(self, artemis_cfg: ArtemisConfig, game_cfg: IDACConfig) -> None:
+        super().__init__(artemis_cfg, game_cfg)
         self.version = IDACConstants.VER_IDAC_SEASON_2
 
         # load the play stamps and timetrial events into memory
@@ -109,10 +109,10 @@ class IDACSeason2(IDACBase):
         version = headers["device_version"]
         ver_str = version.replace(".", "")[:3]
 
-        if self.core_cfg.server.is_using_proxy:
-            domain_api_game = f"http://{self.core_cfg.server.hostname}/{ver_str}/"
+        if self.artemis_cfg.server.is_using_proxy:
+            domain_api_game = f"http://{self.artemis_cfg.server.hostname}/{ver_str}/"
         else:
-            domain_api_game = f"http://{self.core_cfg.server.hostname}:{Utils.get_title_port(self.core_cfg)}/{ver_str}/"
+            domain_api_game = f"http://{self.artemis_cfg.server.hostname}:{Utils.get_title_port(self.artemis_cfg)}/{ver_str}/"
 
         return {
             "status_code": "0",
@@ -138,14 +138,14 @@ class IDACSeason2(IDACBase):
             "server_maintenance_end_minutes": 0,
             "domain_api_game": domain_api_game,
             "domain_matching": f"{domain_api_game}initiald-matching/",
-            "domain_echo1": f"{self.core_cfg.server.hostname}:{self.game_config.server.echo1}",
-            "domain_echo2": f"{self.core_cfg.server.hostname}:{self.game_config.server.echo1}",
-            "domain_ping": f"{self.core_cfg.server.hostname}",
+            "domain_echo1": f"{self.artemis_cfg.server.hostname}:{self.game_config.server.echo1}",
+            "domain_echo2": f"{self.artemis_cfg.server.hostname}:{self.game_config.server.echo1}",
+            "domain_ping": f"{self.artemis_cfg.server.hostname}",
             "battle_gift_event_master": [],
             "round_event": [
                 {
                     "round_event_id": 30,
-                    "round_event_nm": f"{self.core_cfg.server.name} Event",
+                    "round_event_nm": f"{self.artemis_cfg.server.name} Event",
                     "start_dt": int(
                         datetime.strptime("2023-01-01", "%Y-%m-%d").timestamp()
                     ),
@@ -403,7 +403,7 @@ class IDACSeason2(IDACBase):
 
                 if arcade is None:
                     arcade = {}
-                    arcade["name"] = self.core_cfg.server.name
+                    arcade["name"] = self.artemis_cfg.server.name
 
                 # should never happen
                 if profile is None:
@@ -604,7 +604,7 @@ class IDACSeason2(IDACBase):
         del user_data["version"]
         user_data["id"] = user_id
         user_data["store_name"] = (
-            self.core_cfg.server.name if arcade is None else arcade["name"]
+            self.artemis_cfg.server.name if arcade is None else arcade["name"]
         )
         user_data["last_play_date"] = int(user_data["last_play_date"].timestamp())
         user_data["create_date"] = int(user_data["create_date"].timestamp())
@@ -913,7 +913,7 @@ class IDACSeason2(IDACBase):
                     "value": course["goal_time"],
                     # total number of entries per course?
                     "total": 10,
-                    "store": self.core_cfg.server.name,
+                    "store": self.artemis_cfg.server.name,
                     # use car_id from request?
                     "car_id": 0,
                     "style_car_id": course["style_car_id"],
@@ -942,7 +942,7 @@ class IDACSeason2(IDACBase):
                         # no clue
                         "member": user_id,
                         "value": car["goal_time"],
-                        "store": self.core_cfg.server.name,
+                        "store": self.artemis_cfg.server.name,
                         # use car_id from request?
                         "car_id": 0,
                         "style_car_id": car["style_car_id"],
@@ -992,7 +992,7 @@ class IDACSeason2(IDACBase):
 
             if arcade is None:
                 arcade = {}
-                arcade["name"] = self.core_cfg.server.name
+                arcade["name"] = self.artemis_cfg.server.name
 
             # should never happen
             if profile is None:
@@ -1030,7 +1030,7 @@ class IDACSeason2(IDACBase):
 
             if arcade is None:
                 arcade = {}
-                arcade["name"] = self.core_cfg.server.name
+                arcade["name"] = self.artemis_cfg.server.name
 
             # should never happen
             if profile is None:
@@ -2054,7 +2054,7 @@ class IDACSeason2(IDACBase):
             arcade = await self.data.arcade.get_arcade(profile["store"])
             if arcade is None:
                 arcade = {}
-                arcade["name"] = self.core_cfg.server.name
+                arcade["name"] = self.artemis_cfg.server.name
 
             rival_data.append(
                 {
@@ -2332,7 +2332,7 @@ class IDACSeason2(IDACBase):
                         # no clue
                         "member": user_id,
                         "value": car["goal_time"],
-                        "store": self.core_cfg.server.name,
+                        "store": self.artemis_cfg.server.name,
                         # use car_id from request?
                         "car_id": 0,
                         "style_car_id": car["style_car_id"],

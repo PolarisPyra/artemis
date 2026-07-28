@@ -5,15 +5,15 @@ from typing import Any, Dict
 from hashlib import md5
 from datetime import datetime
 
-from core.config import CoreConfig
-from core.data import Data, cached
+from artemis.config import ArtemisConfig
+from artemis.data import Data, cached
 from .config import CxbConfig
 from .base import CxbBase
 from .const import CxbConstants
 
 
 class CxbRevSunriseS2(CxbBase):
-    def __init__(self, cfg: CoreConfig, game_cfg: CxbConfig) -> None:
+    def __init__(self, cfg: ArtemisConfig, game_cfg: CxbConfig) -> None:
         super().__init__(cfg, game_cfg)
         self.version = CxbConstants.VER_CROSSBEATS_REV_SUNRISE_S2_OMNI
 

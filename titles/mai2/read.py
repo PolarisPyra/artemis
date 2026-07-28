@@ -12,7 +12,7 @@ import UnityPy
 from UnityPy.classes import Sprite
 import yaml
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from read import BaseReader
 
 from .config import Mai2Config
@@ -23,7 +23,7 @@ from .database import Mai2Data
 class Mai2Reader(BaseReader):
     def __init__(
         self,
-        config: CoreConfig,
+        config: ArtemisConfig,
         version: int,
         bin_dir: Optional[str],
         opt_dir: Optional[str],

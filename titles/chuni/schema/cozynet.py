@@ -12,7 +12,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.engine import Row, RowMapping
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 character: Table = Table(
     "cozynet_static_chuni_character",

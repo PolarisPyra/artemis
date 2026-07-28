@@ -3,8 +3,8 @@ from sqlalchemy import Boolean, Column, Integer, String, Table, UniqueConstraint
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.engine import Row
 
-from core.data.schema import metadata
-from core.data.schema.base import BaseData
+from artemis.data.schema import metadata
+from artemis.data.schema.base import BaseData
 
 bookkeeping: Table = Table(
     "chuni_client_bookkeeping",

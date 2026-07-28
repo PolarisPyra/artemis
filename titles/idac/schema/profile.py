@@ -7,8 +7,8 @@ from sqlalchemy.sql import func, select
 from sqlalchemy.engine import Row
 from sqlalchemy.dialects.mysql import insert
 
-from core.data.schema import BaseData, metadata
-from core.config import CoreConfig
+from artemis.data.schema import BaseData, metadata
+from artemis.config import ArtemisConfig
 
 profile = Table(
     "idac_profile",
@@ -246,7 +246,7 @@ theory = Table(
 
 
 class IDACProfileData(BaseData):
-    def __init__(self, cfg: CoreConfig, conn: Connection) -> None:
+    def __init__(self, cfg: ArtemisConfig, conn: Connection) -> None:
         super().__init__(cfg, conn)
         self.date_time_format_ext = (
             "%Y-%m-%d %H:%M:%S.%f"  # needs to be lopped off at [:-5]

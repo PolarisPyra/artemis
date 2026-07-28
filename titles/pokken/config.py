@@ -1,4 +1,4 @@
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 
 
 class PokkenServerConfig:
@@ -7,20 +7,20 @@ class PokkenServerConfig:
 
     @property
     def hostname(self) -> str:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "pokken", "server", "hostname", default="localhost"
         )
 
     @property
     def enable(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "pokken", "server", "enable", default=True
         )
 
     @property
     def loglevel(self) -> int:
-        return CoreConfig.str_to_loglevel(
-            CoreConfig.get_config_field(
+        return ArtemisConfig.str_to_loglevel(
+            ArtemisConfig.get_config_field(
                 self.__config, "pokken", "server", "loglevel", default="info"
             )
         )
@@ -31,7 +31,7 @@ class PokkenServerConfig:
         Automatically register users in `aime_user` on first carding in with pokken
         if they don't exist already. Set to false to display an error instead.
         """
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "pokken", "server", "auto_register", default=True
         )
 
@@ -40,7 +40,7 @@ class PokkenServerConfig:
         """
         If global matching should happen
         """
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "pokken", "server", "enable_matching", default=False
         )
 
@@ -49,7 +49,7 @@ class PokkenServerConfig:
         """
         Hostname of the EXTERNAL stun server the game should connect to. This is not handled by artemis.
         """
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config,
             "pokken",
             "server",
@@ -62,7 +62,7 @@ class PokkenServerConfig:
         """
         Port of the EXTERNAL stun server the game should connect to. This is not handled by artemis.
         """
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "pokken", "server", "stun_server_port", default=3478
         )
 
@@ -73,13 +73,13 @@ class PokkenPortsConfig:
 
     @property
     def game(self) -> int:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "pokken", "ports", "game", default=9000
         )
 
     @property
     def admission(self) -> int:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "pokken", "ports", "admission", default=9001
         )
 

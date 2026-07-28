@@ -55,7 +55,7 @@ GRANT Alter,Create,Delete,Drop,Index,Insert,References,Select,Update ON aime.* T
 
 ## Setup configuration
 - Create a new `config` folder and copy the files in `example_config` over.
-- edit `core.yaml`
+- edit `artemis.yaml`
     - Put the password you created for the aime user into the `database` section.
     - Put in the aimedb key (YOU DO NOT GENERATE THIS KEY, FIND IT SOMEWHERE).
     - Set your hostname to be whatever hostname or IP address games can reach your server at (many games reject localhost and 127.0.0.1).

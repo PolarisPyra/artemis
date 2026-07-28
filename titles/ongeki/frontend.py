@@ -6,8 +6,8 @@ from starlette.requests import Request
 from starlette.responses import Response, RedirectResponse
 from os import path
 
-from core.frontend import FE_Base, UserSession
-from core.config import CoreConfig
+from artemis.frontend import FE_Base, UserSession
+from artemis.config import ArtemisConfig
 
 from titles.ongeki.config import OngekiConfig
 from titles.ongeki.const import OngekiConstants
@@ -17,7 +17,7 @@ from titles.ongeki.base import OngekiBase
 
 class OngekiFrontend(FE_Base):
     def __init__(
-        self, cfg: CoreConfig, environment: jinja2.Environment, cfg_dir: str
+        self, cfg: ArtemisConfig, environment: jinja2.Environment, cfg_dir: str
     ) -> None:
         super().__init__(cfg, environment)
         self.data = OngekiData(cfg)
@@ -59,7 +59,7 @@ class OngekiFrontend(FE_Base):
             return Response(
                 template.render(
                     data=self.data.profile,
-                    title=f"{self.core_config.server.name} | {self.nav_name}",
+                    title=f"{self.artemis_config.server.name} | {self.nav_name}",
                     game_list=self.environment.globals["game_list"],
                     gachas=self.game_cfg.gachas.enabled_gachas,
                     profile_data=profile_data,

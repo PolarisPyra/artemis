@@ -2,7 +2,7 @@ import csv
 from os import path
 from typing import Optional, Dict, List
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from read import BaseReader
 
 from .database import SaoData
@@ -12,7 +12,7 @@ from .const import SaoConstants
 class SaoReader(BaseReader):
     def __init__(
         self,
-        config: CoreConfig,
+        config: ArtemisConfig,
         version: int,
         bin_dir: Optional[str],
         opt_dir: Optional[str],

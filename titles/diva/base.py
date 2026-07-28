@@ -4,15 +4,15 @@ import logging
 import urllib.parse
 from threading import Thread
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.diva.config import DivaConfig
 from titles.diva.const import DivaConstants
 from titles.diva.database import DivaData
 
 
 class DivaBase:
-    def __init__(self, cfg: CoreConfig, game_cfg: DivaConfig) -> None:
-        self.core_cfg = cfg  # Config file
+    def __init__(self, cfg: ArtemisConfig, game_cfg: DivaConfig) -> None:
+        self.artemis_cfg = cfg  # Config file
         self.game_config = game_cfg
         self.data = DivaData(cfg)  # Database
         self.date_time_format = "%Y-%m-%d %H:%M:%S"
@@ -46,7 +46,7 @@ class DivaBase:
     async def handle_ping_request(self, data: Dict) -> Dict:
         encoded = "&"
         params = {
-            "ping_b_msg": f"Welcome to {self.core_cfg.server.name} network!",
+            "ping_b_msg": f"Welcome to {self.artemis_cfg.server.name} network!",
             "ping_m_msg": "xxx",
             "atnd_lut": f"{self.time_lut}",
             "fi_lut": f"{self.time_lut}",
@@ -278,7 +278,7 @@ class DivaBase:
         encoded = "&"
         params = {
             "fi_id": "1,2",
-            "fi_name": f"{self.core_cfg.server.name} Opening,Project DIVA Festa",
+            "fi_name": f"{self.artemis_cfg.server.name} Opening,Project DIVA Festa",
             # 0=PINK, 1=GREEN
             "fi_kind": "1,0",
             "fi_difficulty": "-1,-1",

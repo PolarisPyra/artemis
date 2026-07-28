@@ -1,4 +1,4 @@
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 
 
 class CxbServerConfig:
@@ -7,21 +7,21 @@ class CxbServerConfig:
 
     @property
     def enable(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "cxb", "server", "enable", default=True
         )
 
     @property
     def loglevel(self) -> int:
-        return CoreConfig.str_to_loglevel(
-            CoreConfig.get_config_field(
+        return ArtemisConfig.str_to_loglevel(
+            ArtemisConfig.get_config_field(
                 self.__config, "cxb", "server", "loglevel", default="info"
             )
         )
 
     @property
     def use_https(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "cxb", "server", "use_https", default=True
         )
 

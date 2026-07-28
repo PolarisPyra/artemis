@@ -5,7 +5,7 @@ from base64 import b64encode
 from typing import Any, Dict, List
 from os import path
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from .config import CxbConfig
 from .const import CxbConstants
 from .database import CxbData
@@ -14,7 +14,7 @@ from threading import Thread
 
 
 class CxbBase:
-    def __init__(self, cfg: CoreConfig, game_cfg: CxbConfig) -> None:
+    def __init__(self, cfg: ArtemisConfig, game_cfg: CxbConfig) -> None:
         self.config = cfg  # Config file
         self.game_config = game_cfg
         self.data = CxbData(cfg)  # Database

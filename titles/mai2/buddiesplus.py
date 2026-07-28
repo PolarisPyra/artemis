@@ -1,13 +1,13 @@
 from typing import Dict
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.mai2.buddies import Mai2Buddies
 from titles.mai2.const import Mai2Constants
 from titles.mai2.config import Mai2Config
 
 
 class Mai2BuddiesPlus(Mai2Buddies):
-    def __init__(self, cfg: CoreConfig, game_cfg: Mai2Config) -> None:
+    def __init__(self, cfg: ArtemisConfig, game_cfg: Mai2Config) -> None:
         super().__init__(cfg, game_cfg)
         self.version = Mai2Constants.VER_MAIMAI_DX_BUDDIES_PLUS
 

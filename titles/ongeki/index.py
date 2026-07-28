@@ -16,9 +16,9 @@ from Crypto.Hash import SHA1
 from os import path
 from typing import Tuple, Dict, List
 
-from core.config import CoreConfig
-from core.utils import Utils
-from core.title import BaseServlet
+from artemis.config import ArtemisConfig
+from artemis.utils import Utils
+from artemis.title import BaseServlet
 from .config import OngekiConfig
 from .const import OngekiConstants
 from .base import OngekiBase
@@ -33,8 +33,8 @@ from .refresh import OngekiReFresh
 
 
 class OngekiServlet(BaseServlet):
-    def __init__(self, core_cfg: CoreConfig, cfg_dir: str) -> None:
-        super().__init__(core_cfg, cfg_dir)
+    def __init__(self, artemis_cfg: ArtemisConfig, cfg_dir: str) -> None:
+        super().__init__(artemis_cfg, cfg_dir)
         self.game_cfg = OngekiConfig()
         self.hash_table: Dict[Dict[str, str]] = {}
         if path.exists(f"{cfg_dir}/{OngekiConstants.CONFIG_NAME}"):
@@ -43,15 +43,15 @@ class OngekiServlet(BaseServlet):
             )
 
         self.versions = [
-            OngekiBase(core_cfg, self.game_cfg),
-            OngekiPlus(core_cfg, self.game_cfg),
-            OngekiSummer(core_cfg, self.game_cfg),
-            OngekiSummerPlus(core_cfg, self.game_cfg),
-            OngekiRed(core_cfg, self.game_cfg),
-            OngekiRedPlus(core_cfg, self.game_cfg),
-            OngekiBright(core_cfg, self.game_cfg),
-            OngekiBrightMemory(core_cfg, self.game_cfg),
-            OngekiReFresh(core_cfg, self.game_cfg),
+            OngekiBase(artemis_cfg, self.game_cfg),
+            OngekiPlus(artemis_cfg, self.game_cfg),
+            OngekiSummer(artemis_cfg, self.game_cfg),
+            OngekiSummerPlus(artemis_cfg, self.game_cfg),
+            OngekiRed(artemis_cfg, self.game_cfg),
+            OngekiRedPlus(artemis_cfg, self.game_cfg),
+            OngekiBright(artemis_cfg, self.game_cfg),
+            OngekiBrightMemory(artemis_cfg, self.game_cfg),
+            OngekiReFresh(artemis_cfg, self.game_cfg),
         ]
 
         self.logger = logging.getLogger("ongeki")
@@ -60,7 +60,7 @@ class OngekiServlet(BaseServlet):
             log_fmt_str = "[%(asctime)s] Ongeki | %(levelname)s | %(message)s"
             log_fmt = logging.Formatter(log_fmt_str)
             fileHandler = TimedRotatingFileHandler(
-                "{0}/{1}.log".format(self.core_cfg.server.log_dir, "ongeki"),
+                "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "ongeki"),
                 encoding="utf8",
                 when="d",
                 backupCount=10,
@@ -114,7 +114,7 @@ class OngekiServlet(BaseServlet):
 
     @classmethod
     def is_game_enabled(
-        cls, game_code: str, core_cfg: CoreConfig, cfg_dir: str
+        cls, game_code: str, artemis_cfg: ArtemisConfig, cfg_dir: str
     ) -> bool:
         game_cfg = OngekiConfig()
 
@@ -138,8 +138,8 @@ class OngekiServlet(BaseServlet):
     def get_allnet_info(
         self, game_code: str, game_ver: int, keychip: str
     ) -> Tuple[str, str]:
-        title_port_int = Utils.get_title_port(self.core_cfg)
-        title_port_ssl_int = Utils.get_title_port_ssl(self.core_cfg)
+        title_port_int = Utils.get_title_port(self.artemis_cfg)
+        title_port_ssl_int = Utils.get_title_port_ssl(self.artemis_cfg)
         proto = (
             "https" if self.game_cfg.server.use_https and game_ver >= 120 else "http"
         )
@@ -151,8 +151,8 @@ class OngekiServlet(BaseServlet):
             t_port = f":{title_port_int}" if title_port_int != 80 else ""
 
         return (
-            f"{proto}://{self.core_cfg.server.hostname}{t_port}/{game_code}/{game_ver}/",
-            f"{self.core_cfg.server.hostname}{t_port}/",
+            f"{proto}://{self.artemis_cfg.server.hostname}{t_port}/{game_code}/{game_ver}/",
+            f"{self.artemis_cfg.server.hostname}{t_port}/",
         )
 
     async def render_POST(self, request: Request) -> bytes:

@@ -13,8 +13,8 @@ import inflection
 from os import path
 from google.protobuf.message import DecodeError
 
-from core import CoreConfig, Utils
-from core.title import BaseServlet
+from artemis import ArtemisConfig, Utils
+from artemis.title import BaseServlet
 from .config import PokkenConfig
 from .base import PokkenBase
 from .const import PokkenConstants
@@ -22,8 +22,8 @@ from .proto import jackal_pb2
 
 
 class PokkenServlet(BaseServlet):
-    def __init__(self, core_cfg: CoreConfig, cfg_dir: str) -> None:
-        super().__init__(core_cfg, cfg_dir)
+    def __init__(self, artemis_cfg: ArtemisConfig, cfg_dir: str) -> None:
+        super().__init__(artemis_cfg, cfg_dir)
         self.config_dir = cfg_dir
         self.game_cfg = PokkenConfig()
         if path.exists(f"{cfg_dir}/pokken.yaml"):
@@ -34,7 +34,7 @@ class PokkenServlet(BaseServlet):
             log_fmt_str = "[%(asctime)s] Pokken | %(levelname)s | %(message)s"
             log_fmt = logging.Formatter(log_fmt_str)
             fileHandler = TimedRotatingFileHandler(
-                "{0}/{1}.log".format(self.core_cfg.server.log_dir, "pokken"),
+                "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "pokken"),
                 encoding="utf8",
                 when="d",
                 backupCount=10,
@@ -54,11 +54,11 @@ class PokkenServlet(BaseServlet):
             )
             self.logger.inited = True
 
-        self.base = PokkenBase(core_cfg, self.game_cfg)
+        self.base = PokkenBase(artemis_cfg, self.game_cfg)
 
     @classmethod
     def is_game_enabled(
-        cls, game_code: str, core_cfg: CoreConfig, cfg_dir: str
+        cls, game_code: str, artemis_cfg: ArtemisConfig, cfg_dir: str
     ) -> bool:
         game_cfg = PokkenConfig()
 
@@ -83,11 +83,11 @@ class PokkenServlet(BaseServlet):
         self, game_code: str, game_ver: int, keychip: str
     ) -> Tuple[str, str]:
         return (
-            f"https://{self.game_cfg.server.hostname}:{Utils.get_title_port_ssl(self.core_cfg)}/pokken/",
-            f"{self.game_cfg.server.hostname}:{Utils.get_title_port_ssl(self.core_cfg)}/pokken/",
+            f"https://{self.game_cfg.server.hostname}:{Utils.get_title_port_ssl(self.artemis_cfg)}/pokken/",
+            f"{self.game_cfg.server.hostname}:{Utils.get_title_port_ssl(self.artemis_cfg)}/pokken/",
         )
 
-    def get_mucha_info(self, core_cfg: CoreConfig, cfg_dir: str) -> Tuple[bool, str]:
+    def get_mucha_info(self, artemis_cfg: ArtemisConfig, cfg_dir: str) -> Tuple[bool, str]:
         if not self.game_cfg.server.enable:
             return (False, [], [])
 

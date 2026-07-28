@@ -85,10 +85,10 @@ AimeDB and the frontend utalize JSON Web Tokens (JWT) for card authentication an
 
 With 64 being the number of bytes. You shouldn't need to go higher then 64, but you can if desired. **NOTE: When pasting secrets into the config file, make sure you remove any newlines!**
 
-### Edit `core.yaml`
-Before editing `core.yaml`, you should familiarize yourself with the name and function of each of the config options. You can find a full list in [config.md](config.md)
+### Edit `artemis.yaml`
+Before editing `artemis.yaml`, you should familiarize yourself with the name and function of each of the config options. You can find a full list in [config.md](config.md)
 
-Open `core.yaml` in the `config` folder in your prefered text editor. The only configuration option that it is absolutly mandatory to change is `aimedb`->`key`. This key must be set for the server to start, and the key must be correct, otherwise you will not be able to process aimedb requests. The correct key is floating around online, and finding it is left as an excersie to the reader. 
+Open `artemis.yaml` in the `config` folder in your prefered text editor. The only configuration option that it is absolutly mandatory to change is `aimedb`->`key`. This key must be set for the server to start, and the key must be correct, otherwise you will not be able to process aimedb requests. The correct key is floating around online, and finding it is left as an excersie to the reader. 
 
 Another option that should be changed is `database`->`password` to be the password you set when you created your database user. You did write it down somewhere, right?
 

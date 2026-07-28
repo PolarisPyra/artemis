@@ -2,14 +2,14 @@ import base64
 import os
 from typing import Dict
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.mai2.buddiesplus import Mai2BuddiesPlus
 from titles.mai2.const import Mai2Constants
 from titles.mai2.config import Mai2Config
 
 
 class Mai2Prism(Mai2BuddiesPlus):
-    def __init__(self, cfg: CoreConfig, game_cfg: Mai2Config) -> None:
+    def __init__(self, cfg: ArtemisConfig, game_cfg: Mai2Config) -> None:
         super().__init__(cfg, game_cfg)
         self.version = Mai2Constants.VER_MAIMAI_DX_PRISM
 

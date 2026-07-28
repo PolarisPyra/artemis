@@ -12,9 +12,9 @@ import secrets
 import traceback
 import sys
 
-from core import CoreConfig
-from core.title import BaseServlet
-from core.utils import Utils
+from artemis import ArtemisConfig
+from artemis.title import BaseServlet
+from artemis.utils import Utils
 from titles.sao.config import SaoConfig
 from titles.sao.const import SaoConstants
 from titles.sao.base import SaoBase
@@ -22,8 +22,8 @@ from titles.sao.handlers.base import *
 
 
 class SaoServlet(BaseServlet):
-    def __init__(self, core_cfg: CoreConfig, cfg_dir: str) -> None:
-        super().__init__(core_cfg, cfg_dir)
+    def __init__(self, artemis_cfg: ArtemisConfig, cfg_dir: str) -> None:
+        super().__init__(artemis_cfg, cfg_dir)
         self.config_dir = cfg_dir
         self.game_cfg = SaoConfig()
         if path.exists(f"{cfg_dir}/sao.yaml"):
@@ -34,7 +34,7 @@ class SaoServlet(BaseServlet):
             log_fmt_str = "[%(asctime)s] SAO | %(levelname)s | %(message)s"
             log_fmt = logging.Formatter(log_fmt_str)
             fileHandler = TimedRotatingFileHandler(
-                "{0}/{1}.log".format(self.core_cfg.server.log_dir, "sao"),
+                "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "sao"),
                 encoding="utf8",
                 when="d",
                 backupCount=10,
@@ -54,7 +54,7 @@ class SaoServlet(BaseServlet):
             )
             self.logger.inited = True
 
-        self.base = SaoBase(core_cfg, self.game_cfg)
+        self.base = SaoBase(artemis_cfg, self.game_cfg)
         self.static_hash = None
 
         if self.game_cfg.hash.verify_hash:
@@ -78,7 +78,7 @@ class SaoServlet(BaseServlet):
 
     @classmethod
     def is_game_enabled(
-        cls, game_code: str, core_cfg: CoreConfig, cfg_dir: str
+        cls, game_code: str, artemis_cfg: ArtemisConfig, cfg_dir: str
     ) -> bool:
         game_cfg = SaoConfig()
 
@@ -95,16 +95,16 @@ class SaoServlet(BaseServlet):
     def get_allnet_info(
         self, game_id: str, int_ver: int, serial: str
     ) -> Tuple[str, str]:
-        if self.core_cfg.server.is_using_proxy:
-            return (f"https://{self.core_cfg.server.hostname}/", "")
+        if self.artemis_cfg.server.is_using_proxy:
+            return (f"https://{self.artemis_cfg.server.hostname}/", "")
 
         return (
-            f"http://{self.core_cfg.server.hostname}:{Utils.get_title_port(self.core_cfg)}/",
+            f"http://{self.artemis_cfg.server.hostname}:{Utils.get_title_port(self.artemis_cfg)}/",
             "",
         )
 
     def get_mucha_info(
-        self, core_cfg: CoreConfig, cfg_dir: str
+        self, artemis_cfg: ArtemisConfig, cfg_dir: str
     ) -> Tuple[bool, List[str], List[str]]:
         if not self.game_cfg.server.enable:
             return (False, [], [])
@@ -159,7 +159,7 @@ class SaoServlet(BaseServlet):
             tp, val, tb = sys.exc_info()
             traceback.print_exception(tp, val, tb, limit=5)
             with open(
-                "{0}/{1}.log".format(self.core_cfg.server.log_dir, "sao"), "a"
+                "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "sao"), "a"
             ) as f:
                 traceback.print_exception(tp, val, tb, limit=5, file=f)
 

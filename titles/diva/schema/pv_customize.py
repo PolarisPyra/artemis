@@ -4,7 +4,7 @@ from sqlalchemy.types import Integer, String
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.dialects.mysql import insert
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 pv_customize = Table(
     "diva_profile_pv_customize",

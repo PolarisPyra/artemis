@@ -32,3 +32,30 @@ For most cases, the config in `example_config` will suffice. It makes the follow
 - You're not using cloudflare in front of your frontend
 
 If this describes you, your only configuration needs are to edit the `server_name` and `certificate_*` directives. Otherwise, please see nginx configuration documentation to configure it to best suit your setup.
+
+## Standalone Konami service
+
+When `konami.enable` and `konami.standalone` are enabled, Artemis listens on
+`konami.port` (5730 by default). A public HTTPS hostname can proxy to that port:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name eamuse.example.com;
+
+    ssl_certificate /etc/letsencrypt/live/eamuse.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/eamuse.example.com/privkey.pem;
+
+    location / {
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Port $server_port;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://127.0.0.1:5730;
+    }
+}
+```
+
+Set Bemanitools' `eamuse.server` to the public hostname, for example
+`https://eamuse.example.com`, not the private port.

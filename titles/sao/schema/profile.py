@@ -14,7 +14,7 @@ from sqlalchemy.sql import func, select
 from sqlalchemy.engine import Row
 from sqlalchemy.dialects.mysql import insert
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 profile = Table(
     "sao_profile",

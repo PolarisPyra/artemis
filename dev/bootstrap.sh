@@ -21,12 +21,12 @@ function uvSync {
 function configureArtemis {
     echo "Configuring ARTEMiS with default values..."
 
-    yq --yaml-roundtrip --in-place '.server.listen_address = "0.0.0.0"' config/core.yaml
-    yq --yaml-roundtrip --in-place '.server.port = 8080' config/core.yaml
-    yq --yaml-roundtrip --in-place '.database.host = "mysql"' config/core.yaml
-    yq --yaml-roundtrip --in-place '.database.memcached_host = "memcached"' config/core.yaml
-    yq --yaml-roundtrip --in-place ".aimedb.id_secret = \"$(openssl rand --base64 64 | tr -d "\n")\"" config/core.yaml
-    yq --yaml-roundtrip --in-place ".frontend.secret = \"$(openssl rand --base64 64 | tr -d "\n")\"" config/core.yaml
+    yq --yaml-roundtrip --in-place '.server.listen_address = "0.0.0.0"' config/artemis.yaml
+    yq --yaml-roundtrip --in-place '.server.port = 8080' config/artemis.yaml
+    yq --yaml-roundtrip --in-place '.database.host = "mysql"' config/artemis.yaml
+    yq --yaml-roundtrip --in-place '.database.memcached_host = "memcached"' config/artemis.yaml
+    yq --yaml-roundtrip --in-place ".aimedb.id_secret = \"$(openssl rand --base64 64 | tr -d "\n")\"" config/artemis.yaml
+    yq --yaml-roundtrip --in-place ".frontend.secret = \"$(openssl rand --base64 64 | tr -d "\n")\"" config/artemis.yaml
 }
 
 function createDatabaseTables {

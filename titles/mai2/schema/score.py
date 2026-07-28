@@ -7,7 +7,7 @@ from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import func, select
 from sqlalchemy.types import JSON, BigInteger, Boolean, Integer, String
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 best_score: Table = Table(
     "mai2_score_best",
@@ -328,15 +328,15 @@ kaleidxscope: Table = Table(
 
 class Mai2ScoreData(BaseData):
     async def put_best_score(
-        self, user_id: int, score_data: Dict, is_dx: bool = True
+        self, user_id: int, sartemis_data: Dict, is_dx: bool = True
     ) -> Optional[int]:
-        score_data["user"] = user_id
+        sartemis_data["user"] = user_id
 
         if is_dx:
-            sql = insert(best_score).values(**score_data)
+            sql = insert(best_score).values(**sartemis_data)
         else:
-            sql = insert(best_score_old).values(**score_data)
-        conflict = sql.on_duplicate_key_update(**score_data)
+            sql = insert(best_score_old).values(**sartemis_data)
+        conflict = sql.on_duplicate_key_update(**sartemis_data)
 
         result = await self.execute(conflict)
         if result is None:

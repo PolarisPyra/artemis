@@ -6,8 +6,8 @@ from starlette.responses import Response, RedirectResponse
 from starlette.routing import Route
 from os import path
 
-from core.frontend import FE_Base, UserSession
-from core.config import CoreConfig
+from artemis.frontend import FE_Base, UserSession
+from artemis.config import ArtemisConfig
 from .database import PokkenData
 from .config import PokkenConfig
 from .const import PokkenConstants
@@ -18,7 +18,7 @@ class PokkenFrontend(FE_Base):
     NETID_PREFIX = PokkenConstants.NETID_PREFIX
 
     def __init__(
-        self, cfg: CoreConfig, environment: jinja2.Environment, cfg_dir: str
+        self, cfg: ArtemisConfig, environment: jinja2.Environment, cfg_dir: str
     ) -> None:
         super().__init__(cfg, environment)
         self.data = PokkenData(cfg)
@@ -70,7 +70,7 @@ class PokkenFrontend(FE_Base):
 
         return Response(
             template.render(
-                title=f"{self.core_config.server.name} | {self.nav_name}",
+                title=f"{self.artemis_config.server.name} | {self.nav_name}",
                 game_list=self.environment.globals["game_list"],
                 sesh=vars(usr_sesh),
                 profile=pf,

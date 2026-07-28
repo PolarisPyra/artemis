@@ -1,4 +1,4 @@
-{% extends "core/templates/index.jinja" %}
+{% extends "artemis/templates/index.jinja" %}
 {% block content %}
 <style>
   {% include 'titles/mai2/templates/css/mai2_style.css' %}
@@ -89,7 +89,7 @@
     </div>
   </div>
   {% if error is defined %}
-  {% include "core/templates/widgets/err_banner.jinja" %}
+  {% include "artemis/templates/widgets/err_banner.jinja" %}
   {% endif %}
   {% elif sesh is defined and sesh is not none and sesh.user_id > 0 %}
   No profile information found for this account.

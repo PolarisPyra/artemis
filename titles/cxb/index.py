@@ -12,9 +12,9 @@ from logging.handlers import TimedRotatingFileHandler
 from typing import Dict, Tuple, List
 from os import path
 
-from core.config import CoreConfig
-from core.title import BaseServlet, JSONResponseNoASCII
-from core.utils import Utils
+from artemis.config import ArtemisConfig
+from artemis.title import BaseServlet, JSONResponseNoASCII
+from artemis.utils import Utils
 from .config import CxbConfig
 from .const import CxbConstants
 from .rev import CxbRev
@@ -23,10 +23,10 @@ from .rss2 import CxbRevSunriseS2
 
 
 class CxbServlet(BaseServlet):
-    def __init__(self, core_cfg: CoreConfig, cfg_dir: str) -> None:
+    def __init__(self, artemis_cfg: ArtemisConfig, cfg_dir: str) -> None:
         self.isLeaf = True
         self.cfg_dir = cfg_dir
-        self.core_cfg = core_cfg
+        self.artemis_cfg = artemis_cfg
         self.game_cfg = CxbConfig()
         if path.exists(f"{cfg_dir}/{CxbConstants.CONFIG_NAME}"):
             self.game_cfg.update(
@@ -38,7 +38,7 @@ class CxbServlet(BaseServlet):
             log_fmt_str = "[%(asctime)s] CXB | %(levelname)s | %(message)s"
             log_fmt = logging.Formatter(log_fmt_str)
             fileHandler = TimedRotatingFileHandler(
-                "{0}/{1}.log".format(self.core_cfg.server.log_dir, "cxb"),
+                "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "cxb"),
                 encoding="utf8",
                 when="d",
                 backupCount=10,
@@ -59,9 +59,9 @@ class CxbServlet(BaseServlet):
             self.logger.inited = True
 
         self.versions = [
-            CxbRev(core_cfg, self.game_cfg),
-            CxbRevSunriseS1(core_cfg, self.game_cfg),
-            CxbRevSunriseS2(core_cfg, self.game_cfg),
+            CxbRev(artemis_cfg, self.game_cfg),
+            CxbRevSunriseS1(artemis_cfg, self.game_cfg),
+            CxbRevSunriseS2(artemis_cfg, self.game_cfg),
         ]
 
     def get_routes(self) -> List[Route]:
@@ -74,7 +74,7 @@ class CxbServlet(BaseServlet):
 
     @classmethod
     def is_game_enabled(
-        cls, game_code: str, core_cfg: CoreConfig, cfg_dir: str
+        cls, game_code: str, artemis_cfg: ArtemisConfig, cfg_dir: str
     ) -> bool:
         game_cfg = CxbConfig()
         if path.exists(f"{cfg_dir}/{CxbConstants.CONFIG_NAME}"):
@@ -90,8 +90,8 @@ class CxbServlet(BaseServlet):
     def get_allnet_info(
         self, game_code: str, game_ver: int, keychip: str
     ) -> Tuple[str, str]:
-        title_port_int = Utils.get_title_port(self.core_cfg)
-        title_port_ssl_int = Utils.get_title_port_ssl(self.core_cfg)
+        title_port_int = Utils.get_title_port(self.artemis_cfg)
+        title_port_ssl_int = Utils.get_title_port_ssl(self.artemis_cfg)
 
         proto = "https" if self.game_cfg.server.use_https else "http"
 
@@ -102,7 +102,7 @@ class CxbServlet(BaseServlet):
             t_port = f":{title_port_int}" if title_port_int != 80 else ""
 
         return (
-            f"{proto}://{self.core_cfg.server.hostname}{t_port}",
+            f"{proto}://{self.artemis_cfg.server.hostname}{t_port}",
             "",
         )
 
@@ -201,7 +201,7 @@ class CxbServlet(BaseServlet):
                 tp, val, tb = sys.exc_info()
                 traceback.print_exception(tp, val, tb, limit=1)
                 with open(
-                    "{0}/{1}.log".format(self.core_cfg.server.log_dir, "cxb"), "a"
+                    "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "cxb"), "a"
                 ) as f:
                     traceback.print_exception(tp, val, tb, limit=1, file=f)
             return Response()
@@ -232,7 +232,7 @@ class CxbServlet(BaseServlet):
                 tp, val, tb = sys.exc_info()
                 traceback.print_exception(tp, val, tb, limit=1)
                 with open(
-                    "{0}/{1}.log".format(self.core_cfg.server.log_dir, "cxb"), "a"
+                    "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "cxb"), "a"
                 ) as f:
                     traceback.print_exception(tp, val, tb, limit=1, file=f)
             return Response()
@@ -263,7 +263,7 @@ class CxbServlet(BaseServlet):
                 tp, val, tb = sys.exc_info()
                 traceback.print_exception(tp, val, tb, limit=1)
                 with open(
-                    "{0}/{1}.log".format(self.core_cfg.server.log_dir, "cxb"), "a"
+                    "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "cxb"), "a"
                 ) as f:
                     traceback.print_exception(tp, val, tb, limit=1, file=f)
             return Response()

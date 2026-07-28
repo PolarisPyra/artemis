@@ -324,7 +324,7 @@ class ItemKind(IntEnum):
 
     FRAME = 2
     """
-    "Frame" is the background for the gauge/score/max combo display
+    "Frame" is the background for the gauge/sartemis/max combo display
     shown during gameplay. This item cannot be equipped (as of LUMINOUS)
     and is hardcoded to the current game's version.
     """

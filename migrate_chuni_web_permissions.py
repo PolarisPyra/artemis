@@ -7,9 +7,9 @@ from typing import Optional
 import yaml
 from sqlalchemy import select
 
-from core.config import CoreConfig
-from core.data.schema import metadata
-from core.data.schema.user import aime_user
+from artemis.config import ArtemisConfig
+from artemis.data.schema import metadata
+from artemis.data.schema.user import aime_user
 from titles.chuni.database import ChuniData
 from titles.chuni.schema.profile import profile
 from titles.chuni.schema.cozynet import web_permissions
@@ -25,7 +25,7 @@ async def main():
 
     # Load config
     cfg_dir = os.environ.get("ARTEMIS_CFG_DIR", "config")
-    config_path = os.path.join(cfg_dir, "core.yaml")
+    config_path = os.path.join(cfg_dir, "artemis.yaml")
 
     if not os.path.exists(config_path):
         logger.error(f"Config file not found at {config_path}")
@@ -36,12 +36,12 @@ async def main():
     with open(config_path, "r") as f:
         config_dict = yaml.safe_load(f)
 
-    core_cfg = CoreConfig()
-    core_cfg.update(config_dict)
+    artemis_cfg = ArtemisConfig()
+    artemis_cfg.update(config_dict)
 
     # Initialize data handler
     logger.info("Connecting to database...")
-    data = ChuniData(core_cfg)
+    data = ChuniData(artemis_cfg)
 
     # Find all unique user IDs from Chunithm profiles
     logger.info("Finding all Chunithm users...")

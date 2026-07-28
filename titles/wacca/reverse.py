@@ -2,7 +2,7 @@ from typing import Any, List, Dict
 from datetime import datetime, timedelta
 import json
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.wacca.lilyr import WaccaLilyR
 from titles.wacca.config import WaccaConfig
 from titles.wacca.const import WaccaConstants
@@ -11,7 +11,7 @@ from titles.wacca.handlers import *
 
 
 class WaccaReverse(WaccaLilyR):
-    def __init__(self, cfg: CoreConfig, game_cfg: WaccaConfig) -> None:
+    def __init__(self, cfg: ArtemisConfig, game_cfg: WaccaConfig) -> None:
         super().__init__(cfg, game_cfg)
         self.version = WaccaConstants.VER_WACCA_REVERSE
 

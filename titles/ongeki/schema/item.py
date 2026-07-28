@@ -8,7 +8,7 @@ from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import func, select
 from sqlalchemy.types import TIMESTAMP, Boolean, Integer, String
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 card: Table = Table(
     "ongeki_user_card",

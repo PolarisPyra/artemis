@@ -6,8 +6,8 @@ from os import path
 import yaml
 import jinja2
 
-from core.frontend import FE_Base, UserSession
-from core.config import CoreConfig
+from artemis.frontend import FE_Base, UserSession
+from artemis.config import ArtemisConfig
 from .database import DivaData
 from .config import DivaConfig
 from .const import DivaConstants
@@ -15,7 +15,7 @@ from .const import DivaConstants
 
 class DivaFrontend(FE_Base):
     def __init__(
-        self, cfg: CoreConfig, environment: jinja2.Environment, cfg_dir: str
+        self, cfg: ArtemisConfig, environment: jinja2.Environment, cfg_dir: str
     ) -> None:
         super().__init__(cfg, environment)
         self.data = DivaData(cfg)
@@ -53,7 +53,7 @@ class DivaFrontend(FE_Base):
 
             resp = Response(
                 template.render(
-                    title=f"{self.core_config.server.name} | {self.nav_name}",
+                    title=f"{self.artemis_config.server.name} | {self.nav_name}",
                     game_list=self.environment.globals["game_list"],
                     sesh=vars(usr_sesh),
                     user_id=usr_sesh.user_id,
@@ -84,7 +84,7 @@ class DivaFrontend(FE_Base):
             if playlog_count < index * 20:
                 return Response(
                     template.render(
-                        title=f"{self.core_config.server.name} | {self.nav_name}",
+                        title=f"{self.artemis_config.server.name} | {self.nav_name}",
                         game_list=self.environment.globals["game_list"],
                         sesh=vars(usr_sesh),
                         score_count=0,
@@ -114,7 +114,7 @@ class DivaFrontend(FE_Base):
                 )
             return Response(
                 template.render(
-                    title=f"{self.core_config.server.name} | {self.nav_name}",
+                    title=f"{self.artemis_config.server.name} | {self.nav_name}",
                     game_list=self.environment.globals["game_list"],
                     sesh=vars(usr_sesh),
                     user_id=usr_sesh.user_id,

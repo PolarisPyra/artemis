@@ -7,8 +7,8 @@ import yaml
 import jinja2
 from datetime import datetime
 
-from core.frontend import FE_Base, UserSession, PermissionOffset
-from core.config import CoreConfig
+from artemis.frontend import FE_Base, UserSession, PermissionOffset
+from artemis.config import ArtemisConfig
 from .database import Mai2Data
 from .config import Mai2Config
 from .const import Mai2Constants
@@ -16,7 +16,7 @@ from .const import Mai2Constants
 
 class Mai2Frontend(FE_Base):
     def __init__(
-        self, cfg: CoreConfig, environment: jinja2.Environment, cfg_dir: str
+        self, cfg: ArtemisConfig, environment: jinja2.Environment, cfg_dir: str
     ) -> None:
         super().__init__(cfg, environment)
         self.data = Mai2Data(cfg)
@@ -76,7 +76,7 @@ class Mai2Frontend(FE_Base):
 
             resp = Response(
                 template.render(
-                    title=f"{self.core_config.server.name} | {self.nav_name}",
+                    title=f"{self.artemis_config.server.name} | {self.nav_name}",
                     game_list=self.environment.globals["game_list"],
                     sesh=vars(usr_sesh),
                     user_id=usr_sesh.user_id,
@@ -118,7 +118,7 @@ class Mai2Frontend(FE_Base):
             if playlog_count < index * 20:
                 return Response(
                     template.render(
-                        title=f"{self.core_config.server.name} | {self.nav_name}",
+                        title=f"{self.artemis_config.server.name} | {self.nav_name}",
                         game_list=self.environment.globals["game_list"],
                         sesh=vars(usr_sesh),
                         playlog_count=0,
@@ -152,7 +152,7 @@ class Mai2Frontend(FE_Base):
                 )
             return Response(
                 template.render(
-                    title=f"{self.core_config.server.name} | {self.nav_name}",
+                    title=f"{self.artemis_config.server.name} | {self.nav_name}",
                     game_list=self.environment.globals["game_list"],
                     sesh=vars(usr_sesh),
                     user_id=usr_sesh.user_id,
@@ -262,7 +262,7 @@ class Mai2Frontend(FE_Base):
 
         resp = Response(
             template.render(
-                title=f"{self.core_config.server.name} | {self.nav_name} Events",
+                title=f"{self.artemis_config.server.name} | {self.nav_name} Events",
                 game_list=self.environment.globals["game_list"],
                 sesh=vars(usr_sesh),
                 version_list=Mai2Constants.VERSION_STRING,
@@ -298,7 +298,7 @@ class Mai2Frontend(FE_Base):
 
         return Response(
             template.render(
-                title=f"{self.core_config.server.name} | {self.nav_name} Edit Event {evt_id}",
+                title=f"{self.artemis_config.server.name} | {self.nav_name} Edit Event {evt_id}",
                 game_list=self.environment.globals["game_list"],
                 sesh=vars(usr_sesh),
                 user_id=usr_sesh.user_id,

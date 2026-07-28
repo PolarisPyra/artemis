@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 
 
 class IDZServerConfig:
@@ -9,33 +9,33 @@ class IDZServerConfig:
 
     @property
     def enable(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "idz", "server", "enable", default=True
         )
 
     @property
     def loglevel(self) -> int:
-        return CoreConfig.str_to_loglevel(
-            CoreConfig.get_config_field(
+        return ArtemisConfig.str_to_loglevel(
+            ArtemisConfig.get_config_field(
                 self.__config, "idz", "server", "loglevel", default="info"
             )
         )
 
     @property
     def hostname(self) -> str:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "idz", "server", "hostname", default=""
         )
 
     @property
     def news(self) -> str:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "idz", "server", "news", default=""
         )
 
     @property
     def aes_key(self) -> str:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "idz", "server", "aes_key", default=""
         )
 
@@ -46,19 +46,19 @@ class IDZPortsConfig:
 
     @property
     def userdb(self) -> int:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "idz", "ports", "userdb", default=10000
         )
 
     @property
     def match(self) -> int:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "idz", "ports", "match", default=10010
         )
 
     @property
     def echo(self) -> int:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "idz", "ports", "echo", default=10020
         )
 
@@ -70,4 +70,4 @@ class IDZConfig(dict):
 
     @property
     def rsa_keys(self) -> List[Dict]:
-        return CoreConfig.get_config_field(self, "idz", "rsa_keys", default=[])
+        return ArtemisConfig.get_config_field(self, "idz", "rsa_keys", default=[])

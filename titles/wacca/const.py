@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from core.const import AllnetJapanRegionId
+from artemis.const import AllnetJapanRegionId
 
 
 class WaccaConstants:

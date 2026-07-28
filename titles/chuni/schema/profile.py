@@ -8,7 +8,7 @@ from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import select
 from sqlalchemy.types import JSON, BigInteger, Boolean, Integer, String
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 profile = Table(
     "chuni_profile_data",

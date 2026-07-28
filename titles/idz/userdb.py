@@ -5,7 +5,7 @@ from typing import Dict, Optional, List, Type
 import random
 import asyncio
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from .database import IDZData
 from .config import IDZConfig
 from .const import IDZConstants
@@ -25,13 +25,13 @@ class IDZKey:
 class IDZUserDB:
     def __init__(
         self,
-        core_cfg: CoreConfig,
+        artemis_cfg: ArtemisConfig,
         game_cfg: IDZConfig,
         keys: List[IDZKey],
         handlers: List[Dict],
     ) -> None:
         self.logger = logging.getLogger("idz")
-        self.core_config = core_cfg
+        self.artemis_config = artemis_cfg
         self.game_config = game_cfg
         self.rsa_keys = keys
         self.handlers = handlers
@@ -45,7 +45,7 @@ class IDZUserDB:
         asyncio.create_task(
             asyncio.start_server(
                 self.connection_cb,
-                self.core_config.server.listen_address,
+                self.artemis_config.server.listen_address,
                 self.game_config.ports.userdb,
             )
         )
@@ -166,7 +166,7 @@ class IDZUserDB:
             self.logger.warning(f"No handler for v{self.version} {hex(cmd)} cmd")
             handler_cls = IDZHandlerBase
 
-        handler = handler_cls(self.core_config, self.game_config, self.version_internal)
+        handler = handler_cls(self.artemis_config, self.game_config, self.version_internal)
         self.logger.info(
             f"Userdb v{self.version} {handler.name} request from {client_ip}"
         )

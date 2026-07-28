@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 from typing import Any, Dict, List, Optional
 
 from read import BaseReader
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.ongeki.database import OngekiData
 from titles.cm.const import CardMakerConstants
 from titles.ongeki.const import OngekiConstants
@@ -21,7 +21,7 @@ from titles.chuni.const import ChuniConstants
 class CardMakerReader(BaseReader):
     def __init__(
         self,
-        config: CoreConfig,
+        config: ArtemisConfig,
         version: int,
         bin_dir: Optional[str],
         opt_dir: Optional[str],

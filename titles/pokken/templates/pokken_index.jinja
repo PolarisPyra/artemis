@@ -1,4 +1,4 @@
-{% extends "core/templates/index.jinja" %}
+{% extends "artemis/templates/index.jinja" %}
 {% block content %}
 <h1>Pokken</h1>
 {% if profile is defined and profile is not none and profile.id > 0 %}
@@ -20,7 +20,7 @@ function toggle_new_name_form() {
 </script>
 <h3>Profile for {{ profile.trainer_name }}&nbsp;<button onclick="toggle_new_name_form()" class="btn btn-secondary" id="btn_toggle_form">Edit</button></h3>
 {% if error is defined %}
-{% include "core/templates/widgets/err_banner.jinja" %}
+{% include "artemis/templates/widgets/err_banner.jinja" %}
 {% endif %}
 {% if success is defined and success == 1 %}
 <div style="background-color: #00AA00; padding: 20px; margin-bottom: 10px; width: 15%;">

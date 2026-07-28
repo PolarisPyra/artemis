@@ -42,7 +42,7 @@ To build our Docker setup, first we need to create some folders and copy some fi
 - Create 'aime', 'configs', 'AimeDB', and 'logs' folder in ARTEMiS root folder (where all source files exist)
 - Inside configs folder, create 'config' folder, and copy all .yaml files from example_config to config (thats all files without nginx_example.conf)
 - Edit .yaml files inside configs/config to suit your server needs
-- Edit core.yaml inside configs/config:
+- Edit artemis.yaml inside configs/config:
 ```
 set server.listen_address: to "0.0.0.0"
 set title.hostname: to machine's IP address, e.g. "192.168.x.x", depending on your network, or actual hostname if your configuration is already set for dns resolve
@@ -184,7 +184,7 @@ save and close
 
 Follow the system and python portion of the guide, installing required packages and python3 modules, Download the ARTEMiS source.
 
-- Edit core.yaml and insert it into config catalog:
+- Edit artemis.yaml and insert it into config catalog:
 
 ```
 database:
@@ -199,7 +199,7 @@ database:
 
 Follow the [windows](docs/INSTALL_WINDOWS.md) guide for installing python dependencies, download the ARTEMiS source.
 
-- Edit core.yaml and insert it into config catalog:
+- Edit artemis.yaml and insert it into config catalog:
 
 ```
 database:
@@ -212,7 +212,7 @@ database:
 # Troubleshooting
 
 ## Game does not connect to ARTEMiS Allnet Server
-Double check your core.yaml if all addresses are correct and ports are correctly set and/or opened.
+Double check your artemis.yaml if all addresses are correct and ports are correctly set and/or opened.
 
 ## Game does not connect to Title Server
 Title server hostname requires your actual system hostname, from which you set up the Containers, or it's IP address, you can get the IP by using command `ip a` which will list all interfaces, and one of them should be your system IP (typically under eth0).
@@ -221,7 +221,7 @@ Title server hostname requires your actual system hostname, from which you set u
 Make sure you have a proper AimeDB Key added to configuration.
 
 ## Memcached Error in ARTEMiS application causes errors in loading data
-Currently when running ARTEMiS from master branch, there is a small bug that causes app to always configure memcached service to 127.0.0.1, to fix that, locate cache.py file in core/data, and edit:
+Currently when running ARTEMiS from master branch, there is a small bug that causes app to always configure memcached service to 127.0.0.1, to fix that, locate cache.py file in artemis/data, and edit:
 
 ```
 memcache = pylibmc.Client([hostname]), binary=True)

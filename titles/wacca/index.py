@@ -12,9 +12,9 @@ from os import path
 import traceback
 import sys
 
-from core import CoreConfig, Utils
-from core.data import Data
-from core.title import BaseServlet
+from artemis import ArtemisConfig, Utils
+from artemis.data import Data
+from artemis.title import BaseServlet
 from .config import WaccaConfig
 from .config import WaccaConfig
 from .const import WaccaConstants
@@ -28,28 +28,28 @@ from .handlers.helpers import Version
 
 
 class WaccaServlet(BaseServlet):
-    def __init__(self, core_cfg: CoreConfig, cfg_dir: str) -> None:
-        self.core_cfg = core_cfg
+    def __init__(self, artemis_cfg: ArtemisConfig, cfg_dir: str) -> None:
+        self.artemis_cfg = artemis_cfg
         self.game_cfg = WaccaConfig()
         if path.exists(f"{cfg_dir}/{WaccaConstants.CONFIG_NAME}"):
             self.game_cfg.update(
                 yaml.safe_load(open(f"{cfg_dir}/{WaccaConstants.CONFIG_NAME}"))
             )
-        self.data = Data(core_cfg)
+        self.data = Data(artemis_cfg)
 
         self.versions = [
-            WaccaBase(core_cfg, self.game_cfg),
-            WaccaS(core_cfg, self.game_cfg),
-            WaccaLily(core_cfg, self.game_cfg),
-            WaccaLilyR(core_cfg, self.game_cfg),
-            WaccaReverse(core_cfg, self.game_cfg),
+            WaccaBase(artemis_cfg, self.game_cfg),
+            WaccaS(artemis_cfg, self.game_cfg),
+            WaccaLily(artemis_cfg, self.game_cfg),
+            WaccaLilyR(artemis_cfg, self.game_cfg),
+            WaccaReverse(artemis_cfg, self.game_cfg),
         ]
 
         self.logger = logging.getLogger("wacca")
         log_fmt_str = "[%(asctime)s] Wacca | %(levelname)s | %(message)s"
         log_fmt = logging.Formatter(log_fmt_str)
         fileHandler = TimedRotatingFileHandler(
-            "{0}/{1}.log".format(self.core_cfg.server.log_dir, "wacca"),
+            "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "wacca"),
             encoding="utf8",
             when="d",
             backupCount=10,
@@ -84,7 +84,7 @@ class WaccaServlet(BaseServlet):
 
     @classmethod
     def is_game_enabled(
-        cls, game_code: str, core_cfg: CoreConfig, cfg_dir: str
+        cls, game_code: str, artemis_cfg: ArtemisConfig, cfg_dir: str
     ) -> bool:
         game_cfg = WaccaConfig()
         if path.exists(f"{cfg_dir}/{WaccaConstants.CONFIG_NAME}"):
@@ -101,17 +101,17 @@ class WaccaServlet(BaseServlet):
         self, game_code: str, game_ver: int, keychip: str
     ) -> Tuple[str, str]:
         if (
-            not self.core_cfg.server.is_using_proxy
-            and Utils.get_title_port(self.core_cfg) != 80
+            not self.artemis_cfg.server.is_using_proxy
+            and Utils.get_title_port(self.artemis_cfg) != 80
         ):
             return (
-                f"http://{self.core_cfg.server.hostname}:{Utils.get_title_port(self.core_cfg)}/WaccaServlet",
-                self.core_cfg.server.hostname,
+                f"http://{self.artemis_cfg.server.hostname}:{Utils.get_title_port(self.artemis_cfg)}/WaccaServlet",
+                self.artemis_cfg.server.hostname,
             )
 
         return (
-            f"http://{self.core_cfg.server.hostname}/WaccaServlet",
-            self.core_cfg.server.hostname,
+            f"http://{self.artemis_cfg.server.hostname}/WaccaServlet",
+            self.artemis_cfg.server.hostname,
         )
 
     async def render_POST(self, request: Request) -> bytes:
@@ -156,7 +156,7 @@ class WaccaServlet(BaseServlet):
             resp.message = "不正なリクエスト エラーです"
             return end(resp.make())
 
-        if not self.core_cfg.server.allow_unregistered_serials:
+        if not self.artemis_cfg.server.allow_unregistered_serials:
             mech = await self.data.arcade.get_machine(req.chipId)
             if not mech:
                 self.logger.error(
@@ -220,7 +220,7 @@ class WaccaServlet(BaseServlet):
                 tp, val, tb = sys.exc_info()
                 traceback.print_exception(tp, val, tb, limit=3)
                 with open(
-                    "{0}/{1}.log".format(self.core_cfg.server.log_dir, "wacca"), "a"
+                    "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "wacca"), "a"
                 ) as f:
                     traceback.print_exception(tp, val, tb, limit=3, file=f)
 

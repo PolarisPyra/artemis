@@ -6,7 +6,7 @@ from sqlalchemy.sql import func, select, update, delete
 from sqlalchemy.engine import Row
 from sqlalchemy.dialects.mysql import insert
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 # Pokken sends depressingly little match data...
 match_data = Table(

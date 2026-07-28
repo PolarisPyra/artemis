@@ -17,9 +17,9 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Route
 
-from core import CoreConfig, Utils
-from core.data import Data
-from core.title import BaseServlet
+from artemis import ArtemisConfig, Utils
+from artemis.data import Data
+from artemis.title import BaseServlet
 
 from .air import ChuniAir
 from .airplus import ChuniAirPlus
@@ -59,11 +59,11 @@ def strict_underscore(name: str) -> str:
 
 
 class ChuniServlet(BaseServlet):
-    def __init__(self, core_cfg: CoreConfig, cfg_dir: str) -> None:
-        super().__init__(core_cfg, cfg_dir)
+    def __init__(self, artemis_cfg: ArtemisConfig, cfg_dir: str) -> None:
+        super().__init__(artemis_cfg, cfg_dir)
 
         self.game_cfg = ChuniConfig()
-        self.core_data = Data(core_cfg)
+        self.artemis_data = Data(artemis_cfg)
         self.hash_table: Dict[str, Dict[str, str]] = {}
 
         if path.exists(f"{cfg_dir}/{ChuniConstants.CONFIG_NAME}"):
@@ -155,7 +155,7 @@ class ChuniServlet(BaseServlet):
             log_fmt_str = "[%(asctime)s] Chunithm | %(levelname)s | %(message)s"
             log_fmt = logging.Formatter(log_fmt_str)
             file_handler = TimedRotatingFileHandler(
-                "{0}/{1}.log".format(self.core_cfg.server.log_dir, "chuni"),
+                "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "chuni"),
                 encoding="utf8",
                 when="d",
                 backupCount=10,
@@ -258,7 +258,7 @@ class ChuniServlet(BaseServlet):
 
     @classmethod
     def is_game_enabled(
-        cls, game_code: str, core_cfg: CoreConfig, cfg_dir: str
+        cls, game_code: str, artemis_cfg: ArtemisConfig, cfg_dir: str
     ) -> bool:
         game_cfg = ChuniConfig()
         if path.exists(f"{cfg_dir}/{ChuniConstants.CONFIG_NAME}"):
@@ -284,17 +284,17 @@ class ChuniServlet(BaseServlet):
         title_path = f"{game_code}/{game_ver}/{keychip}/"
 
         if (
-            not self.core_cfg.server.is_using_proxy
-            and Utils.get_title_port(self.core_cfg) != 80
+            not self.artemis_cfg.server.is_using_proxy
+            and Utils.get_title_port(self.artemis_cfg) != 80
         ):
             return (
-                f"http://{self.core_cfg.server.hostname}:{Utils.get_title_port(self.core_cfg)}/{title_path}",
-                self.core_cfg.server.hostname,
+                f"http://{self.artemis_cfg.server.hostname}:{Utils.get_title_port(self.artemis_cfg)}/{title_path}",
+                self.artemis_cfg.server.hostname,
             )
 
         return (
-            f"http://{self.core_cfg.server.hostname}/{title_path}",
-            self.core_cfg.server.hostname,
+            f"http://{self.artemis_cfg.server.hostname}/{title_path}",
+            self.artemis_cfg.server.hostname,
         )
 
     def get_routes(self) -> List[Route]:
@@ -324,8 +324,8 @@ class ChuniServlet(BaseServlet):
         }
         default_error_response = zlib.compress(b'{"returnCode": 0}')
 
-        if not self.core_cfg.server.allow_unregistered_serials:
-            machine = await self.core_data.arcade.get_machine(keychip)
+        if not self.artemis_cfg.server.allow_unregistered_serials:
+            machine = await self.artemis_data.arcade.get_machine(keychip)
 
             if machine is None:
                 self.logger.warning(
@@ -337,7 +337,7 @@ class ChuniServlet(BaseServlet):
 
             # we gottem
             if HONEYPOT_HEADER_NAME in request.headers:
-                arcade = await self.core_data.arcade.get_arcade(machine.arcade)
+                arcade = await self.artemis_data.arcade.get_arcade(machine.arcade)
 
                 self.logger.warning(
                     "Serial %s hit the honeypot from %s (arcade.name=%s, arcade.nickname=%s). The keychip will be removed.",
@@ -347,7 +347,7 @@ class ChuniServlet(BaseServlet):
                     arcade.nickname,
                 )
 
-                await self.core_data.arcade.delete_machine(keychip)
+                await self.artemis_data.arcade.delete_machine(keychip)
 
                 return Response(default_error_response, headers=headers)
 
@@ -490,7 +490,7 @@ class ChuniServlet(BaseServlet):
             endpoint = endpoint.removesuffix("C3Chn")   
 
         func_to_find = "handle_" + strict_underscore(endpoint) + "_request"
-        handler_cls = self.versions[internal_ver](self.core_cfg, self.game_cfg)
+        handler_cls = self.versions[internal_ver](self.artemis_cfg, self.game_cfg)
 
         if (handler := getattr(handler_cls, func_to_find, None)) is not None:
             try:

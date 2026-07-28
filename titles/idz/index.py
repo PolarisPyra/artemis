@@ -10,8 +10,8 @@ from typing import Tuple, List, Dict
 import importlib
 import asyncio
 
-from core.config import CoreConfig
-from core.title import BaseServlet
+from artemis.config import ArtemisConfig
+from artemis.title import BaseServlet
 from .config import IDZConfig
 from .const import IDZConstants
 from .userdb import IDZUserDB, IDZKey
@@ -19,8 +19,8 @@ from .echo import IDZEcho
 
 
 class IDZServlet(BaseServlet):
-    def __init__(self, core_cfg: CoreConfig, cfg_dir: str) -> None:
-        super().__init__(core_cfg, cfg_dir)
+    def __init__(self, artemis_cfg: ArtemisConfig, cfg_dir: str) -> None:
+        super().__init__(artemis_cfg, cfg_dir)
         self.game_cfg = IDZConfig()
         if path.exists(f"{cfg_dir}/{IDZConstants.CONFIG_NAME}"):
             self.game_cfg.update(
@@ -32,7 +32,7 @@ class IDZServlet(BaseServlet):
             log_fmt_str = "[%(asctime)s] IDZ | %(levelname)s | %(message)s"
             log_fmt = logging.Formatter(log_fmt_str)
             fileHandler = TimedRotatingFileHandler(
-                "{0}/{1}.log".format(self.core_cfg.server.log_dir, "idz"),
+                "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "idz"),
                 encoding="utf8",
                 when="d",
                 backupCount=10,
@@ -67,7 +67,7 @@ class IDZServlet(BaseServlet):
 
     @classmethod
     def is_game_enabled(
-        cls, game_code: str, core_cfg: CoreConfig, cfg_dir: str
+        cls, game_code: str, artemis_cfg: ArtemisConfig, cfg_dir: str
     ) -> bool:
         game_cfg = IDZConfig()
         if path.exists(f"{cfg_dir}/{IDZConstants.CONFIG_NAME}"):
@@ -94,7 +94,7 @@ class IDZServlet(BaseServlet):
         self, game_code: str, game_ver: int, keychip: str
     ) -> Tuple[str, str]:
         hostname = (
-            self.core_cfg.server.hostname
+            self.artemis_cfg.server.hostname
             if not self.game_cfg.server.hostname
             else self.game_cfg.server.hostname
         )
@@ -139,12 +139,12 @@ class IDZServlet(BaseServlet):
                 continue
 
         loop = asyncio.get_running_loop()
-        IDZUserDB(self.core_cfg, self.game_cfg, self.rsa_keys, handler_map).start()
+        IDZUserDB(self.artemis_cfg, self.game_cfg, self.rsa_keys, handler_map).start()
         asyncio.create_task(
             loop.create_datagram_endpoint(
                 lambda: IDZEcho(),
                 local_addr=(
-                    self.core_cfg.server.listen_address,
+                    self.artemis_cfg.server.listen_address,
                     self.game_cfg.ports.echo,
                 ),
             )
@@ -153,7 +153,7 @@ class IDZServlet(BaseServlet):
             loop.create_datagram_endpoint(
                 lambda: IDZEcho(),
                 local_addr=(
-                    self.core_cfg.server.listen_address,
+                    self.artemis_cfg.server.listen_address,
                     self.game_cfg.ports.match,
                 ),
             )
@@ -162,7 +162,7 @@ class IDZServlet(BaseServlet):
             loop.create_datagram_endpoint(
                 lambda: IDZEcho(),
                 local_addr=(
-                    self.core_cfg.server.listen_address,
+                    self.artemis_cfg.server.listen_address,
                     self.game_cfg.ports.userdb + 1,
                 ),
             )
@@ -178,7 +178,7 @@ class IDZServlet(BaseServlet):
         news = (
             self.game_cfg.server.news
             if self.game_cfg.server.news
-            else f"Welcome to Initial D Arcade Stage Zero on {self.core_cfg.server.name}!"
+            else f"Welcome to Initial D Arcade Stage Zero on {self.artemis_cfg.server.name}!"
         )
         news += "\r\n"
         news = "1979/01/01 00:00:00 2099/12/31 23:59:59 " + news

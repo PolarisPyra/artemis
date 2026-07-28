@@ -1,10 +1,10 @@
-from core.data import Data
-from core.config import CoreConfig
+from artemis.data import Data
+from artemis.config import ArtemisConfig
 from titles.wacca.schema import *
 
 
 class WaccaData(Data):
-    def __init__(self, cfg: CoreConfig) -> None:
+    def __init__(self, cfg: ArtemisConfig) -> None:
         super().__init__(cfg)
 
         self.profile = WaccaProfileData(self.config, self.session)

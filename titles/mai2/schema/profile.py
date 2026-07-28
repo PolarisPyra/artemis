@@ -19,7 +19,7 @@ from sqlalchemy.types import (
     String,
 )
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 from titles.mai2.const import Mai2Constants
 
 detail = Table(

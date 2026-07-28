@@ -1,7 +1,7 @@
 import struct
 
 from .base import IDZHandlerBase
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from ..config import IDZConfig
 from ..const import IDZConstants
 
@@ -11,8 +11,8 @@ class IDZHandlerLoad2on2A(IDZHandlerBase):
     rsp_codes = [0x00B1, 0x00B1, 0x00A4, 0x00A4]
     name = "load_2on2A"
 
-    def __init__(self, core_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
-        super().__init__(core_cfg, game_cfg, version)
+    def __init__(self, artemis_cfg: ArtemisConfig, game_cfg: IDZConfig, version: int) -> None:
+        super().__init__(artemis_cfg, game_cfg, version)
         self.size = 0x04C0
 
         if version >= IDZConstants.VER_IDZ_210:
@@ -27,8 +27,8 @@ class IDZHandlerLoad2on2B(IDZHandlerBase):
     rsp_codes = [0x0133] * 4
     name = "load_2on2B"
 
-    def __init__(self, core_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
-        super().__init__(core_cfg, game_cfg, version)
+    def __init__(self, artemis_cfg: ArtemisConfig, game_cfg: IDZConfig, version: int) -> None:
+        super().__init__(artemis_cfg, game_cfg, version)
         self.size = 0x04C0
 
         if version >= IDZConstants.VER_IDZ_210:

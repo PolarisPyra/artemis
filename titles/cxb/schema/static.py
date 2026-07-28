@@ -7,7 +7,7 @@ from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import func, select
 from sqlalchemy.dialects.mysql import insert
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 music = Table(
     "cxb_static_music",

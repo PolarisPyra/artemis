@@ -14,8 +14,8 @@ from sqlalchemy.engine import Row
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.dialects.mysql import insert
 
-from core.data.schema import BaseData, metadata
-from core.data import cached
+from artemis.data.schema import BaseData, metadata
+from artemis.data import cached
 
 quest = Table(
     "sao_static_quest",

@@ -6,8 +6,8 @@ from os import W_OK, access, environ, mkdir, path
 
 import yaml
 
-from core.config import CoreConfig
-from core.data import Data
+from artemis.config import ArtemisConfig
+from artemis.data import Data
 
 
 async def main():
@@ -39,9 +39,9 @@ async def main():
 
     environ["ARTEMIS_CFG_DIR"] = args.config
 
-    cfg = CoreConfig()
-    if path.exists(f"{args.config}/core.yaml"):
-        cfg_dict = yaml.safe_load(open(f"{args.config}/core.yaml"))
+    cfg = ArtemisConfig()
+    if path.exists(f"{args.config}/artemis.yaml"):
+        cfg_dict = yaml.safe_load(open(f"{args.config}/artemis.yaml"))
         cfg.update(cfg_dict)
 
     if not path.exists(cfg.server.log_dir):

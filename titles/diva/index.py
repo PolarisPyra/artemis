@@ -11,30 +11,30 @@ import base64
 from os import path
 from typing import Tuple, Dict, List
 
-from core.config import CoreConfig
-from core.title import BaseServlet
-from core.utils import Utils
+from artemis.config import ArtemisConfig
+from artemis.title import BaseServlet
+from artemis.utils import Utils
 from .config import DivaConfig
 from .const import DivaConstants
 from .base import DivaBase
 
 
 class DivaServlet(BaseServlet):
-    def __init__(self, core_cfg: CoreConfig, cfg_dir: str) -> None:
-        super().__init__(core_cfg, cfg_dir)
+    def __init__(self, artemis_cfg: ArtemisConfig, cfg_dir: str) -> None:
+        super().__init__(artemis_cfg, cfg_dir)
         self.game_cfg = DivaConfig()
         if path.exists(f"{cfg_dir}/{DivaConstants.CONFIG_NAME}"):
             self.game_cfg.update(
                 yaml.safe_load(open(f"{cfg_dir}/{DivaConstants.CONFIG_NAME}"))
             )
 
-        self.base = DivaBase(core_cfg, self.game_cfg)
+        self.base = DivaBase(artemis_cfg, self.game_cfg)
 
         self.logger = logging.getLogger("diva")
         log_fmt_str = "[%(asctime)s] Diva | %(levelname)s | %(message)s"
         log_fmt = logging.Formatter(log_fmt_str)
         fileHandler = TimedRotatingFileHandler(
-            "{0}/{1}.log".format(self.core_cfg.server.log_dir, "diva"),
+            "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "diva"),
             encoding="utf8",
             when="d",
             backupCount=10,
@@ -60,22 +60,22 @@ class DivaServlet(BaseServlet):
         self, game_code: str, game_ver: int, keychip: str
     ) -> Tuple[str, str]:
         if (
-            not self.core_cfg.server.is_using_proxy
-            and Utils.get_title_port(self.core_cfg) != 80
+            not self.artemis_cfg.server.is_using_proxy
+            and Utils.get_title_port(self.artemis_cfg) != 80
         ):
             return (
-                f"http://{self.core_cfg.server.hostname}:{Utils.get_title_port(self.core_cfg)}/DivaServlet/",
-                self.core_cfg.server.hostname,
+                f"http://{self.artemis_cfg.server.hostname}:{Utils.get_title_port(self.artemis_cfg)}/DivaServlet/",
+                self.artemis_cfg.server.hostname,
             )
 
         return (
-            f"http://{self.core_cfg.server.hostname}/DivaServlet/",
-            self.core_cfg.server.hostname,
+            f"http://{self.artemis_cfg.server.hostname}/DivaServlet/",
+            self.artemis_cfg.server.hostname,
         )
 
     @classmethod
     def is_game_enabled(
-        cls, game_code: str, core_cfg: CoreConfig, cfg_dir: str
+        cls, game_code: str, artemis_cfg: ArtemisConfig, cfg_dir: str
     ) -> bool:
         game_cfg = DivaConfig()
         if path.exists(f"{cfg_dir}/{DivaConstants.CONFIG_NAME}"):

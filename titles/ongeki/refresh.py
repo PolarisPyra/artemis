@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.ongeki.const import OngekiConstants
 
 from .brightmemory import OngekiBrightMemory
@@ -8,8 +8,8 @@ from .config import OngekiConfig
 
 
 class OngekiReFresh(OngekiBrightMemory):
-    def __init__(self, core_cfg: CoreConfig, game_cfg: OngekiConfig) -> None:
-        super().__init__(core_cfg, game_cfg)
+    def __init__(self, artemis_cfg: ArtemisConfig, game_cfg: OngekiConfig) -> None:
+        super().__init__(artemis_cfg, game_cfg)
         self.version = OngekiConstants.VER_ONGEKI_REFRESH
 
     async def handle_get_game_setting_api_request(self, data: Dict) -> Dict:

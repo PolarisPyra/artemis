@@ -1,5 +1,5 @@
-from core.data import Data
-from core.config import CoreConfig
+from artemis.data import Data
+from artemis.config import ArtemisConfig
 from titles.chuni.schema import (
     ChuniItemData,
     ChuniProfileData,
@@ -11,7 +11,7 @@ from titles.chuni.schema.client import ChuniClientData
 
 
 class ChuniData(Data):
-    def __init__(self, cfg: CoreConfig) -> None:
+    def __init__(self, cfg: ArtemisConfig) -> None:
         super().__init__(cfg)
 
         self.item = ChuniItemData(cfg, self.session)

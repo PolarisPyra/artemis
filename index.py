@@ -7,14 +7,14 @@ import logging
 import asyncio
 from logging.handlers import TimedRotatingFileHandler
 
-from core.config import CoreConfig
-from core.aimedb import AimedbServlette
+from artemis.config import ArtemisConfig
+from artemis.aimedb import AimedbServlette
 
 
-async def launch_main(cfg: CoreConfig, ssl: bool) -> None:
+async def launch_main(cfg: ArtemisConfig, ssl: bool) -> None:
     if ssl:
         server_cfg = uvicorn.Config(
-            "core.app:app",
+            "artemis.app:app",
             host=cfg.server.listen_address,
             port=cfg.server.port if args.port == 0 else args.port,
             reload=cfg.server.is_develop,
@@ -25,7 +25,7 @@ async def launch_main(cfg: CoreConfig, ssl: bool) -> None:
         )
     else:
         server_cfg = uvicorn.Config(
-            "core.app:app",
+            "artemis.app:app",
             host=cfg.server.listen_address,
             port=cfg.server.port if args.port == 0 else args.port,
             reload=cfg.server.is_develop,
@@ -35,9 +35,9 @@ async def launch_main(cfg: CoreConfig, ssl: bool) -> None:
     await server.serve()
 
 
-async def launch_billing(cfg: CoreConfig) -> None:
+async def launch_billing(cfg: ArtemisConfig) -> None:
     server_cfg = uvicorn.Config(
-        "core.allnet:app_billing",
+        "artemis.allnet:app_billing",
         host=cfg.server.listen_address,
         port=cfg.billing.port,
         reload=cfg.server.is_develop,
@@ -51,9 +51,9 @@ async def launch_billing(cfg: CoreConfig) -> None:
     await server.serve()
 
 
-async def launch_frontend(cfg: CoreConfig) -> None:
+async def launch_frontend(cfg: ArtemisConfig) -> None:
     server_cfg = uvicorn.Config(
-        "core.frontend:app",
+        "artemis.frontend:app",
         host=cfg.server.listen_address,
         port=cfg.frontend.port,
         reload=cfg.server.is_develop,
@@ -63,9 +63,9 @@ async def launch_frontend(cfg: CoreConfig) -> None:
     await server.serve()
 
 
-async def launch_allnet(cfg: CoreConfig) -> None:
+async def launch_allnet(cfg: ArtemisConfig) -> None:
     server_cfg = uvicorn.Config(
-        "core.allnet:app_allnet",
+        "artemis.allnet:app_allnet",
         host=cfg.server.listen_address,
         port=cfg.allnet.port,
         reload=cfg.server.is_develop,
@@ -75,8 +75,8 @@ async def launch_allnet(cfg: CoreConfig) -> None:
     await server.serve()
 
 
-async def launch_konami(cfg: CoreConfig) -> None:
-    from core.konami.app import build_konami_app
+async def launch_konami(cfg: ArtemisConfig) -> None:
+    from artemis.konami.app import build_konami_app
 
     logger = logging.getLogger("konami")
     if not getattr(logger, "handler_set", False):
@@ -109,7 +109,7 @@ async def launch_konami(cfg: CoreConfig) -> None:
     await server.serve()
 
 
-async def launcher(cfg: CoreConfig, ssl: bool) -> None:
+async def launcher(cfg: ArtemisConfig, ssl: bool) -> None:
     task_list = [asyncio.create_task(launch_main(cfg, ssl))]
 
     if cfg.billing.standalone:
@@ -128,7 +128,7 @@ async def launcher(cfg: CoreConfig, ssl: bool) -> None:
         return_when=asyncio.FIRST_COMPLETED,
     )
 
-    logging.getLogger("core").info("Shutdown")
+    logging.getLogger("artemis").info("Shutdown")
     for pending_task in pending:
         pending_task.cancel("Another service died, server is shutting down")
 
@@ -142,14 +142,14 @@ if __name__ == "__main__":
     parser.add_argument("--ssl", "-s", type=bool, help="Launch with SSL")
     args = parser.parse_args()
 
-    if not path.exists(f"{args.config}/core.yaml"):
+    if not path.exists(f"{args.config}/artemis.yaml"):
         print(
-            f"The config folder you specified ({args.config}) does not exist or does not contain core.yaml. Defaults will be used.\nDid you copy the example folder?"
+            f"The config folder you specified ({args.config}) does not exist or does not contain artemis.yaml. Defaults will be used.\nDid you copy the example folder?"
         )
 
-    cfg: CoreConfig = CoreConfig()
-    if path.exists(f"{args.config}/core.yaml"):
-        cfg.update(yaml.safe_load(open(f"{args.config}/core.yaml")))
+    cfg: ArtemisConfig = ArtemisConfig()
+    if path.exists(f"{args.config}/artemis.yaml"):
+        cfg.update(yaml.safe_load(open(f"{args.config}/artemis.yaml")))
 
     environ["ARTEMIS_CFG_DIR"] = args.config
 

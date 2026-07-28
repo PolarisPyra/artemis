@@ -6,7 +6,7 @@ from os import path
 import re
 from sqlalchemy.engine import Row
 
-from core import CoreConfig
+from artemis import ArtemisConfig
 from .config import SaoConfig
 from .database import SaoData
 from .const import GameconnectCmd, RewardType, ExBonusCondition, QuestType
@@ -17,10 +17,10 @@ import csv
 class SaoBase:
     DATA_LIST = {}
 
-    def __init__(self, core_cfg: CoreConfig, game_cfg: SaoConfig) -> None:
-        self.core_cfg = core_cfg
+    def __init__(self, artemis_cfg: ArtemisConfig, game_cfg: SaoConfig) -> None:
+        self.artemis_cfg = artemis_cfg
         self.game_cfg = game_cfg
-        self.data = SaoData(core_cfg)
+        self.data = SaoData(artemis_cfg)
         self.logger = logging.getLogger("sao")
 
     def load_data_csv(
@@ -575,7 +575,7 @@ class SaoBase:
     ) -> bytes:
         # common/get_resource_path_info
         resp = SaoGetResourcePathInfoResponse(
-            f"https://{self.core_cfg.server.hostname}/saoresource/"
+            f"https://{self.artemis_cfg.server.hostname}/saoresource/"
         )
         return resp.make()
 
@@ -1769,7 +1769,7 @@ class SaoBase:
         episode_id = req_data.episode_id
         play_end = req_data.play_end_request_data[0]
         base_get_data = play_end.base_get_data[0]
-        score_data = play_end.score_data[0]
+        sartemis_data = play_end.sartemis_data[0]
         exp = 0
         cleared_mission_ct = 0
         highest_mission_diff_cleared = 0
@@ -1790,11 +1790,11 @@ class SaoBase:
 
         await self.data.profile.add_col(user_id, base_get_data.get_col)
 
-        quest_clear_flag = score_data.clear_time > 0
-        clear_time = score_data.clear_time
-        combo_num = score_data.combo_num
-        total_damage = score_data.total_damage
-        concurrent_destroying_num = score_data.concurrent_destroying_num
+        quest_clear_flag = sartemis_data.clear_time > 0
+        clear_time = sartemis_data.clear_time
+        combo_num = sartemis_data.combo_num
+        total_damage = sartemis_data.total_damage
+        concurrent_destroying_num = sartemis_data.concurrent_destroying_num
 
         if quest_clear_flag is True:
             await self.data.profile.add_vp(user_id, quest_scene["SingleRewardVp"])
@@ -1867,7 +1867,7 @@ class SaoBase:
             val1 = int(bonus["ConditionValue1"])
             val2 = int(bonus["ConditionValue2"])
             if condition == ExBonusCondition.CLEAR_UNDER_X_SECS:
-                if quest_clear_flag and int(score_data.clear_time / 1000) < val1:
+                if quest_clear_flag and int(sartemis_data.clear_time / 1000) < val1:
                     await self.add_reward(bonus._asdict(), user_id)
                     await self.data.item.put_ex_bonus(
                         user_id, int(ep_data["QuestSceneId"]), table_id, True
@@ -1909,28 +1909,28 @@ class SaoBase:
                     )
                     ach_thing = 2
             elif condition == ExBonusCondition.CLEAR_SKILL_LEVEL_X:
-                if score_data.reaching_skill_level >= val1:
+                if sartemis_data.reaching_skill_level >= val1:
                     await self.add_reward(bonus._asdict(), user_id)
                     await self.data.item.put_ex_bonus(
                         user_id, int(ep_data["QuestSceneId"]), table_id, True
                     )
                     ach_thing = 2
             elif condition == ExBonusCondition.NO_LOSSES:
-                if score_data.total_loss_num == 0:
+                if sartemis_data.total_loss_num == 0:
                     await self.add_reward(bonus._asdict(), user_id)
                     await self.data.item.put_ex_bonus(
                         user_id, int(ep_data["QuestSceneId"]), table_id, True
                     )
                     ach_thing = 2
             elif condition == ExBonusCondition.ACCEL_X_TIMES:
-                if score_data.acceleration_invocation_num >= val1:
+                if sartemis_data.acceleration_invocation_num >= val1:
                     await self.add_reward(bonus._asdict(), user_id)
                     await self.data.item.put_ex_bonus(
                         user_id, int(ep_data["QuestSceneId"]), table_id, True
                     )
                     ach_thing = 2
             elif condition == ExBonusCondition.MAX_COMBO_X:
-                if score_data.combo_num >= val1:
+                if sartemis_data.combo_num >= val1:
                     await self.add_reward(bonus._asdict(), user_id)
                     await self.data.item.put_ex_bonus(
                         user_id, int(ep_data["QuestSceneId"]), table_id, True
@@ -2082,7 +2082,7 @@ class SaoBase:
         trial_tower_id = req_data.trial_tower_id
         play_end = req_data.play_end_request_data[0]
         base_get_data = play_end.base_get_data[0]
-        score_data = play_end.score_data[0]
+        sartemis_data = play_end.sartemis_data[0]
         exp = 0
         cleared_mission_ct = 0
         highest_mission_diff_cleared = 0
@@ -2103,11 +2103,11 @@ class SaoBase:
 
         await self.data.profile.add_col(user_id, base_get_data.get_col)
 
-        quest_clear_flag = score_data.clear_time > 0
-        clear_time = score_data.clear_time
-        combo_num = score_data.combo_num
-        total_damage = score_data.total_damage
-        concurrent_destroying_num = score_data.concurrent_destroying_num
+        quest_clear_flag = sartemis_data.clear_time > 0
+        clear_time = sartemis_data.clear_time
+        combo_num = sartemis_data.combo_num
+        total_damage = sartemis_data.total_damage
+        concurrent_destroying_num = sartemis_data.concurrent_destroying_num
 
         if quest_clear_flag is True:
             await self.data.profile.add_vp(user_id, quest_scene["SingleRewardVp"])
@@ -2180,7 +2180,7 @@ class SaoBase:
             val1 = int(bonus["ConditionValue1"])
             val2 = int(bonus["ConditionValue2"])
             if condition == ExBonusCondition.CLEAR_UNDER_X_SECS:
-                if quest_clear_flag and int(score_data.clear_time / 1000) < val1:
+                if quest_clear_flag and int(sartemis_data.clear_time / 1000) < val1:
                     await self.add_reward(bonus._asdict(), user_id)
                     await self.data.item.put_ex_bonus(
                         user_id, int(ep_data["QuestSceneId"]), table_id, True
@@ -2222,28 +2222,28 @@ class SaoBase:
                     )
                     ach_thing = 2
             elif condition == ExBonusCondition.CLEAR_SKILL_LEVEL_X:
-                if score_data.reaching_skill_level >= val1:
+                if sartemis_data.reaching_skill_level >= val1:
                     await self.add_reward(bonus._asdict(), user_id)
                     await self.data.item.put_ex_bonus(
                         user_id, int(ep_data["QuestSceneId"]), table_id, True
                     )
                     ach_thing = 2
             elif condition == ExBonusCondition.NO_LOSSES:
-                if score_data.total_loss_num == 0:
+                if sartemis_data.total_loss_num == 0:
                     await self.add_reward(bonus._asdict(), user_id)
                     await self.data.item.put_ex_bonus(
                         user_id, int(ep_data["QuestSceneId"]), table_id, True
                     )
                     ach_thing = 2
             elif condition == ExBonusCondition.ACCEL_X_TIMES:
-                if score_data.acceleration_invocation_num >= val1:
+                if sartemis_data.acceleration_invocation_num >= val1:
                     await self.add_reward(bonus._asdict(), user_id)
                     await self.data.item.put_ex_bonus(
                         user_id, int(ep_data["QuestSceneId"]), table_id, True
                     )
                     ach_thing = 2
             elif condition == ExBonusCondition.MAX_COMBO_X:
-                if score_data.combo_num >= val1:
+                if sartemis_data.combo_num >= val1:
                     await self.add_reward(bonus._asdict(), user_id)
                     await self.data.item.put_ex_bonus(
                         user_id, int(ep_data["QuestSceneId"]), table_id, True

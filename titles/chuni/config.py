@@ -1,4 +1,4 @@
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from typing import Dict, Optional
 
 
@@ -8,21 +8,21 @@ class ChuniServerConfig:
 
     @property
     def enable(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "server", "enable", default=True
         )
 
     @property
     def loglevel(self) -> int:
-        return CoreConfig.str_to_loglevel(
-            CoreConfig.get_config_field(
+        return ArtemisConfig.str_to_loglevel(
+            ArtemisConfig.get_config_field(
                 self.__config, "chuni", "server", "loglevel", default="info"
             )
         )
 
     @property
     def news_msg(self) -> str:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "server", "news_msg", default=""
         )
 
@@ -33,13 +33,13 @@ class ChuniTeamConfig:
 
     @property
     def team_name(self) -> str:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "team", "name", default=""
         )
 
     @property
     def rank_scale(self) -> str:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "team", "rank_scale", default="False"
         )
 
@@ -50,19 +50,19 @@ class ChuniModsConfig:
 
     @property
     def use_login_bonus(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "mods", "use_login_bonus", default=True
         )
 
     @property
     def stock_tickets(self) -> str:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "mods", "stock_tickets", default=None
         )
 
     @property
     def stock_count(self) -> int:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "mods", "stock_count", default=99
         )
 
@@ -76,7 +76,7 @@ class ChuniVersionConfig:
         in the form of:
         11: {"rom": 2.00.00, "data": 2.00.00}
         """
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "version", default={}
         )[version]
 
@@ -92,13 +92,13 @@ class ChuniCryptoConfig:
         internal_version: [key, iv]
         all values are hex strings
         """
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "crypto", "keys", default={}
         )
 
     @property
     def encrypted_only(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "crypto", "encrypted_only", default=False
         )
 
@@ -109,19 +109,19 @@ class ChuniMatchingConfig:
 
     @property
     def enable(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "matching", "enable", default=False
         )
 
     @property
     def match_time_limit(self) -> int:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "matching", "match_time_limit", default=60
         )
 
     @property
     def match_error_limit(self) -> int:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "matching", "match_error_limit", default=9999
         )
 
@@ -132,7 +132,7 @@ class ChuniReadConfig:
 
     @property
     def asset_hmac_key(self) -> Optional[str]:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "chuni", "read", "asset_hmac_key", default=None
         )
 

@@ -4,7 +4,7 @@ import socket
 from socketserver import BaseRequestHandler, TCPServer
 from typing import Tuple
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.idac.config import IDACConfig
 from titles.idac.database import IDACData
 
@@ -20,9 +20,9 @@ class IDACEchoUDP:
 
 class IDACEchoTCP(BaseRequestHandler):
     def __init__(
-        self, request, client_address, server, cfg: CoreConfig, game_cfg: IDACConfig
+        self, request, client_address, server, cfg: ArtemisConfig, game_cfg: IDACConfig
     ) -> None:
-        self.core_config = cfg
+        self.artemis_config = cfg
         self.game_config = game_cfg
         self.logger = logging.getLogger("idac")
         self.data = IDACData(cfg)
@@ -42,15 +42,15 @@ class IDACEchoTCPFactory(TCPServer):
         self,
         server_address: Tuple[str, int],
         RequestHandlerClass,
-        cfg: CoreConfig,
+        cfg: ArtemisConfig,
         game_cfg: IDACConfig,
         bind_and_activate: bool = ...,
     ) -> None:
         super().__init__(server_address, RequestHandlerClass, bind_and_activate)
-        self.core_config = cfg
+        self.artemis_config = cfg
         self.game_config = game_cfg
 
     def finish_request(self, request, client_address):
         self.RequestHandlerClass(
-            request, client_address, self, self.core_config, self.game_config
+            request, client_address, self, self.artemis_config, self.game_config
         )

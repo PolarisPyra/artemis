@@ -6,8 +6,8 @@ from os import path
 import yaml
 import jinja2
 
-from core.frontend import FE_Base, UserSession
-from core.config import CoreConfig
+from artemis.frontend import FE_Base, UserSession
+from artemis.config import ArtemisConfig
 from titles.wacca.database import WaccaData
 from titles.wacca.config import WaccaConfig
 from titles.wacca.const import WaccaConstants
@@ -15,7 +15,7 @@ from titles.wacca.const import WaccaConstants
 
 class WaccaFrontend(FE_Base):
     def __init__(
-        self, cfg: CoreConfig, environment: jinja2.Environment, cfg_dir: str
+        self, cfg: ArtemisConfig, environment: jinja2.Environment, cfg_dir: str
     ) -> None:
         super().__init__(cfg, environment)
         self.data = WaccaData(cfg)
@@ -39,7 +39,7 @@ class WaccaFrontend(FE_Base):
 
         return Response(
             template.render(
-                title=f"{self.core_config.server.name} | {self.nav_name}",
+                title=f"{self.artemis_config.server.name} | {self.nav_name}",
                 game_list=self.environment.globals["game_list"],
                 sesh=vars(usr_sesh),
             ),

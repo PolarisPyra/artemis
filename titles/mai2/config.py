@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 
 
 class Mai2ServerConfig:
@@ -9,14 +9,14 @@ class Mai2ServerConfig:
 
     @property
     def enable(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "mai2", "server", "enable", default=True
         )
 
     @property
     def loglevel(self) -> int:
-        return CoreConfig.str_to_loglevel(
-            CoreConfig.get_config_field(
+        return ArtemisConfig.str_to_loglevel(
+            ArtemisConfig.get_config_field(
                 self.__config, "mai2", "server", "loglevel", default="info"
             )
         )
@@ -28,19 +28,19 @@ class Mai2DeliverConfig:
 
     @property
     def enable(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "mai2", "deliver", "enable", default=False
         )
 
     @property
     def udbdl_enable(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "mai2", "deliver", "udbdl_enable", default=False
         )
 
     @property
     def content_folder(self) -> int:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "mai2", "deliver", "content_folder", default=""
         )
 
@@ -51,25 +51,25 @@ class Mai2UploadsConfig:
 
     @property
     def photos(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "mai2", "uploads", "photos", default=False
         )
 
     @property
     def photos_dir(self) -> str:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "mai2", "uploads", "photos_dir", default=""
         )
 
     @property
     def movies(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "mai2", "uploads", "movies", default=False
         )
 
     @property
     def movies_dir(self) -> str:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "mai2", "uploads", "movies_dir", default=""
         )
 
@@ -86,13 +86,13 @@ class Mai2CryptoConfig:
         key and iv are hex strings
         salt is a normal UTF-8 string
         """
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "mai2", "crypto", "keys", default={}
         )
 
     @property
     def encrypted_only(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "mai2", "crypto", "encrypted_only", default=False
         )
 
@@ -103,7 +103,7 @@ class Mai2ReadConfig:
 
     @property
     def asset_hmac_key(self) -> Optional[str]:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "mai2", "read", "asset_hmac_key", default=None
         )
 
@@ -114,13 +114,13 @@ class Mai2OnlineChartsConfig:
 
     @property
     def enable(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "mai2", "chart_deliver", "enable", default=False
         )
 
     @property
     def chart_folder(self) -> str:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "mai2", "chart_deliver", "chart_folder", default=""
         )
 

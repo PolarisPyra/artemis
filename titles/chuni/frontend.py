@@ -6,8 +6,8 @@ from os import path
 import yaml
 import jinja2
 
-from core.frontend import FE_Base, UserSession
-from core.config import CoreConfig
+from artemis.frontend import FE_Base, UserSession
+from artemis.config import ArtemisConfig
 from .database import ChuniData
 from .config import ChuniConfig
 from .const import ChuniConstants
@@ -79,7 +79,7 @@ def calculate_song_rating(
 
 class ChuniFrontend(FE_Base):
     def __init__(
-        self, cfg: CoreConfig, environment: jinja2.Environment, cfg_dir: str
+        self, cfg: ArtemisConfig, environment: jinja2.Environment, cfg_dir: str
     ) -> None:
         super().__init__(cfg, environment)
         self.data = ChuniData(cfg)
@@ -128,7 +128,7 @@ class ChuniFrontend(FE_Base):
 
             resp = Response(
                 template.render(
-                    title=f"{self.core_config.server.name} | {self.nav_name}",
+                    title=f"{self.artemis_config.server.name} | {self.nav_name}",
                     game_list=self.environment.globals["game_list"],
                     sesh=vars(usr_sesh),
                     user_id=usr_sesh.user_id,
@@ -206,7 +206,7 @@ class ChuniFrontend(FE_Base):
                 ]
             return Response(
                 template.render(
-                    title=f"{self.core_config.server.name} | {self.nav_name}",
+                    title=f"{self.artemis_config.server.name} | {self.nav_name}",
                     game_list=self.environment.globals["game_list"],
                     sesh=vars(usr_sesh),
                     profile=profile,
@@ -239,7 +239,7 @@ class ChuniFrontend(FE_Base):
             if playlog_count < index * 20:
                 return Response(
                     template.render(
-                        title=f"{self.core_config.server.name} | {self.nav_name}",
+                        title=f"{self.artemis_config.server.name} | {self.nav_name}",
                         game_list=self.environment.globals["game_list"],
                         sesh=vars(usr_sesh),
                         playlog_count=0,
@@ -270,7 +270,7 @@ class ChuniFrontend(FE_Base):
                 )
             return Response(
                 template.render(
-                    title=f"{self.core_config.server.name} | {self.nav_name}",
+                    title=f"{self.artemis_config.server.name} | {self.nav_name}",
                     game_list=self.environment.globals["game_list"],
                     sesh=vars(usr_sesh),
                     user_id=usr_sesh.user_id,

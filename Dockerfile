@@ -13,7 +13,7 @@ RUN chmod +x entrypoint.sh
 COPY index.py index.py
 COPY dbutils.py dbutils.py
 COPY read.py read.py
-ADD core core
+ADD artemis artemis
 ADD titles titles
 ADD logs logs
 ADD cert cert

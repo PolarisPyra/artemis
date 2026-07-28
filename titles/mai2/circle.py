@@ -1,7 +1,7 @@
 import datetime
 from typing import Dict
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 
 from .config import Mai2Config
 from .const import Mai2Constants
@@ -9,7 +9,7 @@ from .prismplus import Mai2PrismPlus
 
 
 class Mai2Circle(Mai2PrismPlus):
-    def __init__(self, cfg: CoreConfig, game_cfg: Mai2Config) -> None:
+    def __init__(self, cfg: ArtemisConfig, game_cfg: Mai2Config) -> None:
         super().__init__(cfg, game_cfg)
         self.version = Mai2Constants.VER_MAIMAI_DX_CIRCLE
 

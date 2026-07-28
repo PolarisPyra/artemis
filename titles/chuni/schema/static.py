@@ -14,7 +14,7 @@ from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import func, select
 from sqlalchemy.dialects.mysql import BIGINT, insert
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 from titles.chuni.const import ChuniConstants, EventType
 
 options: Table = Table(

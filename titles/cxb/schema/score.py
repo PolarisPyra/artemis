@@ -5,8 +5,8 @@ from sqlalchemy.sql import func
 from sqlalchemy.dialects.mysql import insert
 from typing import Optional, List, Dict, Any
 
-from core.data.schema import BaseData, metadata
-from core.data import cached
+from artemis.data.schema import BaseData, metadata
+from artemis.data import cached
 
 score = Table(
     "cxb_score",

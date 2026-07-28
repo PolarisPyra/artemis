@@ -2,18 +2,18 @@ from typing import Any, List, Dict
 from datetime import datetime, timedelta
 import json
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.wacca.handlers import Dict
 from titles.wacca.lily import WaccaLily
 from titles.wacca.config import WaccaConfig
 from titles.wacca.const import WaccaConstants
 from titles.wacca.handlers import *
 
-from core.const import AllnetCountryCode
+from artemis.const import AllnetCountryCode
 
 
 class WaccaLilyR(WaccaLily):
-    def __init__(self, cfg: CoreConfig, game_cfg: WaccaConfig) -> None:
+    def __init__(self, cfg: ArtemisConfig, game_cfg: WaccaConfig) -> None:
         super().__init__(cfg, game_cfg)
         self.version = WaccaConstants.VER_WACCA_LILY_R
         self.season = 2

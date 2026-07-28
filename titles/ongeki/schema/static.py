@@ -7,8 +7,8 @@ from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import func, select
 from sqlalchemy.types import JSON, TIMESTAMP, Boolean, Float, Integer, String
 
-from core.data.schema import BaseData, metadata
-from core.data.schema.arcade import machine
+from artemis.data.schema import BaseData, metadata
+from artemis.data.schema.arcade import machine
 
 options: Table = Table(
     "ongeki_static_opt",

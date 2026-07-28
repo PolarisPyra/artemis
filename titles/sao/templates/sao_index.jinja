@@ -1,4 +1,4 @@
-{% extends "core/templates/index.jinja" %}
+{% extends "artemis/templates/index.jinja" %}
 {% block content %}
 <h1>Sword Art Online Arcade</h1>
 {% if profile is defined and profile is not none and profile.id > 0 %}
@@ -109,8 +109,8 @@ function toggle_new_name_form() {
 }
 </script>
 <h3>Profile for {{ profile.nick_name }}&nbsp;<button onclick="toggle_new_name_form()" class="btn btn-secondary" id="btn_toggle_form">Edit</button></h3>
-{% include "core/templates/widgets/err_banner.jinja" %}
-{% include "core/templates/widgets/succ_banner.jinja" %}
+{% include "artemis/templates/widgets/err_banner.jinja" %}
+{% include "artemis/templates/widgets/succ_banner.jinja" %}
 <form style="max-width: 33%; display: none; max-height: 0px;" action="/game/sao/update.name" method="post" id="new_name_form">
   <div class="mb-3">
     <label for="new_name" class="form-label">New Nickname</label>

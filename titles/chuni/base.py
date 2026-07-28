@@ -6,17 +6,17 @@ from typing import Any
 
 import pytz
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.chuni.config import ChuniConfig
 from titles.chuni.const import ChuniConstants, FavoriteItemKind, ItemKind
 from titles.chuni.database import ChuniData
 
 
 class ChuniBase:
-    def __init__(self, core_cfg: CoreConfig, game_cfg: ChuniConfig) -> None:
-        self.core_cfg = core_cfg
+    def __init__(self, artemis_cfg: ArtemisConfig, game_cfg: ChuniConfig) -> None:
+        self.artemis_cfg = artemis_cfg
         self.game_cfg = game_cfg
-        self.data = ChuniData(core_cfg)
+        self.data = ChuniData(artemis_cfg)
         self.date_time_format = "%Y-%m-%d %H:%M:%S"
         self.logger = logging.getLogger("chuni")
         self.game = ChuniConstants.GAME_CODE
@@ -205,7 +205,7 @@ class ChuniBase:
                 {
                     "id": 1,
                     "type": 1,
-                    "message": f"Welcome to {self.core_cfg.server.name} network!"
+                    "message": f"Welcome to {self.artemis_cfg.server.name} network!"
                     if not self.game_cfg.server.news_msg
                     else self.game_cfg.server.news_msg,
                     "startDate": "2017-12-05 07:00:00.0",
@@ -226,8 +226,8 @@ class ChuniBase:
         current_jst = datetime.now(pytz.timezone("Asia/Tokyo"))
 
         if (
-            self.core_cfg.title.reboot_start_time == ""
-            or self.core_cfg.title.reboot_end_time == ""
+            self.artemis_cfg.title.reboot_start_time == ""
+            or self.artemis_cfg.title.reboot_end_time == ""
         ):
             reboot_start = (
                 (current_jst - timedelta(hours=3))
@@ -242,10 +242,10 @@ class ChuniBase:
         else:
             # parse config start/end times into datetime
             reboot_start_time = datetime.strptime(
-                self.core_cfg.title.reboot_start_time, "%H:%M"
+                self.artemis_cfg.title.reboot_start_time, "%H:%M"
             )
             reboot_end_time = datetime.strptime(
-                self.core_cfg.title.reboot_end_time, "%H:%M"
+                self.artemis_cfg.title.reboot_end_time, "%H:%M"
             )
 
             reboot_start_time = reboot_start_time.replace(

@@ -3,7 +3,7 @@ from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.types import Integer, String
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 nameplates: Table = Table(
     "cozynet_static_ongeki_nameplates",

@@ -4,8 +4,8 @@ import os
 from typing import Any, Dict, List, Optional
 
 from read import BaseReader
-from core.data import Data
-from core.config import CoreConfig
+from artemis.data import Data
+from artemis.config import ArtemisConfig
 from titles.idac.const import IDACConstants
 from titles.idac.database import IDACData
 from titles.idac.schema.profile import *
@@ -15,7 +15,7 @@ from titles.idac.schema.item import *
 class IDACReader(BaseReader):
     def __init__(
         self,
-        config: CoreConfig,
+        config: ArtemisConfig,
         version: int,
         bin_dir: Optional[str],
         opt_dir: Optional[str],

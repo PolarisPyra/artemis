@@ -1,5 +1,5 @@
-from core.config import CoreConfig
-from core.data import Data
+from artemis.config import ArtemisConfig
+from artemis.data import Data
 from titles.ongeki.schema import (
     CozynetStaticOngekiData,
     OngekiItemData,
@@ -11,7 +11,7 @@ from titles.ongeki.schema import (
 
 
 class OngekiData(Data):
-    def __init__(self, cfg: CoreConfig) -> None:
+    def __init__(self, cfg: ArtemisConfig) -> None:
         super().__init__(cfg)
 
         self.cozynet = CozynetStaticOngekiData(cfg, self.session)

@@ -1,10 +1,10 @@
-from core.data import Data
-from core.config import CoreConfig
+from artemis.data import Data
+from artemis.config import ArtemisConfig
 from titles.cxb.schema import CxbProfileData, CxbScoreData, CxbItemData, CxbStaticData
 
 
 class CxbData(Data):
-    def __init__(self, cfg: CoreConfig) -> None:
+    def __init__(self, cfg: ArtemisConfig) -> None:
         super().__init__(cfg)
 
         self.profile = CxbProfileData(self.config, self.session)

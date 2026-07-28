@@ -7,7 +7,7 @@ from sqlalchemy.sql.functions import coalesce
 from sqlalchemy.engine import Row
 from sqlalchemy.dialects.mysql import insert
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 from ..const import PokkenConstants
 
 # Some more of the repeated fields could probably be their own tables, for now I just did the ones that made sense to me

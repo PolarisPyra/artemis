@@ -15,8 +15,8 @@ from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Hash import SHA1
 from Crypto.Cipher import AES, _mode_cbc
 
-from core.frontend import FE_Base, UserSession
-from core.config import CoreConfig
+from artemis.frontend import FE_Base, UserSession
+from artemis.config import ArtemisConfig
 from .database import SaoData
 from .config import SaoConfig
 from .const import SaoConstants
@@ -28,7 +28,7 @@ class SaoFrontend(FE_Base):
     ALL_HEROS = []
 
     def __init__(
-        self, cfg: CoreConfig, environment: jinja2.Environment, cfg_dir: str
+        self, cfg: ArtemisConfig, environment: jinja2.Environment, cfg_dir: str
     ) -> None:
         super().__init__(cfg, environment)
         self.data = SaoData(cfg)
@@ -92,7 +92,7 @@ class SaoFrontend(FE_Base):
 
         return Response(
             template.render(
-                title=f"{self.core_config.server.name} | {self.nav_name}",
+                title=f"{self.artemis_config.server.name} | {self.nav_name}",
                 game_list=self.environment.globals["game_list"],
                 sesh=vars(usr_sesh),
                 profile=pf,

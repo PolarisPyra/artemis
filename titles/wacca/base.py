@@ -3,17 +3,17 @@ import logging
 import inflection
 from math import floor
 from datetime import datetime, timedelta
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.wacca.config import WaccaConfig
 from titles.wacca.const import WaccaConstants
 from titles.wacca.database import WaccaData
 
 from titles.wacca.handlers import *
-from core.const import AllnetCountryCode
+from artemis.const import AllnetCountryCode
 
 
 class WaccaBase:
-    def __init__(self, cfg: CoreConfig, game_cfg: WaccaConfig) -> None:
+    def __init__(self, cfg: ArtemisConfig, game_cfg: WaccaConfig) -> None:
         self.config = cfg  # Config file
         self.game_config = game_cfg  # Game Config file
         self.game = WaccaConstants.GAME_CODE  # Game code

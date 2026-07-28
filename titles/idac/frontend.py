@@ -7,8 +7,8 @@ import jinja2
 from os import path
 from starlette.requests import Request
 
-from core.frontend import FE_Base, UserSession
-from core.config import CoreConfig
+from artemis.frontend import FE_Base, UserSession
+from artemis.config import ArtemisConfig
 from titles.idac.database import IDACData
 from titles.idac.schema.profile import *
 from titles.idac.schema.item import *
@@ -18,7 +18,7 @@ from titles.idac.const import IDACConstants
 
 class IDACFrontend(FE_Base):
     def __init__(
-        self, cfg: CoreConfig, environment: jinja2.Environment, cfg_dir: str
+        self, cfg: ArtemisConfig, environment: jinja2.Environment, cfg_dir: str
     ) -> None:
         super().__init__(cfg, environment)
         self.data = IDACData(cfg)
@@ -133,7 +133,7 @@ class IDACFrontend(FE_Base):
 
         return Response(
             template.render(
-                title=f"{self.core_config.server.name} | {self.nav_name}",
+                title=f"{self.artemis_config.server.name} | {self.nav_name}",
                 game_list=self.environment.globals["game_list"],
                 profile=profile_data,
                 tickets=tickets,

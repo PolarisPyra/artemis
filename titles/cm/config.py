@@ -1,5 +1,5 @@
 from typing import Dict
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 
 
 class CardMakerServerConfig:
@@ -8,14 +8,14 @@ class CardMakerServerConfig:
 
     @property
     def enable(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "cardmaker", "server", "enable", default=True
         )
 
     @property
     def loglevel(self) -> int:
-        return CoreConfig.str_to_loglevel(
-            CoreConfig.get_config_field(
+        return ArtemisConfig.str_to_loglevel(
+            ArtemisConfig.get_config_field(
                 self.__config, "cardmaker", "server", "loglevel", default="info"
             )
         )
@@ -30,7 +30,7 @@ class CardMakerVersionConfig:
         in the form of:
         1: {"ongeki": 1.30.01, "chuni": 2.00.00, "maimai": 1.20.00}
         """
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config,
             "cardmaker",
             "version",

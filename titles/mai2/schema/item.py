@@ -8,7 +8,7 @@ from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import func, select
 from sqlalchemy.types import BIGINT, INTEGER, JSON, TIMESTAMP, Boolean, Integer, String
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 character: Table = Table(
     "mai2_item_character",

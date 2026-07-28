@@ -12,7 +12,7 @@ from xsdata.formats.dataclass.parsers import XmlParser
 from xsdata.formats.dataclass.parsers.config import ParserConfig
 from xsdata.models.mixins import array_element, element
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from read import BaseReader
 
 from .config import OngekiConfig
@@ -329,7 +329,7 @@ class NamePlateData:
 class OngekiReader(BaseReader):
     def __init__(
         self,
-        config: CoreConfig,
+        config: ArtemisConfig,
         version: int,
         bin_dir: Optional[str],
         opt_dir: Optional[str],

@@ -4,7 +4,7 @@ import json
 from os import walk, path
 
 from read import BaseReader
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.wacca.database import WaccaData
 from titles.wacca.const import WaccaConstants
 
@@ -12,7 +12,7 @@ from titles.wacca.const import WaccaConstants
 class WaccaReader(BaseReader):
     def __init__(
         self,
-        config: CoreConfig,
+        config: ArtemisConfig,
         version: int,
         bin_dir: Optional[str],
         opt_dir: Optional[str],

@@ -13,7 +13,7 @@ This document is a work in progress. If you have any questions or notice any err
 ### Step 1 (Setup)
 1) Fork the gitea repo, clone your fork, and checkout the develop branch.
 2) Make a new folder in the `titles` folder, name it some recogniseable shorthand for your game (Chunithm becomes chuni, maimai dx is mai2, etc)
-3) In this new folder, create a file named `__init__.py`. This is the first thing that will load when your title module is loaded by the core system, and it acts as sort of a directory for where everything lives in your module. This file will contain the following required items:
+3) In this new folder, create a file named `__init__.py`. This is the first thing that will load when your title module is loaded by Artemis, and it acts as sort of a directory for where everything lives in your module. This file will contain the following required items:
     + `index`: must point to a subclass of `BaseServlet` that will handle setup and dispatching of your game.
     + `game_codes`: must be a list of 4 letter SEGA game codes as strings.
 
@@ -29,11 +29,11 @@ This document is a work in progress. If you have any questions or notice any err
 
 2) Inside `index.py`, add the following code, replacing {Game name here} with the name of your game, without spaces or special characters. Look at other titles for examples.
 ```py
-from core.title import BaseServlet
-from core import CoreConfig
+from artemis.title import BaseServlet
+from artemis import ArtemisConfig
 
 class {Game name here}Servlet(BaseServlet):
-    def __init__(self, core_cfg: CoreConfig, cfg_dir: str) -> None:
+    def __init__(self, artemis_cfg: ArtemisConfig, cfg_dir: str) -> None:
         pass
 ```
 3) The `__init__` function should acomplish the following:
@@ -83,7 +83,7 @@ game_codes = [{Game name here}Constants.GAME_CODE]
 
 2) Inside that file, add the following:
 ```py
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 
 class {game name}ServerConfig:
     def __init__(self, parent_config: "{game name}Config") -> None:
@@ -91,14 +91,14 @@ class {game name}ServerConfig:
 
     @property
     def enable(self) -> bool:
-        return CoreConfig.get_config_field(
+        return ArtemisConfig.get_config_field(
             self.__config, "{game name}", "server", "enable", default=True
         )
 
     @property
     def loglevel(self) -> int:
-        return CoreConfig.str_to_loglevel(
-            CoreConfig.get_config_field(
+        return ArtemisConfig.str_to_loglevel(
+            ArtemisConfig.get_config_field(
                 self.__config, "{game name}", "server", "loglevel", default="info"
             )
         )
@@ -152,9 +152,9 @@ VERSION_{game name}_PLUS = 1
 3) Inside `base.py` (or whatever your version is named) add the following:
 ```py
 class {game name}Base:
-    def __init__(self, cfg: CoreConfig, game_cfg: {game name}Config) -> None:
+    def __init__(self, cfg: ArtemisConfig, game_cfg: {game name}Config) -> None:
         self.game_config = game_cfg
-        self.core_config = cfg
+        self.artemis_config = cfg
         self.version = {game name}Constants.VERSION_{game name}
         self.data = {game name}Data(cfg)
         # Any other initialization stuff
@@ -165,7 +165,7 @@ class {game name}Base:
 5) If your version is not the base version, make sure it inherits from the base version:
 ```py
 class {game name}Plus({game name}Base):
-    def __init__(self, cfg: CoreConfig, game_cfg: {game name}Config) -> None:
+    def __init__(self, cfg: ArtemisConfig, game_cfg: {game name}Config) -> None:
         super().__init__(cfg, game_cfg)
         self.version = {game name}Constants.VERSION_{game name}_PLUS
 ```
@@ -178,5 +178,5 @@ class {game name}Plus({game name}Base):
 
 9) Submit a PR.
 
-## Adding/improving core services
-If you intend to submit improvements or additions to core services (allnet, mucha, billing, aimedb, database, etc) please get in touch with a maintainer.
+## Adding/improving Artemis services
+If you intend to submit improvements or additions to Artemis services (allnet, mucha, billing, aimedb, database, etc) please get in touch with a maintainer.

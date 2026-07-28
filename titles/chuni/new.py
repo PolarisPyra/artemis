@@ -5,8 +5,8 @@ from typing import Dict
 
 import pytz
 
-from core.config import CoreConfig
-from core.utils import Utils
+from artemis.config import ArtemisConfig
+from artemis.utils import Utils
 from titles.chuni.base import ChuniBase
 from titles.chuni.config import ChuniConfig
 from titles.chuni.const import ChuniConstants
@@ -16,10 +16,10 @@ from titles.chuni.database import ChuniData
 class ChuniNew(ChuniBase):
     ITEM_TYPE = {"character": 20, "story": 21, "card": 22}
 
-    def __init__(self, core_cfg: CoreConfig, game_cfg: ChuniConfig) -> None:
-        self.core_cfg = core_cfg
+    def __init__(self, artemis_cfg: ArtemisConfig, game_cfg: ChuniConfig) -> None:
+        self.artemis_cfg = artemis_cfg
         self.game_cfg = game_cfg
-        self.data = ChuniData(core_cfg)
+        self.data = ChuniData(artemis_cfg)
         self.date_time_format = "%Y-%m-%d %H:%M:%S"
         self.logger = logging.getLogger("chuni")
         self.game = ChuniConstants.GAME_CODE
@@ -55,8 +55,8 @@ class ChuniNew(ChuniBase):
 
         # if reboot start/end time is not defined use the default behavior of being a few hours ago
         if (
-            self.core_cfg.title.reboot_start_time == ""
-            or self.core_cfg.title.reboot_end_time == ""
+            self.artemis_cfg.title.reboot_start_time == ""
+            or self.artemis_cfg.title.reboot_end_time == ""
         ):
             reboot_start = (
                 (current_jst - timedelta(hours=3))
@@ -71,10 +71,10 @@ class ChuniNew(ChuniBase):
         else:
             # parse config start/end times into datetime
             reboot_start_time = datetime.strptime(
-                self.core_cfg.title.reboot_start_time, "%H:%M"
+                self.artemis_cfg.title.reboot_start_time, "%H:%M"
             )
             reboot_end_time = datetime.strptime(
-                self.core_cfg.title.reboot_end_time, "%H:%M"
+                self.artemis_cfg.title.reboot_end_time, "%H:%M"
             )
 
             reboot_start_time = reboot_start_time.replace(
@@ -96,7 +96,7 @@ class ChuniNew(ChuniBase):
             reboot_start = reboot_start_time.strftime(self.date_time_format)
             reboot_end = reboot_end_time.strftime(self.date_time_format)
 
-        t_port = Utils.get_title_port(self.core_cfg)
+        t_port = Utils.get_title_port(self.artemis_cfg)
 
         client_setting = await self.data.client.get_setting(
             data["placeId"], data["clientId"]
@@ -125,10 +125,10 @@ class ChuniNew(ChuniBase):
                 "matchErrorLimit": self.game_cfg.matching.match_error_limit,
                 "romVersion": rom_version,
                 "dataVersion": data_version,
-                # "matchingUri": f"http://{self.core_cfg.server.hostname}:{t_port}/SDHD/{self._interal_ver_to_intver()}/ChuniServlet/",
-                # "matchingUriX": f"http://{self.core_cfg.server.hostname}:{t_port}/SDHD/{self._interal_ver_to_intver()}/ChuniServlet/",
-                # "udpHolePunchUri": f"http://{self.core_cfg.server.hostname}:{self.core_cfg.server.port}/SDHD/{self._interal_ver_to_intver()}/ChuniServlet/",
-                # "reflectorUri": f"http://{self.core_cfg.server.hostname}:{self.core_cfg.server.port}/SDHD/{self._interal_ver_to_intver()}/ChuniServlet/",
+                # "matchingUri": f"http://{self.artemis_cfg.server.hostname}:{t_port}/SDHD/{self._interal_ver_to_intver()}/ChuniServlet/",
+                # "matchingUriX": f"http://{self.artemis_cfg.server.hostname}:{t_port}/SDHD/{self._interal_ver_to_intver()}/ChuniServlet/",
+                # "udpHolePunchUri": f"http://{self.artemis_cfg.server.hostname}:{self.artemis_cfg.server.port}/SDHD/{self._interal_ver_to_intver()}/ChuniServlet/",
+                # "reflectorUri": f"http://{self.artemis_cfg.server.hostname}:{self.artemis_cfg.server.port}/SDHD/{self._interal_ver_to_intver()}/ChuniServlet/",
                 "matchingUri": "http://yukiotoko.chara.lol:9004/",
                 "matchingUriX": "http://yukiotoko.chara.lol:9004/",
                 "udpHolePunchUri": "http://yukiotoko.chara.lol:50201/",
@@ -649,7 +649,7 @@ class ChuniNew(ChuniBase):
             # no idea, maybe to differentiate between CPUs and real players?
             "matchingMemberRoleList": role_list,
             # TCP/UDP connection?
-            "reflectorUri": f"{self.core_cfg.server.hostname}",
+            "reflectorUri": f"{self.artemis_cfg.server.hostname}",
         }
 
     async def handle_remove_matching_member_api_request(self, data: Dict) -> Dict:

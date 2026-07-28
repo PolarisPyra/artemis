@@ -14,7 +14,7 @@ from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import func, select
 from sqlalchemy.types import JSON, TIMESTAMP, Boolean, Integer, String
 
-from core.data.schema import BaseData, metadata
+from artemis.data.schema import BaseData, metadata
 
 character: Table = Table(
     "chuni_item_character",

@@ -14,7 +14,7 @@ from xsdata.formats.dataclass.parsers import XmlParser
 from xsdata.formats.dataclass.parsers.config import ParserConfig
 from xsdata.models.mixins import array_element, element
 
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from read import BaseReader
 from titles.chuni.config import ChuniConfig
 from titles.chuni.const import ChuniConstants
@@ -466,7 +466,7 @@ class StageData:
 class ChuniReader(BaseReader):
     def __init__(
         self,
-        config: CoreConfig,
+        config: ArtemisConfig,
         version: int,
         bin_dir: Optional[str],
         opt_dir: Optional[str],

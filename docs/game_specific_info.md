@@ -6,7 +6,7 @@ the corresponding importer and database upgrades.
 **Important: The described database upgrades are only required if you are using an old database schema, f.e. still
 using the megaime database. Clean installations always create the latest database structure!**
 
-To upgrade the core database and the database for every game, execute:
+To upgrade the Artemis database and the database for every game, execute:
 
 ```shell
 python dbutils.py upgrade
@@ -14,7 +14,7 @@ python dbutils.py upgrade
 
 If you are using the old master branch that was not setup with alembic, make sure to do the following steps in order:
 - Pull down latest master/develop
-- Update core.yaml
+- Update artemis.yaml
 - Back up your existing database
 ```shell
 python dbutils.py migrate
@@ -795,4 +795,3 @@ python dbutils.py upgrade
 - Kinako: For helping with the timeRelease unlocking of courses and special mode
 
 A huge thanks to all people who helped shaping this project to what it is now and don't want to be mentioned here.
-

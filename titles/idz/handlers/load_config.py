@@ -1,7 +1,7 @@
 import struct
 
 from .base import IDZHandlerBase
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from ..config import IDZConfig
 from ..const import IDZConstants
 
@@ -11,8 +11,8 @@ class IDZHandlerLoadConfigA(IDZHandlerBase):
     rsp_codes = [0x0005] * IDZConstants.NUM_VERS
     name = "load_config_a"
 
-    def __init__(self, core_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
-        super().__init__(core_cfg, game_cfg, version)
+    def __init__(self, artemis_cfg: ArtemisConfig, game_cfg: IDZConfig, version: int) -> None:
+        super().__init__(artemis_cfg, game_cfg, version)
         self.size = 0x01A0
 
         if self.version > 1:
@@ -30,8 +30,8 @@ class IDZHandlerLoadConfigB(IDZHandlerBase):
     rsp_codes = [0x00AC, 0x00AC, 0x00A1, 0x00A1]
     name = "load_config_b"
 
-    def __init__(self, core_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
-        super().__init__(core_cfg, game_cfg, version)
+    def __init__(self, artemis_cfg: ArtemisConfig, game_cfg: IDZConfig, version: int) -> None:
+        super().__init__(artemis_cfg, game_cfg, version)
         self.size = 0x0230
 
         if self.version > 1:

@@ -3,7 +3,7 @@ from os import walk, path
 import urllib
 
 from read import BaseReader
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.diva.database import DivaData
 from titles.diva.const import DivaConstants
 
@@ -11,7 +11,7 @@ from titles.diva.const import DivaConstants
 class DivaReader(BaseReader):
     def __init__(
         self,
-        config: CoreConfig,
+        config: ArtemisConfig,
         version: int,
         bin_dir: Optional[str],
         opt_dir: Optional[str],

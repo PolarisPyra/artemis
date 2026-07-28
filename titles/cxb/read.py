@@ -3,7 +3,7 @@ from os import path
 import csv
 
 from read import BaseReader
-from core.config import CoreConfig
+from artemis.config import ArtemisConfig
 from titles.cxb.database import CxbData
 from titles.cxb.const import CxbConstants
 
@@ -11,7 +11,7 @@ from titles.cxb.const import CxbConstants
 class CxbReader(BaseReader):
     def __init__(
         self,
-        config: CoreConfig,
+        config: ArtemisConfig,
         version: int,
         bin_arg: Optional[str],
         opt_arg: Optional[str],
