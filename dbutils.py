@@ -6,8 +6,8 @@ from os import W_OK, access, environ, mkdir, path
 
 import yaml
 
-from artemis.config import ArtemisConfig
-from artemis.data import Data
+from server.sega.config import ArtemisConfig
+from server.sega.data import Data
 
 
 async def main():

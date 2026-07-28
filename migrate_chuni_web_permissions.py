@@ -7,12 +7,12 @@ from typing import Optional
 import yaml
 from sqlalchemy import select
 
-from artemis.config import ArtemisConfig
-from artemis.data.schema import metadata
-from artemis.data.schema.user import aime_user
-from titles.chuni.database import ChuniData
-from titles.chuni.schema.profile import profile
-from titles.chuni.schema.cozynet import web_permissions
+from server.sega.config import ArtemisConfig
+from server.sega.data.schema import metadata
+from server.sega.data.schema.user import aime_user
+from server.sega.titles.chuni.database import ChuniData
+from server.sega.titles.chuni.schema.profile import profile
+from server.sega.titles.chuni.schema.cozynet import web_permissions
 
 
 async def main():

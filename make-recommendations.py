@@ -9,10 +9,10 @@ import scipy.sparse as sp
 from rich.progress import track
 from sqlalchemy import select
 
-from artemis.config import ArtemisConfig
-from titles.chuni.database import ChuniData
-from titles.chuni.schema.cozynet import recommendations
-from titles.chuni.schema.score import best_score
+from server.sega.config import ArtemisConfig
+from server.sega.titles.chuni.database import ChuniData
+from server.sega.titles.chuni.schema.cozynet import recommendations
+from server.sega.titles.chuni.schema.score import best_score
 
 
 async def main():

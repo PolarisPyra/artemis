@@ -7,14 +7,14 @@ import logging
 import asyncio
 from logging.handlers import TimedRotatingFileHandler
 
-from artemis.config import ArtemisConfig
-from artemis.aimedb import AimedbServlette
+from server.sega.config import ArtemisConfig
+from server.sega.aimedb import AimedbServlette
 
 
 async def launch_main(cfg: ArtemisConfig, ssl: bool) -> None:
     if ssl:
         server_cfg = uvicorn.Config(
-            "artemis.app:app",
+            "server.sega.app:app",
             host=cfg.server.listen_address,
             port=cfg.server.port if args.port == 0 else args.port,
             reload=cfg.server.is_develop,
@@ -25,7 +25,7 @@ async def launch_main(cfg: ArtemisConfig, ssl: bool) -> None:
         )
     else:
         server_cfg = uvicorn.Config(
-            "artemis.app:app",
+            "server.sega.app:app",
             host=cfg.server.listen_address,
             port=cfg.server.port if args.port == 0 else args.port,
             reload=cfg.server.is_develop,
@@ -37,7 +37,7 @@ async def launch_main(cfg: ArtemisConfig, ssl: bool) -> None:
 
 async def launch_billing(cfg: ArtemisConfig) -> None:
     server_cfg = uvicorn.Config(
-        "artemis.allnet:app_billing",
+        "server.sega.allnet:app_billing",
         host=cfg.server.listen_address,
         port=cfg.billing.port,
         reload=cfg.server.is_develop,
@@ -53,7 +53,7 @@ async def launch_billing(cfg: ArtemisConfig) -> None:
 
 async def launch_frontend(cfg: ArtemisConfig) -> None:
     server_cfg = uvicorn.Config(
-        "artemis.frontend:app",
+        "server.sega.frontend:app",
         host=cfg.server.listen_address,
         port=cfg.frontend.port,
         reload=cfg.server.is_develop,
@@ -65,7 +65,7 @@ async def launch_frontend(cfg: ArtemisConfig) -> None:
 
 async def launch_allnet(cfg: ArtemisConfig) -> None:
     server_cfg = uvicorn.Config(
-        "artemis.allnet:app_allnet",
+        "server.sega.allnet:app_allnet",
         host=cfg.server.listen_address,
         port=cfg.allnet.port,
         reload=cfg.server.is_develop,
@@ -76,7 +76,7 @@ async def launch_allnet(cfg: ArtemisConfig) -> None:
 
 
 async def launch_konami(cfg: ArtemisConfig) -> None:
-    from artemis.konami.app import build_konami_app
+    from server.konami.app import build_konami_app
 
     logger = logging.getLogger("konami")
     if not getattr(logger, "handler_set", False):

@@ -11,7 +11,7 @@ from typing import List, Optional
 import coloredlogs
 import yaml
 
-from artemis import ArtemisConfig, Utils
+from server.sega import ArtemisConfig, Utils
 
 
 class BaseReader:
