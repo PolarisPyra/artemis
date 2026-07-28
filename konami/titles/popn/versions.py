@@ -288,10 +288,11 @@ class PopnVersionHandler:
                 "goods": self._goods("v23", 420),
             }
         else:
+            phases = self._modern_phases()
             response.content = {
                 "phase": [
                     {"event_id": item("s16", i), "phase": item("s16", p)}
-                    for i, p in PHASES[self.spec.version]
+                    for i, p in phases
                 ],
                 "choco": [
                     {"choco_id": item("s16", i), "param": item("s32", -1)}
@@ -302,6 +303,16 @@ class PopnVersionHandler:
                     {"v24": 97, "v25": 133, "v26": 133, "v27": 81}[self.spec.version],
                 ),
             }
+            if self.spec.version == "v24":
+                response.content["area"] = [
+                    {
+                        "area_id": item("s16", i),
+                        "end_date": item("u64", 0),
+                        "medal_id": item("s16", i),
+                        "is_limit": item("bool", False),
+                    }
+                    for i in range(16)
+                ]
 
     async def new(self, info: EamuseInfo, data: dict, response: EamuseResponse) -> None:
         await self._profile(info, data, response, update_name=True)
@@ -397,22 +408,56 @@ class PopnVersionHandler:
     async def start(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ) -> None:
-        response.content = {"result": item("s8", 0)}
+        await self.info(info, data, response)
+        response.content["play_id"] = item("s32", 1)
 
     async def buy(self, info: EamuseInfo, data: dict, response: EamuseResponse) -> None:
-        response.content = {"result": item("s8", 0)}
+        refid = field(data, "ref_id", "")
+        if not refid:
+            response.status = 1
+            return
+        item_type = scalar(field(data, "type", -1), -1)
+        item_id = scalar(field(data, "id", -1), -1)
+        if item_type < 0 or item_id < 0:
+            response.status = 1
+            return
+        lumina = scalar(field(data, "lumina", 0), 0)
+        price = scalar(field(data, "price", 0), 0)
+        if lumina >= price:
+            params = await self.repo.params(refid, self.spec.version)
+            params.setdefault("params", {})["player_point"] = lumina - price
+            await self.repo.save_params(refid, self.spec.version, params)
+            achievements = await self.repo.achievements(
+                refid,
+                self.spec.version,
+                {
+                    "collection": "achievements",
+                    "version": self.spec.version,
+                    "items": {},
+                },
+            )
+            achievements.setdefault("items", {})[f"{item_type}:{item_id}"] = scalar(
+                field(data, "param", 0), 0
+            )
+            await self.repo.save_achievements(refid, self.spec.version, achievements)
 
     async def friend(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ) -> None:
         refid = field(data, "ref_id", "")
         rivals = await self.repo.rivals(refid)
+        rival_index = scalar(field(data, "no", -1), -1)
+        rival_ids = rivals.get("rivals", [])
+        if rival_index < 0 or rival_index >= len(rival_ids):
+            response.content = {"result": item("s8", 2)}
+            return
         friends = []
-        for rival in rivals.get("rivals", [])[:2]:
+        for rival in (rival_ids[rival_index],):
             profile = await self.repo.profile(rival)
             friends.append(
                 {
-                    "open": item("s8", 1),
+                    "no": item("s16", rival_index),
+                    "is_open": item("s8", 1),
                     "g_pm_id": item("str", profile.get("friendId", "000000000000")),
                     "name": item("str", profile.get("name", "ゲスト")),
                     "chara": item("s16", -1),
@@ -425,6 +470,15 @@ class PopnVersionHandler:
                 }
             )
         response.content = {"friend": friends}
+
+    def _modern_phases(self) -> list[tuple[int, int]]:
+        if self.spec.version == "v24":
+            return list(PHASES["v24"])
+        if self.spec.version == "v25":
+            return list(dict.fromkeys(PHASES["v24"] + PHASES["v25"]))
+        if self.spec.version == "v26":
+            return list(dict.fromkeys(PHASES["v24"] + PHASES["v25"] + PHASES["v26"]))
+        return list(PHASES["v27"])
 
     async def _profile(
         self, info: EamuseInfo, data: dict, response: EamuseResponse, update_name: bool
@@ -512,8 +566,16 @@ class PopnVersionHandler:
                     "is_conv": item("s8", 0),
                     "item_type": item("s16", 0),
                     "item_id": item("s16", 0),
-                    "license_data": array("s16", [-1] * 10),
+                    "license_data": array(
+                        "s16", [-1] * (20 if self.spec.version != "v22" else 10)
+                    ),
                     "active_fr_num": item("u8", len(rivals.get("rivals", []))),
+                    "total_play_cnt": item("s16", 100),
+                    "today_play_cnt": item("s16", 50),
+                    "consecutive_days": item("s16", 365),
+                    "total_days": item("s16", 366),
+                    "interval_day": item("s16", 1),
+                    "latest_music": array("s16", [-1, -1, -1, -1, -1]),
                     "my_best": array("s16", best[:10]),
                 },
                 "netvs": {
@@ -536,6 +598,24 @@ class PopnVersionHandler:
             response.content.update(
                 {"area": [], "course_data": [], "fes": [], "mission": [], "stamp": []}
             )
+            response.content["custom_cate"] = {
+                "valid": item("s8", 0),
+                "lv_min": item("s8", -1),
+                "lv_max": item("s8", -1),
+                "medal_min": item("s8", -1),
+                "medal_max": item("s8", -1),
+                "friend_no": item("s8", -1),
+                "score_flg": item("s8", -1),
+            }
+            if self.spec.version >= "v24":
+                response.content["eaappli"] = {"relation": item("s8", -1)}
+                response.content["navi_data"] = {
+                    "raisePoint": array("s32", [-1, -1, -1, -1, -1]),
+                    "navi_param": {
+                        "navi_id": item("u16", 0),
+                        "friendship": item("s32", 0),
+                    },
+                }
         params = await self.repo.params(refid, self.spec.version)
         self._apply_defaults(
             response.content, self.spec.version, params.get("params", {})
@@ -903,22 +983,35 @@ class PopnVersionHandler:
             }
         event = child(data, "event_p27", {})
         for node in elements(event, "team"):
-            achievements.setdefault("team", []).append(
-                {
-                    "team_id": scalar(field(node, "team_id")),
-                    "ex_no": scalar(field(node, "ex_no")),
-                    "point": scalar(field(node, "point")),
-                    "is_cleared": bool(scalar(field(node, "is_cleared"))),
-                }
+            value = {
+                "team_id": scalar(field(node, "team_id")),
+                "ex_no": scalar(field(node, "ex_no")),
+                "point": scalar(field(node, "point")),
+                "is_cleared": bool(scalar(field(node, "is_cleared"))),
+            }
+            teams = achievements.setdefault("team", [])
+            existing = next(
+                (x for x in teams if x.get("team_id") == value["team_id"]), None
             )
+            if existing is None:
+                teams.append(value)
+            else:
+                existing.update(value)
         for node in elements(event, "battery"):
-            achievements.setdefault("battery", []).append(
-                {
-                    "battery_id": scalar(field(node, "battery_id")),
-                    "energy": scalar(field(node, "energy")),
-                    "is_cleared": bool(scalar(field(node, "is_cleared"))),
-                }
+            value = {
+                "battery_id": scalar(field(node, "battery_id")),
+                "energy": scalar(field(node, "energy")),
+                "is_cleared": bool(scalar(field(node, "is_cleared"))),
+            }
+            batteries = achievements.setdefault("battery", [])
+            existing = next(
+                (x for x in batteries if x.get("battery_id") == value["battery_id"]),
+                None,
             )
+            if existing is None:
+                batteries.append(value)
+            else:
+                existing.update(value)
         await self.repo.save_achievements(refid, self.spec.version, achievements)
 
     @staticmethod
