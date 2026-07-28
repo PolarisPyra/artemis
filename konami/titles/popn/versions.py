@@ -1327,6 +1327,18 @@ class PopnVersionHandler:
         """
         params = await self.repo.params(refid, self.spec.version)
         values = params.setdefault("params", {})
+        field_source = (
+            "v24"
+            if self.spec.version in ("v24", "v25", "v26", "v27")
+            else self.spec.version
+        )
+        allowed = {
+            name.split("__", 1)[0] for name, *_ in DEFAULT_FIELDS.get(field_source, [])
+        }
+        if self.spec.version in ("v24", "v25"):
+            allowed.difference_update(EXTRA_V26 | EXTRA_V27)
+        elif self.spec.version == "v26":
+            allowed.difference_update(EXTRA_V27)
 
         def collect(node: Any, path: str = "") -> None:
             if not isinstance(node, dict):
@@ -1338,6 +1350,8 @@ class PopnVersionHandler:
                     and all(isinstance(x, (str, int, float, bool)) for x in value)
                 ):
                     key = path.rsplit(".", 1)[-1].split("__", 1)[0]
+                    if key not in allowed:
+                        return
                     values[key] = (
                         value[0]
                         if isinstance(value, list) and len(value) == 1
