@@ -26,7 +26,7 @@ class ArtemisServices:
             router.add(game_code, "services", "get", self.services_get)
             router.add(game_code, "facility", "get", self.facility_get)
             router.add(game_code, "message", "get", self.message_get)
-            router.add(game_code, "package", "list", self.success)
+            router.add(game_code, "package", "list", self.package_list)
             router.add(game_code, "pcbevent", "put", self.success)
             router.add(game_code, "tax", "get_phase", self.tax_get_phase)
             router.add(game_code, "dlstatus", "progress", self.success)
@@ -103,7 +103,6 @@ class ArtemisServices:
                     "netlog",
                     "sidmgr",
                     "globby",
-                    "game",
                 )
             ],
         }
@@ -121,6 +120,7 @@ class ArtemisServices:
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ):
         response.content = {
+            "@attr": {"expire": "86400"},
             "location": {
                 "id": _item("str", "ea"),
                 "country": _item("str", "JP"),
@@ -172,6 +172,12 @@ class ArtemisServices:
                 {"@attr": {"start": "0", "end": "86400", "name": "sys.mainte"}},
                 {"@attr": {"start": "0", "end": "86400", "name": "sys.eacoin.mainte"}},
             ]
+
+    async def package_list(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ):
+        """Report that no package updates are available."""
+        response.content = {"@attr": {"expire": "600"}}
 
     async def tax_get_phase(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
