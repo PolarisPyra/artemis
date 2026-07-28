@@ -60,9 +60,10 @@ class KonamiServlet:
     async def handle(self, request: Request) -> Response:
         raw = await request.body()
         body = raw
-        encrypted = bool(request.headers.get("x-eamuse-info"))
+        eamuse_info = request.headers.get("x-eamuse-info")
+        encrypted = bool(eamuse_info)
         if encrypted:
-            body = KonmaiEncrypt(request.headers["x-eamuse-info"]).crypt(body)
+            body = KonmaiEncrypt(eamuse_info).crypt(body)
 
         compressed = request.headers.get("x-compress", "none") == "lz77"
         if compressed:
@@ -165,9 +166,12 @@ class KonamiServlet:
             output = deflate(output)
             response_headers["X-Compress"] = "lz77"
         if result.encrypt if result.encrypt is not None else encrypted:
-            key = KonmaiEncrypt()
+            # EA3 expects the response to use the same negotiated key that
+            # arrived in X-Eamuse-Info.  Generating a fresh key here makes a
+            # correct response impossible for the client to decrypt.
+            key = KonmaiEncrypt(eamuse_info)
             output = key.crypt(output)
-            response_headers["X-Eamuse-Info"] = key.public_key
+            response_headers["X-Eamuse-Info"] = eamuse_info or key.public_key
         return Response(
             output, media_type="application/octet-stream", headers=response_headers
         )
