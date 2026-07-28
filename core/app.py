@@ -13,6 +13,9 @@ from core import CoreConfig, TitleServlet, MuchaServlet
 from core.allnet import AllnetServlet, BillingServlet
 from core.chimedb import ChimeServlet
 from core.frontend import FrontendServlet
+from core.konami import KonamiServlet
+from core.konami.core_plugin import CoreKonamiPlugin
+from konami.titles.popn import PopnPlugin
 
 
 async def dummy_rt(request: Request):
@@ -56,6 +59,10 @@ logger.info(
 
 title = TitleServlet(cfg, cfg_dir)  # This has to be loaded first to load plugins
 mucha = MuchaServlet(cfg, cfg_dir)
+konami = None
+if cfg.konami.enable and not cfg.konami.standalone:
+    popn = PopnPlugin(cfg)
+    konami = KonamiServlet((CoreKonamiPlugin(cfg, popn.game_codes), popn))
 
 route_lst: List[Route] = [
     # Mucha
@@ -104,5 +111,7 @@ if cfg.chimedb.enable:
     ]
 for code, game in title.title_registry.items():
     route_lst += game.get_routes()
+if konami is not None:
+    route_lst += konami.get_routes()
 
 app = Starlette(cfg.server.is_develop, route_lst)

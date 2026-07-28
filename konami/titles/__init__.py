@@ -1,0 +1,1 @@
+"""Konami game title packages."""

@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import sessionmaker
 
 from core.config import CoreConfig
-from core.data.schema import ArcadeData, BaseData, CardData, UserData, metadata
+from core.data.schema import ArcadeData, BaseData, CardData, KonamiData, UserData, metadata
 from core.utils import MISSING, Utils
 
 
@@ -30,6 +30,7 @@ class Data:
     arcade: ClassVar[ArcadeData] = MISSING
     card: ClassVar[CardData] = MISSING
     base: ClassVar[BaseData] = MISSING
+    konami: ClassVar[KonamiData] = MISSING
 
     def __init__(self, cfg: CoreConfig) -> None:
         self.config = cfg
@@ -68,6 +69,9 @@ class Data:
 
         if Data.base is MISSING:
             Data.base = BaseData(self.config, self.session)
+
+        if Data.konami is MISSING:
+            Data.konami = KonamiData(self.config, self.session)
 
         self.logger = logging.getLogger("database")
 

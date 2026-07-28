@@ -74,6 +74,20 @@ async def launch_allnet(cfg: CoreConfig) -> None:
     await server.serve()
 
 
+async def launch_konami(cfg: CoreConfig) -> None:
+    from core.konami.app import build_konami_app
+
+    server_cfg = uvicorn.Config(
+        build_konami_app(cfg),
+        host=cfg.server.listen_address,
+        port=cfg.konami.port,
+        reload=cfg.server.is_develop,
+        log_level="info" if cfg.server.is_develop else "critical",
+    )
+    server = uvicorn.Server(server_cfg)
+    await server.serve()
+
+
 async def launcher(cfg: CoreConfig, ssl: bool) -> None:
     task_list = [asyncio.create_task(launch_main(cfg, ssl))]
 
@@ -83,6 +97,8 @@ async def launcher(cfg: CoreConfig, ssl: bool) -> None:
         task_list.append(asyncio.create_task(launch_frontend(cfg)))
     if cfg.allnet.standalone:
         task_list.append(asyncio.create_task(launch_allnet(cfg)))
+    if cfg.konami.enable and cfg.konami.standalone:
+        task_list.append(asyncio.create_task(launch_konami(cfg)))
     if cfg.aimedb.enable:
         AimedbServlette(cfg).start()
 

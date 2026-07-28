@@ -477,6 +477,35 @@ class MuchaConfig:
                 self.__config, "core", "mucha", "loglevel", default="info"
             )
         )
+
+
+class KonamiConfig:
+    """Configuration for Artemis' native e-amusement service."""
+
+    def __init__(self, parent_config: "CoreConfig") -> None:
+        self.__config = parent_config
+
+    @property
+    def enable(self) -> bool:
+        return CoreConfig.get_config_field(self.__config, "core", "konami", "enable", default=False)
+
+    @property
+    def standalone(self) -> bool:
+        return CoreConfig.get_config_field(self.__config, "core", "konami", "standalone", default=False)
+
+    @property
+    def port(self) -> int:
+        return CoreConfig.get_config_field(self.__config, "core", "konami", "port", default=5730)
+
+    @property
+    def hostname(self) -> str:
+        return CoreConfig.get_config_field(self.__config, "core", "konami", "hostname", default="localhost")
+
+    @property
+    def loglevel(self) -> int:
+        return CoreConfig.str_to_loglevel(
+            CoreConfig.get_config_field(self.__config, "core", "konami", "loglevel", default="info")
+        )
 class ChimedbConfig:
     def __init__(self, parent_config: "CoreConfig") -> None:
         self.__config = parent_config
@@ -511,6 +540,7 @@ class CoreConfig(dict):
         self.aimedb = AimedbConfig(self)
         self.chimedb = ChimedbConfig(self)
         self.mucha = MuchaConfig(self)
+        self.konami = KonamiConfig(self)
 
     @classmethod
     def str_to_loglevel(cls, level_str: str):

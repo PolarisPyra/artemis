@@ -70,3 +70,10 @@ chimedb:
 
 mucha:
   loglevel: "info"
+
+konami:
+  enable: False
+  standalone: False
+  port: 5730
+  hostname: "localhost"
+  loglevel: "info"
