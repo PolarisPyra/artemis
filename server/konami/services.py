@@ -30,6 +30,15 @@ class ArtemisServices:
             router.add(game_code, "pcbevent", "put", self.success)
             router.add(game_code, "tax", "get_phase", self.tax_get_phase)
             router.add(game_code, "dlstatus", "progress", self.success)
+            # EA3 boot/update calls used by newer Pop'n binaries.  These are
+            # deliberately explicit instead of relying on the title fallback:
+            # the client checks the response status before continuing boot.
+            router.add(game_code, "pcb", "boot", self.pcb_success)
+            router.add(game_code, "pcb", "dlstatus", self.pcb_success)
+            router.add(game_code, "pcb", "error", self.pcb_success)
+            router.add(game_code, "pcb", "write", self.pcb_success)
+            router.add(game_code, "info", "common", self.info_common)
+            router.add(game_code, "loc", "test_log", self.success)
             router.add(game_code, "pcbtracker", "alive", self.pcbtracker_alive)
             router.add(game_code, "eacoin", "checkout", self.success)
             router.add(game_code, "eacoin", "checkin", self.eacoin_checkin)
@@ -43,8 +52,13 @@ class ArtemisServices:
             )
             router.add(game_code, "posevent", "outcome", self.success)
             router.add(game_code, "lobby", "get", self.success)
+            router.add(game_code, "lobby", "getlist", self.success)
+            router.add(game_code, "lobby", "entry", self.success)
+            router.add(game_code, "lobby", "update", self.success)
+            router.add(game_code, "lobby", "delete", self.success)
             router.add(game_code, "cardmng", "inquire", self.card_inquire)
             router.add(game_code, "cardmng", "getrefid", self.card_getrefid)
+            router.add(game_code, "cardmng", "getdatalist", self.card_getdatalist)
             router.add(game_code, "cardmng", "authpass", self.card_authpass)
             router.add(game_code, "cardmng", "bindmodel", self.card_bindmodel)
             router.fallback(game_code, self.success)
@@ -209,6 +223,25 @@ class ArtemisServices:
     async def success(self, info: EamuseInfo, data: dict, response: EamuseResponse):
         response.status = 0
 
+    async def pcb_success(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ):
+        """Accept EA3 PCB lifecycle calls with a successful XRPC status."""
+        response.status = 0
+
+    async def info_common(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ):
+        """Provide the common network-info call used during Pop'n boot."""
+        response.content = {
+            "@attr": {
+                "location_id": "ea",
+                "location_name": "ARTEMIS",
+                "country": "JP",
+                "region": "JP-13",
+            }
+        }
+
     async def card_inquire(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ):
@@ -278,6 +311,12 @@ class ArtemisServices:
     ):
         refid = data.get("@attr", {}).get("refid", "")
         response.content = {"@attr": {"dataid": refid}}
+
+    async def card_getdatalist(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ):
+        """Return an empty card data list for the initial card flow."""
+        response.content = {"card": []}
 
     @staticmethod
     def _refid(cardid: str) -> str:

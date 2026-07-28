@@ -123,6 +123,37 @@ class PopnRoutes:
                 router.add(
                     code, f"info{prefix}", "common", self._modern(version, "info")
                 )
+
+            # M39/Hi Cheers still exposes the original generic XRPC module
+            # names in addition to the versioned playerdata modules.  The
+            # DLL registers these methods as CXrpcPlayer* classes.  Reuse the
+            # established v21 persistence handlers so both naming schemes
+            # address the same profile and score documents.
+            generic = {
+                "new": "new",
+                "conversion": "new",
+                "read": "read",
+                "write": "write",
+                "start": "start",
+                "delete": "success",
+                "end": "success",
+                "logout": "success",
+                "read_friend": "friend",
+                "write_music": "write_music",
+                "update_ranking": "success",
+                "write_course": "write",
+                "read_score": "read_score",
+                "shop": "buy",
+                "read_option": "read",
+                "tsumtsum": "success",
+            }
+            for method, handler_name in generic.items():
+                handler = (
+                    self._modern("v21", handler_name)
+                    if handler_name != "success"
+                    else self.unhandled
+                )
+                router.add(code, "player", method, handler)
             router.fallback(code, self.unhandled)
 
         for method in ("common", "shop", "new", "load", "load_m", "save", "save_m"):
