@@ -34,6 +34,36 @@ def test_xml_declared_shift_jis_round_trip():
     assert xml_to_data(encoded)["call"]["playerdata"]["@attr"]["name"] == "ポップン"
 
 
+def test_xml_typed_binary_and_quoted_attributes():
+    encoded = data_to_xml(
+        {
+            "response": {
+                "playerdata": {
+                    "town": {
+                        "@attr": {"__type": "bin", "label": 'a"b'},
+                        "@content": bytes.fromhex("00ff10"),
+                    },
+                    "address": {
+                        "@attr": {"__type": "ip4"},
+                        "@content": [0x7F000001],
+                    },
+                }
+            }
+        }
+    )
+    text = encoded.decode("utf-8")
+    assert 'label="a\'b&quot;b"' in text or "label='a\"b'" in text
+    assert ">00ff10<" in text
+    assert ">127.0.0.1<" in text
+    decoded = xml_to_data(encoded)
+    assert decoded["response"]["playerdata"]["town"]["@content"] == bytes.fromhex(
+        "00ff10"
+    )
+    assert decoded["response"]["playerdata"]["address"]["@content"] == [
+        0x7F000001
+    ]
+
+
 def test_kbin_binary_round_trip():
     payload = {
         "response": {

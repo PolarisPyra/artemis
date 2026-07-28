@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import OrderedDict
 import re
 from xml.etree import ElementTree
+from xml.sax.saxutils import escape as escape_xml, quoteattr
 
 
 def _add(parent: dict, name: str, value: object) -> None:
@@ -31,7 +32,35 @@ def _element_to_data(element: ElementTree.Element) -> dict:
         text = element.text or ""
         if text:
             value["@content"] = text
+    _decode_typed_content(value)
     return value
+
+
+def _decode_typed_content(value: dict) -> None:
+    attrs = value.get("@attr", {})
+    content = value.get("@content")
+    if not isinstance(content, str):
+        return
+    type_name = attrs.get("__type")
+    if type_name == "bin":
+        try:
+            value["@content"] = bytes.fromhex("".join(content.split()))
+        except ValueError:
+            pass
+    elif type_name == "ip4":
+        converted = []
+        for item in content.split():
+            try:
+                parts = [int(part) for part in item.split(".")]
+                if len(parts) != 4 or any(part < 0 or part > 255 for part in parts):
+                    raise ValueError
+                number = 0
+                for part in parts:
+                    number = (number << 8) | part
+                converted.append(number)
+            except ValueError:
+                return
+        value["@content"] = converted
 
 
 def detect_xml_encoding(raw: bytes) -> str:
@@ -55,13 +84,7 @@ def xml_to_data(raw: bytes, encoding: str | None = None) -> dict:
 
 
 def _escape(value: object) -> str:
-    return (
-        ElementTree.escape(str(value))
-        if hasattr(ElementTree, "escape")
-        else (
-            str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-        )
-    )
+    return escape_xml(str(value))
 
 
 def _render(name: str, value: object) -> str:
@@ -71,13 +94,17 @@ def _render(name: str, value: object) -> str:
         return f"<{name}>{_escape(value)}</{name}>"
     attrs = value.get("@attr", {})
     attr_text = "".join(
-        f' {key}="{_escape(val)}"'
+        f" {key}={quoteattr(str(val))}"
         for key, val in attrs.items()
-        if not key.startswith("__")
     )
     raw_content = value.get("@content", "")
+    if attrs.get("__type") == "bin" and isinstance(raw_content, (bytes, bytearray)):
+        raw_content = bytes(raw_content).hex()
     if isinstance(raw_content, list):
-        raw_content = " ".join(str(item) for item in raw_content)
+        if attrs.get("__type") == "ip4":
+            raw_content = " ".join(_int_to_ip(item) for item in raw_content)
+        else:
+            raw_content = " ".join(str(item) for item in raw_content)
     content = _escape(raw_content) if "@content" in value else ""
     children = "".join(
         _render(key, child) for key, child in value.items() if not key.startswith("@")
@@ -85,6 +112,14 @@ def _render(name: str, value: object) -> str:
     if not content and not children:
         return f"<{name}{attr_text}/>"
     return f"<{name}{attr_text}>{content}{children}</{name}>"
+
+
+def _int_to_ip(value: object) -> str:
+    try:
+        number = int(value)
+        return ".".join(str((number >> shift) & 0xFF) for shift in (24, 16, 8, 0))
+    except (TypeError, ValueError):
+        return "0.0.0.0"
 
 
 def data_to_xml(data: dict, encoding: str = "utf-8") -> bytes:
