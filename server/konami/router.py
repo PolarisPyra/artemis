@@ -42,7 +42,7 @@ class EamuseRouter:
         if handler is None:
             handler = self._fallback.get(info.game_code)
         if handler is not None:
-            module_data = body.data.get("call", {}).get(body.module, {})
+            module_data = self._module_data(body.data.get("call", {}), body.module)
             # K-bin represents repeated top-level nodes as arrays.  The title
             # Handlers consume the object convention used by the title routes,
             # so a single repeated module is unwrapped here.
@@ -52,3 +52,27 @@ class EamuseRouter:
                 info, module_data if isinstance(module_data, dict) else {}, response
             )
         return matched
+
+    @classmethod
+    def _module_data(cls, call: dict, module: str) -> dict:
+        """Find a module payload in direct or EA3 service-wrapped calls."""
+        value = call.get(module)
+        if isinstance(value, dict):
+            return value
+        if isinstance(value, list) and len(value) == 1 and isinstance(value[0], dict):
+            return value[0]
+        for candidate in call.values():
+            values = candidate if isinstance(candidate, list) else [candidate]
+            for item in values:
+                if not isinstance(item, dict):
+                    continue
+                nested = {
+                    key: nested_value
+                    for key, nested_value in item.items()
+                    if not key.startswith("@")
+                }
+                if nested:
+                    result = cls._module_data(nested, module)
+                    if result:
+                        return result
+        return {}

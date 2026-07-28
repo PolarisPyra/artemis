@@ -174,6 +174,13 @@ class KonamiServlet:
 
     @staticmethod
     def _find_call(call: dict) -> tuple[str, str]:
+        """Find the concrete XRPC module in direct or EA3-wrapped calls.
+
+        Most clients send ``<call><pcb method="boot">`` directly.  EA3 also
+        permits the service alias registered by a module (for example
+        ``local3 -> pcb``) to wrap that call.  The DLL inspected for Pop'n Hi
+        Cheers registers both forms, so accept either wire layout.
+        """
         for module, value in call.items():
             if module.startswith("@"):
                 continue
@@ -185,7 +192,18 @@ class KonamiServlet:
             ]
             if methods:
                 return module, ".".join(methods)
+            for item in values:
+                if not isinstance(item, dict):
+                    continue
+                nested = {
+                    key: nested_value
+                    for key, nested_value in item.items()
+                    if not key.startswith("@")
+                }
+                if nested:
+                    return KonamiServlet._find_call(nested)
         raise ValueError("call does not contain a module method")
+
 
 
 def build_konami_app(cfg) -> Starlette:
