@@ -93,7 +93,7 @@ class CoreKonamiPlugin(KonamiPlugin):
                 "id": _item("str", "ea"),
                 "country": _item("str", "JP"),
                 "region": _item("str", "JP-13"),
-                "name": _item("str", "ARTEMIS"),
+                "name": _item("str", "CORE"),
                 "type": _item("u8", 0),
                 "countryname": _item("str", "UNKNOWN"),
                 "countryjname": _item("str", "不明"),
@@ -124,11 +124,11 @@ class CoreKonamiPlugin(KonamiPlugin):
                     "supplylimit": _item("s32", 100000),
                 },
                 "url": {
-                    "eapass": _item("str", "ARTEMIS"),
-                    "arcadefan": _item("str", "ARTEMIS"),
-                    "konaminetdx": _item("str", "ARTEMIS"),
-                    "konamiid": _item("str", "ARTEMIS"),
-                    "eagate": _item("str", "ARTEMIS"),
+                    "eapass": _item("str", "CORE v1.60b"),
+                    "arcadefan": _item("str", "CORE v1.60b"),
+                    "konaminetdx": _item("str", "CORE v1.60b"),
+                    "konamiid": _item("str", "CORE v1.60b"),
+                    "eagate": _item("str", "CORE v1.60b"),
                 },
             },
         }
@@ -206,7 +206,7 @@ class CoreKonamiPlugin(KonamiPlugin):
         cardid = data.get("@attr", {}).get("cardid", "")
         refid = self._refid(cardid)
         profile = await self.data.konami.get_document(refid, info.game_code, "profile")
-        if profile is None:
+        if profile is None or profile.get("pin", "unset") == "unset":
             response.status = 112
             return
         response.content = {
@@ -246,7 +246,7 @@ class CoreKonamiPlugin(KonamiPlugin):
     async def card_authpass(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ):
-        refid = data.get("@attr", {}).get("refid", "")
+        refid = data.get("@attr", {}).get("refid", "DEADC0DEFEEDBEEF")
         profile = await self.data.konami.get_document(refid, info.game_code, "profile")
         if profile is None:
             response.status = 110
