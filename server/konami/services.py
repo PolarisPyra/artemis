@@ -56,6 +56,13 @@ class ArtemisServices:
             router.add(game_code, "lobby", "entry", self.success)
             router.add(game_code, "lobby", "update", self.success)
             router.add(game_code, "lobby", "delete", self.success)
+            # Pop'n 24+ sends these through the local2/lobby2 aliases using
+            # the concrete module names registered by the M39 DLL.
+            router.add(game_code, "lobby24", "getlist", self.success)
+            router.add(game_code, "lobby24", "entry", self.success)
+            router.add(game_code, "lobby24", "update", self.success)
+            router.add(game_code, "lobby24", "delete", self.success)
+            router.add(game_code, "loctest24", "test_log", self.success)
             router.add(game_code, "cardmng", "inquire", self.card_inquire)
             router.add(game_code, "cardmng", "getrefid", self.card_getrefid)
             router.add(game_code, "cardmng", "getdatalist", self.card_getdatalist)
