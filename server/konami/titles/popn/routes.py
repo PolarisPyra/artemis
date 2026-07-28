@@ -76,6 +76,7 @@ class PopnRoutes:
 
     def register(self, router: EamuseRouter) -> None:
         for code in self.game_codes[:3]:
+            legacy_version = {"K39": "v19", "L39": "v20", "M39": "v21"}[code]
             for module, method, handler_name in (
                 ("game", "get", "info"),
                 ("playerdata", "new", "new"),
@@ -127,6 +128,9 @@ class PopnRoutes:
             # Hi Cheers labels its common game-data call ``info23.common``
             # even though the cabinet model is M39.
             router.add(code, "info23", "common", self._modern("v21", "info"))
+            # The concrete DLL module is named ``info``.  Its common payload
+            # is Pop'n game data; location data comes from facility.get.
+            router.add(code, "info", "common", self._modern(legacy_version, "info"))
 
             # M39/Hi Cheers still exposes the original generic XRPC module
             # names in addition to the versioned playerdata modules.  The
