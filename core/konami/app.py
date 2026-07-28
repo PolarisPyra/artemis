@@ -136,9 +136,13 @@ class KonamiServlet:
             if module.startswith("@"):
                 continue
             values = value if isinstance(value, list) else [value]
-            for item in values:
-                if isinstance(item, dict) and "method" in item.get("@attr", {}):
-                    return module, item["@attr"]["method"]
+            methods = [
+                item["@attr"]["method"]
+                for item in values
+                if isinstance(item, dict) and "method" in item.get("@attr", {})
+            ]
+            if methods:
+                return module, ".".join(methods)
         raise ValueError("call does not contain a module method")
 
 

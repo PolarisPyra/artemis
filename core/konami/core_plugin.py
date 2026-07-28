@@ -32,6 +32,12 @@ class CoreKonamiPlugin(KonamiPlugin):
             router.add(game_code, "eacoin", "checkin", self.eacoin_checkin)
             router.add(game_code, "eacoin", "consume", self.eacoin_consume)
             router.add(game_code, "posevent", "income", self.posevent_income)
+            router.add(
+                game_code,
+                "posevent",
+                "income.sales.sale",
+                self.posevent_sale,
+            )
             router.add(game_code, "posevent", "outcome", self.success)
             router.add(game_code, "lobby", "get", self.success)
             router.add(game_code, "cardmng", "inquire", self.card_inquire)
