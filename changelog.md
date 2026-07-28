@@ -125,7 +125,7 @@ Documenting updates to ARTEMiS, to be updated every time the master branch is pu
 ### Aimedb
 + Add support for SegaAuth key in games that support it (for now only Chunithm)
   + This is a JWT that is sent to games, by Aimedb, that the games send to their game server, to verify that the access code the game is sending to the server was obtained via aimedb.
-  + Requires a base64-encoded secret to be set in the `artemis.yaml`
+  + Requires a base64-encoded secret to be set in the `core.yaml`
 
 ### Chunithm
 + Fix Air support

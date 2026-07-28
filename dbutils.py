@@ -13,9 +13,6 @@ from artemis.data import Data
 async def main():
     parser = argparse.ArgumentParser(description="Database utilities")
     parser.add_argument(
-        "--config", "-c", type=str, help="Config folder to use", default="config"
-    )
-    parser.add_argument(
         "--version",
         "-v",
         type=str,
@@ -37,11 +34,12 @@ async def main():
     )
     args = parser.parse_args()
 
-    environ["ARTEMIS_CFG_DIR"] = args.config
+    config_dir = "config"
+    environ["ARTEMIS_CFG_DIR"] = config_dir
 
     cfg = ArtemisConfig()
-    if path.exists(f"{args.config}/artemis.yaml"):
-        cfg_dict = yaml.safe_load(open(f"{args.config}/artemis.yaml"))
+    if path.exists(f"{config_dir}/core.yaml"):
+        cfg_dict = yaml.safe_load(open(f"{config_dir}/core.yaml"))
         cfg.update(cfg_dict)
 
     if not path.exists(cfg.server.log_dir):

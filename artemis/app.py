@@ -24,8 +24,8 @@ async def dummy_rt(request: Request):
 
 cfg_dir = environ.get("ARTEMIS_CFG_DIR", "config")
 cfg: ArtemisConfig = ArtemisConfig()
-if path.exists(f"{cfg_dir}/artemis.yaml"):
-    cfg.update(yaml.safe_load(open(f"{cfg_dir}/artemis.yaml")))
+if path.exists(f"{cfg_dir}/core.yaml"):
+    cfg.update(yaml.safe_load(open(f"{cfg_dir}/core.yaml")))
 
 if not path.exists(cfg.server.log_dir):
     mkdir(cfg.server.log_dir)

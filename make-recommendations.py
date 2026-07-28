@@ -19,8 +19,8 @@ async def main():
     cfg_dir = Path(os.getenv("ARTEMIS_CFG_DIR", "config"))
     artemis_cfg = ArtemisConfig()
 
-    if (cfg_dir / "artemis.yaml").exists():
-        with (cfg_dir / "artemis.yaml").open(encoding="utf-8") as f:
+    if (cfg_dir / "core.yaml").exists():
+        with (cfg_dir / "core.yaml").open(encoding="utf-8") as f:
             artemis_cfg.update(yaml.safe_load(f))
 
     print("Fetching playlogs...")

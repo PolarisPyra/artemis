@@ -80,7 +80,7 @@ async def run_async_migrations() -> None:
 
     artemis_config = ArtemisConfig()
 
-    with (Path("../../..") / os.environ["ARTEMIS_CFG_DIR"] / "artemis.yaml").open(
+    with (Path("../../..") / os.environ["ARTEMIS_CFG_DIR"] / "core.yaml").open(
         encoding="utf-8"
     ) as f:
         artemis_config.update(yaml.safe_load(f))

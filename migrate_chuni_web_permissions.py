@@ -25,7 +25,7 @@ async def main():
 
     # Load config
     cfg_dir = os.environ.get("ARTEMIS_CFG_DIR", "config")
-    config_path = os.path.join(cfg_dir, "artemis.yaml")
+    config_path = os.path.join(cfg_dir, "core.yaml")
 
     if not os.path.exists(config_path):
         logger.error(f"Config file not found at {config_path}")
@@ -122,4 +122,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-

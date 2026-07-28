@@ -14,7 +14,7 @@ For almost all situations, simply running `python dbutils.py migrate` will do th
 ## Configuration
 Configuration management is the sewage cleaning of the sysadmin world. It sucks and nobody likes to do it, but it needs to be done or everyone ends up in deep shit. This section will walk through what configuration options have changed, and how to set them properly.
 
-### artemis.yaml
+### core.yaml
 `title`->`hostname` is now `server`->`hostname`. This hostname is what gets sent to clients in response to auth requests, so it should be both accessable from whereever the client is, and point properly to the title server.
 
 With the move to starlette and uvicorn, different services now run as seperate USGI applications. `billing`->`standalone` and `allnet`->`standalone` are flags that determine weather the service runs as a stand-alone service, on it's own seperate port, or as a part of the whole application. For example, setting `billing`->`standalone` to `True` will cause a seperate instance of the billing server to spin up listening on 8443 with SSL using the certs listed in the config file. Setting it to `False` will just allow the main server to also serve `/request/` and assumes that something is standing in front of it proxying 8443 SSL to whatever `server`->`port` is set to.

@@ -76,12 +76,6 @@ async def main():
         help="Folder containing Option data folders",
     )
     parser.add_argument(
-        "--config",
-        type=str,
-        default="config",
-        help="Folder containing the Artemis configuration for importing to DB. Defaults to 'config'.",
-    )
-    parser.add_argument(
         "--extra",
         type=str,
         help="Any extra data that a reader might require.",
@@ -90,11 +84,12 @@ async def main():
     # Parse args, validate invariants.
     args = parser.parse_args()
 
-    os.environ["ARTEMIS_CFG_DIR"] = args.config
+    config_dir = "config"
+    os.environ["ARTEMIS_CFG_DIR"] = config_dir
 
     config = ArtemisConfig()
-    if path.exists(f"{args.config}/artemis.yaml"):
-        config.update(yaml.safe_load(open(f"{args.config}/artemis.yaml")))
+    if path.exists(f"{config_dir}/core.yaml"):
+        config.update(yaml.safe_load(open(f"{config_dir}/core.yaml")))
 
     log_fmt_str = "[%(asctime)s] Reader | %(levelname)s | %(message)s"
     log_fmt = logging.Formatter(log_fmt_str)

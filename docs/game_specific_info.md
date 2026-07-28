@@ -14,7 +14,7 @@ python dbutils.py upgrade
 
 If you are using the old master branch that was not setup with alembic, make sure to do the following steps in order:
 - Pull down latest master/develop
-- Update artemis.yaml
+- Update core.yaml
 - Back up your existing database
 ```shell
 python dbutils.py migrate
