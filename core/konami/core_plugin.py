@@ -14,6 +14,8 @@ from .router import EamuseRouter, KonamiPlugin
 class CoreKonamiPlugin(KonamiPlugin):
     """Implement the protocol-level services exposed by Asphyxia CORE."""
 
+    identifier = "asphyxia-core"
+
     def __init__(self, cfg: CoreConfig, game_codes: tuple[str, ...] = ()) -> None:
         self.data = Data(cfg)
         self.game_codes = game_codes

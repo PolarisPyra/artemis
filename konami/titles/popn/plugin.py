@@ -21,6 +21,7 @@ class PopnPlugin(KonamiPlugin):
     """
 
     game_codes = ("K39", "L39", "M39", "JMP")
+    identifier = "popn@asphyxia"
 
     def __init__(self, cfg: CoreConfig) -> None:
         self.cfg = cfg

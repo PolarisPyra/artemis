@@ -39,3 +39,4 @@ class EamuseResponse:
     encoding: str | None = None
     compress: bool | None = None
     encrypt: bool | None = None
+    plugin: str | None = None

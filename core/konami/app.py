@@ -26,7 +26,7 @@ class KonamiServlet:
         self.router = EamuseRouter()
         self.plugins = tuple(plugins)
         for plugin in self.plugins:
-            plugin.register(self.router)
+            self.router.register_plugin(plugin)
 
     def get_routes(self) -> list[Route]:
         # Konami clients commonly post to /, while services discovered through
@@ -139,6 +139,8 @@ class KonamiServlet:
             else data_to_xml(response_data, encoding)
         )
         response_headers = {"X-Compress": "none"}
+        if result.plugin:
+            response_headers["X-CORE-Plugin"] = result.plugin
         should_compress = result.compress if result.compress is not None else compressed
         if should_compress and len(output) > 500:
             output = deflate(output)

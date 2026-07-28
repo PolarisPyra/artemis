@@ -9,6 +9,8 @@ from core.konami.xml import data_to_xml, xml_to_data
 from core.konami.xml import detect_xml_encoding
 from core.konami.kbin import decode as kbin_decode, encode as kbin_encode
 from core.konami.app import KonamiServlet
+from core.konami.protocol import EamuseBody, EamuseInfo, EamuseResponse
+from core.konami.router import KonamiPlugin
 from konami.titles.popn.repository import PopnRepository
 
 
@@ -231,3 +233,31 @@ def test_popn_webui_rival_events_match_reference_limits():
     assert store.docs[("OWNER", "M39", "rivals", "")]["rivals"] == ["RIVAL"]
     assert asyncio.run(repo.delete_rival("OWNER", "RIVAL"))
     assert store.docs[("OWNER", "M39", "rivals", "")]["rivals"] == []
+
+
+def test_router_tracks_core_plugin_owner():
+    class Plugin(KonamiPlugin):
+        game_codes = ("TST",)
+        identifier = "test-plugin"
+
+        def register(self, router):
+            router.add("TST", "game", "get", self.handle)
+
+        async def handle(self, info, data, response):
+            response.status = 0
+
+    servlet = KonamiServlet((Plugin(),))
+    body = EamuseBody(
+        {"call": {"game": {"@attr": {"method": "get"}}}},
+        b"",
+        "game",
+        "get",
+        "TST:1",
+    )
+    response = EamuseResponse()
+    asyncio.run(
+        servlet.router.dispatch(
+            body, EamuseInfo("TST", "game", "get", "TST:1"), response
+        )
+    )
+    assert response.plugin == "test-plugin"
