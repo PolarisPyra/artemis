@@ -25,6 +25,12 @@ class CoreKonamiPlugin(KonamiPlugin):
             router.add(game_code, "package", "list", self.success)
             router.add(game_code, "pcbevent", "put", self.success)
             router.add(game_code, "pcbtracker", "alive", self.success)
+            router.add(game_code, "eacoin", "checkout", self.success)
+            router.add(game_code, "eacoin", "checkin", self.eacoin_checkin)
+            router.add(game_code, "eacoin", "consume", self.eacoin_consume)
+            router.add(game_code, "posevent", "income", self.success)
+            router.add(game_code, "posevent", "outcome", self.success)
+            router.add(game_code, "lobby", " services", self.success)
             router.add(game_code, "cardmng", "inquire", self.card_inquire)
             router.add(game_code, "cardmng", "getrefid", self.card_getrefid)
             router.add(game_code, "cardmng", "authpass", self.card_authpass)
@@ -35,7 +41,7 @@ class CoreKonamiPlugin(KonamiPlugin):
         host = info.host or "localhost"
         response.content = {"item": [
             {"@attr": {"name": name, "url": f"{info.protocol}://{host}"}}
-            for name in ("ntp", "keepalive", "cardmng", "facility", "message", "services")
+            for name in ("ntp", "keepalive", "cardmng", "facility", "message", "services", "package", "pcbevent", "pcbtracker", "pkglist", "posevent", "userdata", "userid", "eacoin", "local", "local2", "lobby", "lobby2", "dlstatus", "netlog", "sidmgr", "globby")
         ]}
 
     async def facility_get(self, info: EamuseInfo, data: dict, response: EamuseResponse):
@@ -43,6 +49,12 @@ class CoreKonamiPlugin(KonamiPlugin):
 
     async def message_get(self, info: EamuseInfo, data: dict, response: EamuseResponse):
         response.content = {"@attr": {"expire": "300"}}
+
+    async def eacoin_checkin(self, info: EamuseInfo, data: dict, response: EamuseResponse):
+        response.content = {"balance": {"@attr": {"__type": "s32"}, "@content": [88410]}, "sessid": {"@attr": {"__type": "str"}, "@content": "DEADC0DEFEEDBEEF"}, "acstatus": {"@attr": {"__type": "u8"}, "@content": [0]}, "sequence": {"@attr": {"__type": "s16"}, "@content": [1]}, "acid": {"@attr": {"__type": "str"}, "@content": "DEADC0DEFEEDBEEF"}, "acname": {"@attr": {"__type": "str"}, "@content": "DEADC0DEFEEDBEEF"}}
+
+    async def eacoin_consume(self, info: EamuseInfo, data: dict, response: EamuseResponse):
+        response.content = {"autocharge": {"@attr": {"__type": "u8"}, "@content": [0]}, "acstatus": {"@attr": {"__type": "u8"}, "@content": [0]}, "balance": {"@attr": {"__type": "s32"}, "@content": [88410]}}
 
     async def success(self, info: EamuseInfo, data: dict, response: EamuseResponse):
         response.status = 0

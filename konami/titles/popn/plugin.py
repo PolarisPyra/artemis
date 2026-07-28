@@ -1,70 +1,78 @@
-"""Pop'n Music e-amusement title adapter.
-
-The version-specific handlers are deliberately isolated behind this plugin so
-the common Konami transport can support other games without title branching.
-"""
+"""Pop'n Music route registration for Artemis."""
 
 from __future__ import annotations
-
-import secrets
-from typing import Any
 
 from core.config import CoreConfig
 from core.data import Data
 from core.konami.protocol import EamuseInfo, EamuseResponse
 from core.konami.router import EamuseRouter, KonamiPlugin
 
-
-def attrs(data: dict[str, Any]) -> dict[str, Any]:
-    return data.get("@attr", {}) if isinstance(data, dict) else {}
+from .repository import PopnRepository
+from .versions import SPECS, PopnVersionHandler
 
 
 class PopnPlugin(KonamiPlugin):
+    """Pop'n Music 19 through Unilab route set.
+
+    The old games use ``K39/L39/M39`` with the playerdata module.  Later games
+    expose their version in the module name (player22/player23/player24), as
+    in the reference Asphyxia plugin.
+    """
+
     game_codes = ("K39", "L39", "M39")
 
     def __init__(self, cfg: CoreConfig) -> None:
         self.cfg = cfg
         self.data = Data(cfg)
+        self._handlers = {
+            "v19": PopnVersionHandler(PopnRepository(self.data, "K39"), SPECS["v19"]),
+            "v20": PopnVersionHandler(PopnRepository(self.data, "L39"), SPECS["v20"]),
+            "v21": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v21"]),
+            "v22": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v22"]),
+            "v23": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v23"]),
+            "v24": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v24"]),
+            "v25": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v25"]),
+            "v26": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v26"]),
+            "v27": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v27"]),
+        }
 
     def register(self, router: EamuseRouter) -> None:
         for code in self.game_codes:
-            router.add(code, "game", "get", self.game_get)
-            router.add(code, "playerdata", "new", self.player_new)
-            router.add(code, "playerdata", "conversion", self.player_new)
-            router.add(code, "playerdata", "get", self.player_get)
-            router.add(code, "playerdata", "set", self.player_set)
-            router.add(code, "playerdata", "friend", self.player_friend)
+            for module, method, handler_name in (
+                ("game", "get", "info"),
+                ("playerdata", "new", "new"),
+                ("playerdata", "conversion", "new"),
+                ("playerdata", "get", "read"),
+                ("playerdata", "set", "write"),
+                ("playerdata", "friend", "friend"),
+                ("playerdata", "town", "town"),
+            ):
+                router.add(code, module, method, self._classic(handler_name))
+
+            for version_number, version in ((22, "v22"), (23, "v23"), (24, "v24")):
+                prefix = f"{version_number}"
+                for method, handler_name in (
+                    ("common", "info"), ("new", "new"), ("read", "read"),
+                    ("start", "start"), ("buy", "buy"), ("read_score", "read_score"),
+                    ("write_music", "write_music"), ("write", "write"),
+                    ("friend", "friend"),
+                ):
+                    router.add(code, f"info{prefix}" if method == "common" else f"player{prefix}", method, self._modern(version, handler_name))
             router.fallback(code, self.unhandled)
 
-    async def game_get(self, info: EamuseInfo, data: dict, response: EamuseResponse):
-        version = {"K39": "19", "L39": "20", "M39": "21"}.get(info.game_code, "19")
-        response.content = {"@attr": {"game_phase": "1", "version": version}}
+    def _classic(self, name: str):
+        async def handler(info: EamuseInfo, data: dict, response: EamuseResponse):
+            version = {"K39": "v19", "L39": "v20", "M39": "v21"}[info.game_code]
+            if name == "town":
+                response.content = {"result": {"@attr": {"status": "0"}}}
+                return
+            await getattr(self._handlers[version], name)(info, data, response)
+        return handler
 
-    async def player_new(self, info: EamuseInfo, data: dict, response: EamuseResponse):
-        refid = attrs(data).get("refid", attrs(data).get("dataid", ""))
-        if not refid:
-            refid = secrets.token_hex(8).upper()
-        profile = await self.data.konami.get_document(refid, info.game_code, "profile") or {
-            "collection": "profile", "name": "ゲスト", "friendId": f"{secrets.randbelow(10**12):012d}", "dataVersion": 2,
-        }
-        await self.data.konami.put_document(refid, info.game_code, "profile", profile)
-        response.content = {"@attr": {"dataid": refid, "refid": refid}, "player": profile}
-
-    async def player_get(self, info: EamuseInfo, data: dict, response: EamuseResponse):
-        refid = attrs(data).get("refid", attrs(data).get("dataid", ""))
-        profile = await self.data.konami.get_document(refid, info.game_code, "profile") or {
-            "collection": "profile", "name": "ゲスト", "friendId": "000000000000", "dataVersion": 2,
-        }
-        response.content = {"@attr": {"dataid": refid, "refid": refid}, "player": profile}
-
-    async def player_set(self, info: EamuseInfo, data: dict, response: EamuseResponse):
-        refid = attrs(data).get("refid", attrs(data).get("dataid", ""))
-        profile = dict(data.get("player", {}))
-        await self.data.konami.put_document(refid, info.game_code, "profile", profile)
-        response.content = {"@attr": {"dataid": refid, "refid": refid}}
-
-    async def player_friend(self, info: EamuseInfo, data: dict, response: EamuseResponse):
-        response.content = {"@attr": {"friend_num": "0"}}
+    def _modern(self, version: str, name: str):
+        async def handler(info: EamuseInfo, data: dict, response: EamuseResponse):
+            await getattr(self._handlers[version], name)(info, data, response)
+        return handler
 
     async def unhandled(self, info: EamuseInfo, data: dict, response: EamuseResponse):
         response.status = 0
