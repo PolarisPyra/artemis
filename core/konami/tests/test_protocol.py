@@ -8,6 +8,7 @@ from core.konami.xml import data_to_xml, xml_to_data
 from core.konami.xml import detect_xml_encoding
 from core.konami.kbin import decode as kbin_decode, encode as kbin_encode
 from core.konami.app import KonamiServlet
+from konami.titles.popn.repository import PopnRepository
 
 
 def test_konmai_encrypt_round_trip():
@@ -150,3 +151,40 @@ def test_malformed_xml_is_rejected():
 
     response = asyncio.run(KonamiServlet().handle(Request(scope, receive)))
     assert response.status_code == 404
+
+
+def test_popn_score_sharing_is_scoped_to_refid():
+    class ScoreStore:
+        def __init__(self):
+            self.requested_refid = None
+
+        async def documents(self, game_code, collection, version="", refid=""):
+            self.requested_refid = refid
+            return [
+                (
+                    refid,
+                    {
+                        "scores": {
+                            "1:0": {"score": 100, "cnt": 1, "clear_type": 100}
+                        }
+                    },
+                )
+            ]
+
+        async def get_document(self, *args):
+            return None
+
+    store = ScoreStore()
+    data = type(
+        "Data",
+        (),
+        {
+            "config": type(
+                "Config", (), {"konami": type("Konami", (), {"enable_score_sharing": True})()}
+            )(),
+            "konami": store,
+        },
+    )()
+    scores = asyncio.run(PopnRepository(data, "M39").scores("REF-A", "v24"))
+    assert store.requested_refid == "REF-A"
+    assert scores["scores"]["1:0"]["score"] == 100

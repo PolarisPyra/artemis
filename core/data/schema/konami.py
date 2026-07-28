@@ -57,7 +57,11 @@ class KonamiData(BaseData):
         return await self.execute(statement.on_duplicate_key_update(document=document))
 
     async def documents(
-        self, game_code: str, collection: str, version: str = ""
+        self,
+        game_code: str,
+        collection: str,
+        version: str = "",
+        refid: str = "",
     ) -> list[tuple[str, dict]]:
         conditions = [
             konami_document.c.game_code == game_code,
@@ -65,6 +69,8 @@ class KonamiData(BaseData):
         ]
         if version:
             conditions.append(konami_document.c.version == version)
+        if refid:
+            conditions.append(konami_document.c.refid == refid)
         result = await self.execute(
             konami_document.select().where(*conditions).order_by(konami_document.c.id)
         )

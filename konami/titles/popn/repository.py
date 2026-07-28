@@ -48,7 +48,7 @@ class PopnRepository:
         ):
             merged = {"collection": "scores", "version": version, "scores": {}}
             for _, document in await self.data.konami.documents(
-                self.game_code, "scores"
+                self.game_code, "scores", refid=refid
             ):
                 for key, score in document.get("scores", {}).items():
                     current = merged["scores"].get(key)
