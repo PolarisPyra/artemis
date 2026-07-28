@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import struct
 from typing import Iterable
+from xml.etree.ElementTree import ParseError
 
 from starlette.requests import Request
 from starlette.responses import Response
@@ -56,7 +57,13 @@ class KonamiServlet:
             module, method = self._find_call(call)
             model = call.get("@attr", {}).get("model", "")
             game_code = model.split(":", 1)[0]
-        except (ValueError, UnicodeDecodeError, IndexError, struct.error) as exc:
+        except (
+            ValueError,
+            UnicodeDecodeError,
+            IndexError,
+            ParseError,
+            struct.error,
+        ) as exc:
             self.logger.warning("Unable to decode e-amusement request: %s", exc)
             return Response(status_code=404)
 

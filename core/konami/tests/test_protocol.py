@@ -1,3 +1,7 @@
+import asyncio
+
+from starlette.requests import Request
+
 from core.konami.encryption import KonmaiEncrypt
 from core.konami.lzkn import deflate_dummy, inflate
 from core.konami.xml import data_to_xml, xml_to_data
@@ -104,3 +108,23 @@ def test_dotted_method_detection():
     assert KonamiServlet._find_call(
         {"posevent": [{"@attr": {"method": "income"}}, {"@attr": {"method": "sales"}}]}
     ) == ("posevent", "income.sales")
+
+
+def test_malformed_xml_is_rejected():
+    scope = {
+        "type": "http",
+        "method": "POST",
+        "path": "/",
+        "raw_path": b"/",
+        "query_string": b"",
+        "headers": [],
+        "client": ("127.0.0.1", 1234),
+        "server": ("localhost", 80),
+        "scheme": "http",
+    }
+
+    async def receive():
+        return {"type": "http.request", "body": b"<not-xml", "more_body": False}
+
+    response = asyncio.run(KonamiServlet().handle(Request(scope, receive)))
+    assert response.status_code == 404
