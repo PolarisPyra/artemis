@@ -118,6 +118,16 @@ class KonamiServlet:
             root_name=module, compress=compressed, encrypt=encrypted
         )
         await self.router.dispatch(parsed, info, result)
+        self.logger.info(
+            "%s %s %s model=%s client=%s status=%s plugin=%s",
+            module,
+            method,
+            "kbin" if kencoded else "xml",
+            model or "-",
+            info.client_ip or "-",
+            result.status,
+            result.plugin or "-",
+        )
         if not result.content:
             result.content = {}
 

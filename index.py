@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import argparse
 import yaml
-from os import path, environ
+from os import path, environ, makedirs
 import uvicorn
 import logging
 import asyncio
+from logging.handlers import TimedRotatingFileHandler
 
 from core.config import CoreConfig
 from core.aimedb import AimedbServlette
@@ -76,6 +77,26 @@ async def launch_allnet(cfg: CoreConfig) -> None:
 
 async def launch_konami(cfg: CoreConfig) -> None:
     from core.konami.app import build_konami_app
+
+    logger = logging.getLogger("konami")
+    if not getattr(logger, "handler_set", False):
+        if not path.exists(cfg.server.log_dir):
+            makedirs(cfg.server.log_dir)
+        log_path = path.join(cfg.server.log_dir, "konami.log")
+        file_handler = TimedRotatingFileHandler(
+            log_path, encoding="utf-8", when="d", backupCount=10
+        )
+        log_format = logging.Formatter(
+            "[%(asctime)s] Konami | %(levelname)s | %(message)s"
+        )
+        file_handler.setFormatter(log_format)
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(log_format)
+        logger.addHandler(file_handler)
+        logger.addHandler(console_handler)
+        logger.setLevel(cfg.konami.loglevel)
+        logger.propagate = False
+        logger.handler_set = True
 
     server_cfg = uvicorn.Config(
         build_konami_app(cfg),
