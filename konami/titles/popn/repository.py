@@ -28,6 +28,14 @@ class PopnRepository:
     async def save_profile(self, refid: str, profile: dict) -> None:
         await self.data.konami.put_document(refid, self.game_code, "profile", profile)
 
+    async def update_profile_name(self, refid: str, name: str) -> None:
+        profile = await self.data.konami.get_document(
+            refid, self.game_code, "profile"
+        )
+        if profile is not None:
+            profile["name"] = name
+            await self.save_profile(refid, profile)
+
     async def params(self, refid: str, version: str) -> dict:
         return await self.data.konami.get_document(
             refid, self.game_code, "params", version
@@ -93,6 +101,34 @@ class PopnRepository:
             "collection": "rivals",
             "rivals": [],
         }
+
+    async def add_rival(self, refid: str, rivalid: str) -> bool:
+        refid = refid.strip()
+        rivalid = str(rivalid)
+        if not refid or not rivalid:
+            return False
+        rival_profile = await self.data.konami.get_document(
+            rivalid, self.game_code, "profile"
+        )
+        if rival_profile is None:
+            return False
+        rivals = await self.rivals(refid)
+        if len(rivals.get("rivals", [])) >= 4:
+            return False
+        rivals.setdefault("rivals", []).append(rivalid)
+        await self.data.konami.put_document(
+            refid, self.game_code, "rivals", rivals
+        )
+        return True
+
+    async def delete_rival(self, refid: str, rivalid: str) -> bool:
+        rivals = await self.rivals(refid)
+        rival_list = rivals.setdefault("rivals", [])
+        if rivalid not in rival_list:
+            return False
+        rival_list.remove(rivalid)
+        await self.data.konami.put_document(refid, self.game_code, "rivals", rivals)
+        return True
 
     async def documents(
         self, collection: str, version: str = ""

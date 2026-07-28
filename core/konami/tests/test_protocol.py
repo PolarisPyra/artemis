@@ -197,3 +197,37 @@ def test_popn_score_sharing_is_scoped_to_refid():
     scores = asyncio.run(PopnRepository(data, "M39").scores("REF-A", "v24"))
     assert store.requested_refid == "REF-A"
     assert scores["scores"]["1:0"]["score"] == 100
+
+
+def test_popn_webui_rival_events_match_reference_limits():
+    class RivalStore:
+        def __init__(self):
+            self.docs = {
+                ("RIVAL", "M39", "profile", ""): {"name": "Rival"},
+            }
+
+        async def get_document(self, refid, game_code, collection, version=""):
+            return self.docs.get((refid, game_code, collection, version))
+
+        async def put_document(
+            self, refid, game_code, collection, document, version=""
+        ):
+            self.docs[(refid, game_code, collection, version)] = document
+
+        async def documents(self, *args, **kwargs):
+            return []
+
+    store = RivalStore()
+    data = type(
+        "Data",
+        (),
+        {
+            "config": type("Config", (), {})(),
+            "konami": store,
+        },
+    )()
+    repo = PopnRepository(data, "M39")
+    assert asyncio.run(repo.add_rival(" OWNER ", "RIVAL"))
+    assert store.docs[("OWNER", "M39", "rivals", "")]["rivals"] == ["RIVAL"]
+    assert asyncio.run(repo.delete_rival("OWNER", "RIVAL"))
+    assert store.docs[("OWNER", "M39", "rivals", "")]["rivals"] == []

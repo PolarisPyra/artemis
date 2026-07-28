@@ -34,6 +34,20 @@ class KonamiServlet:
         # therefore intentional.
         return [Route("/{path:path}", self.handle, methods=["POST"])]
 
+    async def dispatch_webui_event(
+        self, game_code: str, name: str, data: dict
+    ) -> bool:
+        """Dispatch a title WebUI event without exposing an unauthenticated route."""
+        for plugin in self.plugins:
+            if game_code not in getattr(plugin, "game_codes", ()):
+                continue
+            handler = getattr(plugin, "webui_event", None)
+            if handler is None:
+                return False
+            await handler(name, data)
+            return True
+        return False
+
     async def handle(self, request: Request) -> Response:
         raw = await request.body()
         body = raw

@@ -123,6 +123,22 @@ class PopnPlugin(KonamiPlugin):
                 )
             router.fallback(code, self.unhandled)
 
+    async def webui_event(self, name: str, data: dict) -> None:
+        """Handle the reference Pop'n plugin's three WebUI events."""
+        repository = self._handlers["v21"].repo
+        if name == "updatePnmPlayerInfo":
+            await repository.update_profile_name(
+                str(data.get("refid", "")), str(data.get("name", ""))
+            )
+        elif name == "addRival":
+            await repository.add_rival(
+                str(data.get("refid", "")), str(data.get("rivalid", ""))
+            )
+        elif name == "deleteRival":
+            await repository.delete_rival(
+                str(data.get("refid", "")), str(data.get("rivalid", ""))
+            )
+
     def _classic(self, name: str):
         async def handler(info: EamuseInfo, data: dict, response: EamuseResponse):
             version = {"K39": "v19", "L39": "v20", "M39": "v21"}[info.game_code]
