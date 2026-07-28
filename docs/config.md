@@ -47,6 +47,16 @@
 - `ssl_key`: Location of the ssl server key for the billing server. Ignored if `standalone` is `False`. Default `cert/server.key`
 - `ssl_cert`: Location of the ssl server certificate for the billing server. Ignored if `standalone` is `False`.  Must match the CA distributed to users or the billing server will not connect. Default `cert/server.pem`
 - `signing_key`: Location of the RSA Private key used to sign billing requests. Must match the public key distributed to users or the billing server will not connect. Default `cert/billing.key`
+## Konami
+- `enable`: Enables the native Konami e-amusement service and Pop'n Music routes. Default `False`
+- `standalone`: Runs Konami on its own port instead of the main Artemis HTTP service. Default `False`
+- `port`: Standalone Konami service port. Default `5730`
+- `hostname`: Advertised Konami hostname. Default `localhost`
+- `popn_force_unlock`: Unlocks Pop'n songs in returned profiles. Default `True`
+- `ping_ip`: Reachable address used in the e-amusement keepalive URL. Default `127.0.0.1`
+- `matching_port`: Port reported for facility matching. Default `5700`
+- `enable_paseli`: Enables PASELI in `pcbtracker.alive`. Default `True`
+- `maintenance_mode`: Adds system maintenance messages to `message.get`. Default `False`
 ## Aimedb
 - `enable`: Whether or not aimedb should run. Default `True`
 - `listen_address`: IP Address or hostname that the aimedb server will listen for connections on. Leave this blank to use the listen address under `server`. Default `""`
