@@ -368,13 +368,41 @@ class PopnVersionHandler:
         if not refid:
             response.status = 1
             return
+        achievement_docs = await self.repo.documents("achievements", "v19")
+        candidates = [candidate for candidate, _ in achievement_docs]
+        if refid not in candidates:
+            candidates.insert(0, refid)
+        requested_friend = field(data, "gpm_id", None)
+        if requested_friend is not None:
+            for candidate, profile in await self.repo.documents("profile"):
+                if str(profile.get("friendId", "")) == str(requested_friend):
+                    if candidate in candidates:
+                        candidates.remove(candidate)
+                    candidates.insert(0, candidate)
+                    break
+        if scalar(field(data, "is_random", 0), 0) == 1 and candidates:
+            candidates.insert(0, random.choice(candidates))
+            candidates = list(dict.fromkeys(candidates))
+        candidates = candidates[:10]
+        response.content = {
+            "residence": {"@attr": {"id": "0"}},
+            "map": [
+                item(
+                    "bin",
+                    await self._format_town_map(candidate),
+                    residence=str(index),
+                )
+                for index, candidate in enumerate(candidates)
+            ],
+        }
+
+    async def _format_town_map(self, refid: str) -> bytes:
         profile = await self.repo.profile(refid)
         params = await self.repo.params(refid, "v19")
         achievements = await self.repo.achievements(
             refid,
             "v19",
             {
-                "apply": [""] * 6,
                 "building": [[0] * 8 for _ in range(8)],
                 "base": [0] * 4,
             },
@@ -382,24 +410,31 @@ class PopnVersionHandler:
         town = bytearray(180)
         chara = scalar(params.get("params", {}).get("chara", 0), 0)
         town[0:2] = chara.to_bytes(2, "little", signed=False)
-        for row in range(8):
-            for column in range(8):
-                town[42 + row * 8 + column] = (
-                    scalar(achievements.get("building", [[0] * 8] * 8)[row][column], 0)
-                    & 0xFF
-                )
+        building = achievements.get("building", [[0] * 8 for _ in range(8)])
+        for row in range(min(8, len(building))):
+            values = building[row] if isinstance(building[row], list) else []
+            for column in range(min(8, len(values))):
+                town[42 + row * 8 + column] = scalar(values[column], 0) & 0xFF
         friend_id = str(profile.get("friendId", ""))[:12].encode("ascii", "replace")
         town[106 : 106 + len(friend_id)] = friend_id
         name = str(profile.get("name", "ゲスト")).encode("shift_jis", "replace")[:12]
         town[119 : 119 + len(name)] = name
         for index, value in enumerate(achievements.get("base", [0] * 4)[:4]):
             town[173 + index] = scalar(value, 0) & 0xFF
-        response.content = {
-            "residence": {"@attr": {"id": "0"}},
-            "map": [
-                item("bin", bytes(town), residence="0"),
-            ],
-        }
+        scores = (await self.repo.scores(refid, "v19")).get("scores", {})
+        play_count: dict[int, int] = {}
+        for key, score in scores.items():
+            try:
+                music, sheet = (int(value) for value in key.split(":", 1))
+            except (TypeError, ValueError):
+                continue
+            if music <= self.spec.max_music and sheet not in (0, 7, 8):
+                play_count[music] = play_count.get(music, 0) + int(score.get("cnt", 0))
+        for index, music in enumerate(
+            sorted(play_count, key=play_count.get, reverse=True)[:20]
+        ):
+            town[2 + index * 2 : 4 + index * 2] = int(music).to_bytes(2, "little")
+        return bytes(town)
 
     async def _write_tunestreet(self, data: dict, response: EamuseResponse) -> None:
         refid = field(data, "ref_id", "")

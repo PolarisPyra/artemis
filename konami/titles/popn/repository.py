@@ -70,3 +70,8 @@ class PopnRepository:
             "collection": "rivals",
             "rivals": [],
         }
+
+    async def documents(
+        self, collection: str, version: str = ""
+    ) -> list[tuple[str, dict]]:
+        return await self.data.konami.documents(self.game_code, collection, version)
