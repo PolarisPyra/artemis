@@ -649,18 +649,20 @@ class PopnVersionHandler:
                 except ValueError:
                     continue
                 if music_id <= self.spec.max_music and sheet in range(4):
-                    music.append(
-                        {
-                            "@attr": {
-                                "music_num": str(music_id),
-                                "sheet_num": str(sheet),
-                                "score": str(score.get("score", 0)),
-                                "clearmedal": str(
-                                    CLEAR_TO_MEDAL.get(score.get("clear_type", 0), 0)
-                                ),
-                            }
-                        }
-                    )
+                    clear_medal = CLEAR_TO_MEDAL.get(score.get("clear_type", 0), 0)
+                    score_attrs = {
+                        "music_num": str(music_id),
+                        "sheet_num": str(sheet),
+                        "score": str(score.get("score", 0)),
+                    }
+                    if self.spec.version == "v22":
+                        score_attrs["clearmedal"] = str(clear_medal)
+                    else:
+                        score_attrs["cleartype"] = str(clear_medal)
+                        score_attrs["clearrank"] = str(
+                            self._rank(score.get("score", 0))
+                        )
+                    music.append({"@attr": score_attrs})
             friends.append(
                 {
                     "no": item("s16", rival_index),
