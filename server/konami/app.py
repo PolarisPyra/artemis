@@ -119,10 +119,11 @@ class KonamiServlet:
         )
         await self.router.dispatch(parsed, info, result)
         self.logger.info(
-            "%s %s %s model=%s client=%s status=%s",
+            "%s %s %s path=%s model=%s client=%s status=%s",
             module,
             method,
             "kbin" if kencoded else "xml",
+            request.url.path,
             model or "-",
             info.client_ip or "-",
             result.status,
