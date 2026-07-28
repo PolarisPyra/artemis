@@ -88,6 +88,7 @@ class ArtemisServices:
                     "eacoin",
                     "local",
                     "local2",
+                    "local3",
                     "lobby",
                     "lobby2",
                     "dlstatus",
