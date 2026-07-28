@@ -532,7 +532,7 @@ class PopnVersionHandler:
                 continue
             if music_id > self.spec.max_music or sheet not in range(4):
                 continue
-            medal = CLEAR_TO_MEDAL.get(value.get("clear_type", 0), 0)
+            medal = self._score_medal(value.get("clear_type", 0))
             if self.spec.version in ("v24", "v25", "v26", "v27"):
                 music.append(
                     {
@@ -596,28 +596,79 @@ class PopnVersionHandler:
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ) -> None:
         refid = field(data, "ref_id", "")
+        if self.spec.version == "v19" or not refid:
+            response.status = 1
+            return
         rivals = await self.repo.rivals(refid)
-        rival_index = scalar(field(data, "no", -1), -1)
         rival_ids = rivals.get("rivals", [])
+        if self.spec.version in ("v20", "v21"):
+            friends = []
+            for rival in rival_ids[:2]:
+                profile = await self.repo.profile(rival)
+                scores = await self._scores(rival)
+                friend = {
+                    "open": item("s8", 1),
+                    "g_pm_id": item("str", profile.get("friendId", "000000000000")),
+                    "name": item("str", profile.get("name", "ゲスト")),
+                    "chara": item("s16", -1),
+                    "clear_medal": array("u16", scores["clear_medal"]),
+                    "hiscore": item("bin", bytes(scores["hiscore_array"])),
+                }
+                if self.spec.version == "v21":
+                    params = await self.repo.params(rival, self.spec.version)
+                    values = params.get("params", {})
+                    friend.update(
+                        {
+                            "hair": item("u8", values.get("hair", 0)),
+                            "face": item("u8", values.get("face", 0)),
+                            "body": item("u8", values.get("body", 0)),
+                            "effect": item("u8", values.get("effect", 0)),
+                            "object": item("u8", values.get("object", 0)),
+                            "comment": array("u8", values.get("comment", [0, 0])),
+                        }
+                    )
+                friends.append(friend)
+            response.content = {"friend": friends}
+            return
+        rival_index = scalar(field(data, "no", -1), -1)
         if rival_index < 0 or rival_index >= len(rival_ids):
             response.content = {"result": item("s8", 2)}
             return
         friends = []
         for rival in (rival_ids[rival_index],):
             profile = await self.repo.profile(rival)
+            params = await self.repo.params(rival, self.spec.version)
+            music = []
+            for key, score in (
+                (await self.repo.scores(rival, self.spec.version))
+                .get("scores", {})
+                .items()
+            ):
+                try:
+                    music_id, sheet = (int(value) for value in key.split(":", 1))
+                except ValueError:
+                    continue
+                if music_id <= self.spec.max_music and sheet in range(4):
+                    music.append(
+                        {
+                            "@attr": {
+                                "music_num": str(music_id),
+                                "sheet_num": str(sheet),
+                                "score": str(score.get("score", 0)),
+                                "clearmedal": str(
+                                    CLEAR_TO_MEDAL.get(score.get("clear_type", 0), 0)
+                                ),
+                            }
+                        }
+                    )
             friends.append(
                 {
                     "no": item("s16", rival_index),
                     "is_open": item("s8", 1),
                     "g_pm_id": item("str", profile.get("friendId", "000000000000")),
                     "name": item("str", profile.get("name", "ゲスト")),
-                    "chara": item("s16", -1),
-                    "clear_medal": array(
-                        "u16", (await self._scores(rival))["clear_medal"]
-                    ),
-                    "hiscore": item(
-                        "bin", bytes((await self._scores(rival))["hiscore_array"])
-                    ),
+                    "chara": item("s16", params.get("params", {}).get("chara", -1)),
+                    "music": music,
                 }
             )
         response.content = {"friend": friends}
@@ -1151,7 +1202,7 @@ class PopnVersionHandler:
                 continue
             if music > self.spec.max_music or sheet not in range(4):
                 continue
-            medal = CLEAR_TO_MEDAL.get(value.get("clear_type", 0), 0)
+            medal = self._score_medal(value.get("clear_type", 0))
             medals[music] |= medal << (sheet * 4)
             index = music * 4 + sheet
             bit = index * 17
@@ -1215,7 +1266,9 @@ class PopnVersionHandler:
             "missions": {},
             "riddles": {},
             "team": [],
-            "battery": {},
+            "battery": [],
+            "medals": {},
+            "stamps": {},
         }
         achievements = await self.repo.achievements(refid, self.spec.version, defaults)
         for node_name, target, fields in (
@@ -1336,6 +1389,23 @@ class PopnVersionHandler:
             if score < limit:
                 return rank
         return 8
+
+    def _score_medal(self, clear_type: Any) -> int:
+        if self.spec.version in ("v20", "v21"):
+            return {
+                100: 1,
+                200: 2,
+                300: 3,
+                400: 5,
+                500: 5,
+                600: 6,
+                700: 7,
+                800: 9,
+                900: 10,
+                1000: 11,
+                1100: 15,
+            }.get(clear_type, 0)
+        return CLEAR_TO_MEDAL.get(clear_type, 0)
 
     @staticmethod
     def _merge_score(
