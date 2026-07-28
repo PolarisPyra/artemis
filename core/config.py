@@ -524,9 +524,9 @@ class KonamiConfig:
         )
 
     @property
-    def popn_score_sharing(self) -> bool:
+    def enable_score_sharing(self) -> bool:
         return CoreConfig.get_config_field(
-            self.__config, "core", "konami", "popn_score_sharing", default=True
+            self.__config, "core", "konami", "enable_score_sharing", default=True
         )
 
     @property

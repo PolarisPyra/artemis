@@ -43,7 +43,9 @@ class PopnRepository:
         )
 
     async def scores(self, refid: str, version: str, force_version: bool = False) -> dict:
-        if not force_version and getattr(self.data.config.konami, "popn_score_sharing", True):
+        if not force_version and getattr(
+            self.data.config.konami, "enable_score_sharing", True
+        ):
             merged = {"collection": "scores", "version": version, "scores": {}}
             for _, document in await self.data.konami.documents(
                 self.game_code, "scores"
