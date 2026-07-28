@@ -78,6 +78,7 @@ konami:
   hostname: "localhost"
   loglevel: "info"
   popn_force_unlock: True
+  popn_score_sharing: True
   ping_ip: "127.0.0.1"
   matching_port: 5700
   enable_paseli: True

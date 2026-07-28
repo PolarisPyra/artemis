@@ -53,6 +53,7 @@
 - `port`: Standalone Konami service port. Default `5730`
 - `hostname`: Advertised Konami hostname. Default `localhost`
 - `popn_force_unlock`: Unlocks Pop'n songs in returned profiles. Default `True`
+- `popn_score_sharing`: Merges Pop'n scores across stored versions when reading. Default `True`
 - `ping_ip`: Reachable address used in the e-amusement keepalive URL. Default `127.0.0.1`
 - `matching_port`: Port reported for facility matching. Default `5700`
 - `enable_paseli`: Enables PASELI in `pcbtracker.alive`. Default `True`

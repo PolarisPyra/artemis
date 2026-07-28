@@ -42,7 +42,25 @@ class PopnRepository:
             refid, self.game_code, "params", params, version
         )
 
-    async def scores(self, refid: str, version: str) -> dict:
+    async def scores(self, refid: str, version: str, force_version: bool = False) -> dict:
+        if not force_version and getattr(self.data.config.konami, "popn_score_sharing", True):
+            merged = {"collection": "scores", "version": version, "scores": {}}
+            for _, document in await self.data.konami.documents(
+                self.game_code, "scores"
+            ):
+                for key, score in document.get("scores", {}).items():
+                    current = merged["scores"].get(key)
+                    if current is None:
+                        merged["scores"][key] = deepcopy(score)
+                    else:
+                        current["score"] = max(
+                            current.get("score", 0), score.get("score", 0)
+                        )
+                        current["cnt"] = current.get("cnt", 0) + score.get("cnt", 0)
+                        current["clear_type"] = max(
+                            current.get("clear_type", 0), score.get("clear_type", 0)
+                        )
+            return merged
         return await self.data.konami.get_document(
             refid, self.game_code, "scores", version
         ) or {

@@ -334,7 +334,7 @@ class PopnVersionHandler:
         if not refid:
             response.status = 1
             return
-        scores = await self.repo.scores(refid, self.spec.version)
+        scores = await self.repo.scores(refid, self.spec.version, force_version=True)
         for stage in elements(data, "stage"):
             music = scalar(field(stage, "no", -1), -1)
             sheet = scalar(field(stage, "sheet", 0), 0)
@@ -462,7 +462,7 @@ class PopnVersionHandler:
             if value is not None:
                 saved[name] = scalar(value, 0)
         await self.repo.save_params(refid, "v19", params)
-        scores = await self.repo.scores(refid, "v19")
+        scores = await self.repo.scores(refid, "v19", force_version=True)
         for music_node in elements(data, "music"):
             music = scalar(field(music_node, "music_num", 0), 0)
             sheet = scalar(field(music_node, "sheet_num", 0), 0)
@@ -541,7 +541,7 @@ class PopnVersionHandler:
         if not refid:
             response.status = 1
             return
-        scores = await self.repo.scores(refid, self.spec.version)
+        scores = await self.repo.scores(refid, self.spec.version, force_version=True)
         self._merge_score(
             scores,
             scalar(field(data, "music_num", 0)),

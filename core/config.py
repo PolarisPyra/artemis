@@ -524,6 +524,12 @@ class KonamiConfig:
         )
 
     @property
+    def popn_score_sharing(self) -> bool:
+        return CoreConfig.get_config_field(
+            self.__config, "core", "konami", "popn_score_sharing", default=True
+        )
+
+    @property
     def ping_ip(self) -> str:
         return CoreConfig.get_config_field(
             self.__config, "core", "konami", "ping_ip", default="127.0.0.1"

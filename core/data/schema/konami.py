@@ -59,14 +59,14 @@ class KonamiData(BaseData):
     async def documents(
         self, game_code: str, collection: str, version: str = ""
     ) -> list[tuple[str, dict]]:
+        conditions = [
+            konami_document.c.game_code == game_code,
+            konami_document.c.collection == collection,
+        ]
+        if version:
+            conditions.append(konami_document.c.version == version)
         result = await self.execute(
-            konami_document.select()
-            .where(
-                (konami_document.c.game_code == game_code)
-                & (konami_document.c.collection == collection)
-                & (konami_document.c.version == version)
-            )
-            .order_by(konami_document.c.id)
+            konami_document.select().where(*conditions).order_by(konami_document.c.id)
         )
         if result is None:
             return []
