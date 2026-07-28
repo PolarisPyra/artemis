@@ -8,6 +8,8 @@ profile/params/scores/achievements collections.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
+import random
 from typing import Any
 
 from core.konami.protocol import EamuseInfo, EamuseResponse
@@ -336,6 +338,8 @@ class PopnVersionHandler:
         for stage in elements(data, "stage"):
             music = scalar(field(stage, "no", -1), -1)
             sheet = scalar(field(stage, "sheet", 0), 0)
+            if self.spec.version == "v20":
+                sheet = {2: 0, 0: 1, 1: 2, 3: 3}.get(sheet, sheet)
             n_data = scalar(field(stage, "n_data", 0), 0)
             clear = N_DATA_CLEAR.get((n_data >> (sheet * 4)) & 0xF, 0)
             self._merge_score(
@@ -345,6 +349,12 @@ class PopnVersionHandler:
         await self._save_extras(refid, data)
         if self.spec.version in ("v22", "v23", "v24", "v25", "v26", "v27"):
             await self._save_achievements(refid, data)
+            if self.spec.version == "v24":
+                params = await self.repo.params(refid, self.spec.version)
+                params.setdefault("params", {})["mission_date"] = (
+                    f"{date.today().year}-{date.today().month - 1}-{date.today().day}"
+                )
+                await self.repo.save_params(refid, self.spec.version, params)
         profile = await self.repo.profile(refid)
         response.content = {
             "pref": item("s8", -1),
@@ -790,15 +800,42 @@ class PopnVersionHandler:
                     }
                     for music_id in range(1, self.spec.max_music + 1)
                 )
-            if self.spec.version == "v24" and not response.content.get("mission"):
-                response.content["mission"] = [
-                    {
-                        "mission_id": item("u32", mission_id),
-                        "gauge_point": item("u32", 0),
-                        "mission_comp": item("u32", 0),
-                    }
-                    for mission_id in (1, 2, 3)
-                ]
+            if self.spec.version == "v24":
+                mission_date = (
+                    f"{date.today().year}-{date.today().month - 1}-{date.today().day}"
+                )
+                params = await self.repo.params(refid, self.spec.version)
+                saved_date = params.setdefault("params", {}).setdefault(
+                    "mission_date", mission_date
+                )
+                if saved_date != mission_date:
+                    missions = achievements.get("missions", {})
+                    next_id = max((int(key) for key in missions), default=0)
+                    response.content["mission"] = []
+                    for key, value in missions.items():
+                        if value.get("mission_comp", 0) == 1:
+                            next_id += 1
+                            mission_id = next_id
+                        else:
+                            mission_id = int(key)
+                        response.content["mission"].append(
+                            {
+                                "mission_id": item("u32", mission_id),
+                                "gauge_point": item("u32", 0),
+                                "mission_comp": item("u32", 0),
+                            }
+                        )
+                else:
+                    response.content["mission"] = [
+                        {
+                            "mission_id": item("u32", mission_id),
+                            "gauge_point": item("u32", value.get("gauge_point", 0)),
+                            "mission_comp": item("u32", value.get("mission_comp", 0)),
+                        }
+                        for mission_id, value in achievements.get(
+                            "missions", {1: {}, 2: {}, 3: {}}
+                        ).items()
+                    ]
             if self.spec.version == "v26":
                 riddles = achievements.get("riddles", {})
                 response.content["riddles_data"] = {
@@ -815,7 +852,8 @@ class PopnVersionHandler:
                         for value in riddles.values()
                     ],
                     "sh_riddles": [
-                        {"sh_riddles_id": item("u32", index)} for index in (1, 2, 3)
+                        {"sh_riddles_id": item("u32", index)}
+                        for index in random.sample(range(1, 21), 3)
                     ],
                 }
             if self.spec.version == "v27":
