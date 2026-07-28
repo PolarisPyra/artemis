@@ -8,6 +8,7 @@ from core.konami.protocol import EamuseInfo, EamuseResponse
 from core.konami.router import EamuseRouter, KonamiPlugin
 
 from .repository import PopnRepository
+from .hello import PopnHelloHandler
 from .versions import SPECS, PopnVersionHandler
 
 
@@ -19,11 +20,12 @@ class PopnPlugin(KonamiPlugin):
     in the reference Asphyxia plugin.
     """
 
-    game_codes = ("K39", "L39", "M39")
+    game_codes = ("K39", "L39", "M39", "JMP")
 
     def __init__(self, cfg: CoreConfig) -> None:
         self.cfg = cfg
         self.data = Data(cfg)
+        self.hello = PopnHelloHandler(self.data)
         self._handlers = {
             "v19": PopnVersionHandler(
                 PopnRepository(self.data, "K39"),
@@ -73,7 +75,7 @@ class PopnPlugin(KonamiPlugin):
         }
 
     def register(self, router: EamuseRouter) -> None:
-        for code in self.game_codes:
+        for code in self.game_codes[:3]:
             for module, method, handler_name in (
                 ("game", "get", "info"),
                 ("playerdata", "new", "new"),
@@ -123,6 +125,10 @@ class PopnPlugin(KonamiPlugin):
                 )
             router.fallback(code, self.unhandled)
 
+        for method in ("common", "shop", "new", "load", "load_m", "save", "save_m"):
+            router.add("JMP", "game", method, self._hello(method))
+        router.fallback("JMP", self.unhandled)
+
     async def webui_event(self, name: str, data: dict) -> None:
         """Handle the reference Pop'n plugin's three WebUI events."""
         repository = self._handlers["v21"].repo
@@ -138,6 +144,14 @@ class PopnPlugin(KonamiPlugin):
             await repository.delete_rival(
                 str(data.get("refid", "")), str(data.get("rivalid", ""))
             )
+        elif name == "setUnlockState":
+            await self.hello.set_unlock_state(data)
+
+    def _hello(self, name: str):
+        async def handler(info: EamuseInfo, data: dict, response: EamuseResponse):
+            await getattr(self.hello, name)(info, data, response)
+
+        return handler
 
     def _classic(self, name: str):
         async def handler(info: EamuseInfo, data: dict, response: EamuseResponse):
