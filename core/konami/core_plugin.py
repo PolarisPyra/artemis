@@ -17,6 +17,9 @@ class CoreKonamiPlugin(KonamiPlugin):
     def __init__(self, cfg: CoreConfig, game_codes: tuple[str, ...] = ()) -> None:
         self.data = Data(cfg)
         self.game_codes = game_codes
+        self.profile_code = (
+            "M39" if "M39" in game_codes else game_codes[0] if game_codes else ""
+        )
 
     def register(self, router: EamuseRouter) -> None:
         for game_code in self.game_codes:
@@ -211,7 +214,9 @@ class CoreKonamiPlugin(KonamiPlugin):
     ):
         cardid = data.get("@attr", {}).get("cardid", "")
         refid = self._refid(cardid)
-        profile = await self.data.konami.get_document(refid, info.game_code, "profile")
+        profile = await self.data.konami.get_document(
+            refid, self.profile_code, "profile"
+        )
         if profile is None or profile.get("pin", "unset") == "unset":
             response.status = 112
             return
@@ -231,7 +236,9 @@ class CoreKonamiPlugin(KonamiPlugin):
     ):
         cardid = data.get("@attr", {}).get("cardid", "")
         refid = self._refid(cardid)
-        profile = await self.data.konami.get_document(refid, info.game_code, "profile")
+        profile = await self.data.konami.get_document(
+            refid, self.profile_code, "profile"
+        )
         if profile is None:
             profile = {
                 "collection": "profile",
@@ -246,14 +253,18 @@ class CoreKonamiPlugin(KonamiPlugin):
             profile["pin"] = data.get("@attr", {}).get(
                 "passwd", profile.get("pin", "unset")
             )
-        await self.data.konami.put_document(refid, info.game_code, "profile", profile)
+        await self.data.konami.put_document(
+            refid, self.profile_code, "profile", profile
+        )
         response.content = {"@attr": {"dataid": refid, "refid": refid}}
 
     async def card_authpass(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ):
         refid = data.get("@attr", {}).get("refid", "DEADC0DEFEEDBEEF")
-        profile = await self.data.konami.get_document(refid, info.game_code, "profile")
+        profile = await self.data.konami.get_document(
+            refid, self.profile_code, "profile"
+        )
         if profile is None:
             response.status = 110
         elif str(profile.get("pin", "unset")) != str(

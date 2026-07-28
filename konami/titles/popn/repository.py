@@ -10,7 +10,10 @@ from core.data import Data
 class PopnRepository:
     def __init__(self, data: Data, game_code: str) -> None:
         self.data = data
-        self.game_code = game_code
+        # Asphyxia's Pop'n DB collections are keyed by refid and collection;
+        # game versions are carried by the document's version field.  M39 is
+        # the shared namespace used by the modern Pop'n route family.
+        self.game_code = "M39"
 
     async def profile(self, refid: str) -> dict:
         return await self.data.konami.get_document(

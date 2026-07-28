@@ -46,6 +46,30 @@ def test_kbin_binary_round_trip():
     assert decoded["response"]["playerdata"]["town"]["@content"] == bytes(range(8))
 
 
+def test_kbin_group_and_vector_round_trip():
+    payload = {
+        "response": {
+            "playerdata": {
+                "position": {
+                    "@attr": {"__type": "3f"},
+                    "@content": [1.0, 2.0, 3.0],
+                },
+                "flags": {
+                    "@attr": {"__type": "vu8", "__count": 2},
+                    "@content": list(range(32)),
+                },
+            }
+        }
+    }
+    decoded, _ = kbin_decode(kbin_encode(payload, "utf-8", True))
+    assert decoded["response"]["playerdata"]["position"]["@content"] == [
+        1.0,
+        2.0,
+        3.0,
+    ]
+    assert decoded["response"]["playerdata"]["flags"]["@attr"]["__count"] == 2
+
+
 def test_dotted_method_detection():
     assert KonamiServlet._find_call(
         {"posevent": [{"@attr": {"method": "income"}}, {"@attr": {"method": "sales"}}]}

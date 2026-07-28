@@ -35,7 +35,36 @@ NUMBER_TYPES = {
     "ip4": (12, "I", 4),
     "time": (13, "I", 4),
 }
+GROUP_TYPES = {
+    # K-bin stores vector/group values as a flat sequence of their scalar
+    # components.  The group width is part of the wire type, not the value.
+    "2s8": (16, "b", 2), "2u8": (17, "B", 2),
+    "2s16": (18, "h", 2), "2u16": (19, "H", 2),
+    "2s32": (20, "i", 2), "2u32": (21, "I", 2),
+    "2s64": (22, "q", 2), "2u64": (23, "Q", 2),
+    "2f": (24, "f", 2), "2d": (25, "d", 2),
+    "3s8": (26, "b", 3), "3u8": (27, "B", 3),
+    "3s16": (28, "h", 3), "3u16": (29, "H", 3),
+    "3s32": (30, "i", 3), "3u32": (31, "I", 3),
+    "3s64": (32, "q", 3), "3u64": (33, "Q", 3),
+    "3f": (34, "f", 3), "3d": (35, "d", 3),
+    "4s8": (36, "b", 4), "4u8": (37, "B", 4),
+    "4s16": (38, "h", 4), "4u16": (39, "H", 4),
+    "4s32": (40, "i", 4), "4u32": (41, "I", 4),
+    "4s64": (42, "q", 4), "4u64": (43, "Q", 4),
+    "4f": (44, "f", 4), "4d": (45, "d", 4),
+    # These are aliases emitted by the game protocol for fixed-width vectors.
+    "vs8": (48, "b", 16), "vu8": (49, "B", 16),
+    "vs16": (50, "h", 8), "vu16": (51, "H", 8),
+    "2b": (53, "B", 2), "3b": (54, "B", 3),
+    "4b": (55, "B", 4), "vb": (56, "B", 16),
+}
+GROUP_TYPES.update({
+    "vs32": (40, "i", 4), "vu32": (41, "I", 4), "vf": (44, "f", 4),
+})
+NUMBER_TYPES.update({"f": (14, "f", 4), "d": (15, "d", 8), "b": (52, "B", 1)})
 TYPES.update({key: value[0] for key, value in NUMBER_TYPES.items()})
+TYPES.update({key: value[0] for key, value in GROUP_TYPES.items()})
 
 
 def is_kbin(data: bytes) -> bool:
@@ -178,12 +207,16 @@ def decode(data: bytes) -> tuple[dict, str]:
                 data, data_cursor, data_start
             )
         else:
-            fmt = NUMBER_TYPES[type_name][1]
+            fmt, width = (
+                (NUMBER_TYPES[type_name][1], 1)
+                if type_name in NUMBER_TYPES
+                else (GROUP_TYPES[type_name][1], GROUP_TYPES[type_name][2])
+            )
             current["@content"], data_cursor = _read_value(
-                data, data_cursor, fmt, 1, is_array, data_start
+                data, data_cursor, fmt, width, is_array, data_start
             )
             if is_array:
-                current["@attr"]["__count"] = len(current["@content"])
+                current["@attr"]["__count"] = len(current["@content"]) // width
     return root, encoding
 
 
@@ -215,8 +248,12 @@ def encode(data: dict, encoding: str = "shift_jis", compressed: bool = True) -> 
             )
         elif type_name == "bin":
             stream(bytes(node.get("@content", b"")))
-        elif type_name in NUMBER_TYPES:
-            fmt = NUMBER_TYPES[type_name][1]
+        elif type_name in NUMBER_TYPES or type_name in GROUP_TYPES:
+            fmt, _width = (
+                (NUMBER_TYPES[type_name][1], 1)
+                if type_name in NUMBER_TYPES
+                else (GROUP_TYPES[type_name][1], GROUP_TYPES[type_name][2])
+            )
             content = node.get("@content", [])
             content = content if isinstance(content, list) else [content]
             raw = b"".join(struct.pack(">" + fmt, value) for value in content)
