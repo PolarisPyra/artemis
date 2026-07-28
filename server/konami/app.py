@@ -117,15 +117,16 @@ class KonamiServlet:
         result = EamuseResponse(
             root_name=module, compress=compressed, encrypt=encrypted
         )
-        await self.router.dispatch(parsed, info, result)
+        matched = await self.router.dispatch(parsed, info, result)
         self.logger.info(
-            "%s %s %s path=%s model=%s client=%s status=%s",
+            "%s %s %s path=%s model=%s client=%s route=%s status=%s",
             module,
             method,
             "kbin" if kencoded else "xml",
             request.url.path,
             model or "-",
             info.client_ip or "-",
+            "matched" if matched else "fallback",
             result.status,
         )
         if not result.content:

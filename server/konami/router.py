@@ -34,10 +34,11 @@ class EamuseRouter:
 
     async def dispatch(
         self, body: EamuseBody, info: EamuseInfo, response: EamuseResponse
-    ) -> None:
+    ) -> bool:
         handler = self._routes.get(info.game_code, {}).get(
             f"{body.module}.{body.method}"
         )
+        matched = handler is not None
         if handler is None:
             handler = self._fallback.get(info.game_code)
         if handler is not None:
@@ -50,3 +51,4 @@ class EamuseRouter:
             await handler(
                 info, module_data if isinstance(module_data, dict) else {}, response
             )
+        return matched
