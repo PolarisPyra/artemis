@@ -1,9 +1,10 @@
 import asyncio
+import hashlib
 
 from starlette.requests import Request
 
 from core.konami.encryption import KonmaiEncrypt
-from core.konami.lzkn import deflate_dummy, inflate
+from core.konami.lzkn import deflate, deflate_dummy, inflate
 from core.konami.xml import data_to_xml, xml_to_data
 from core.konami.xml import detect_xml_encoding
 from core.konami.kbin import decode as kbin_decode, encode as kbin_encode
@@ -20,6 +21,14 @@ def test_konmai_encrypt_round_trip():
 def test_lzkn_literal_round_trip():
     payload = b"a small payload for konami"
     assert inflate(deflate_dummy(payload)) == payload
+
+
+def test_lz_kn_matches_reference_encoder():
+    payload = b"The quick brown fox jumps over the lazy dog " * 30
+    encoded = deflate(payload)
+    assert hashlib.sha256(encoded).hexdigest() == (
+        "ffa88f70fdeb8a962b30e3d2e4b51960b731e3bd698b61dd30ddf25914249d5e"
+    )
 
 
 def test_xml_asphyxia_shape_round_trip():
