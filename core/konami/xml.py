@@ -39,8 +39,12 @@ def xml_to_data(raw: bytes, encoding: str = "utf-8") -> dict:
 
 
 def _escape(value: object) -> str:
-    return ElementTree.escape(str(value)) if hasattr(ElementTree, "escape") else (
-        str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    return (
+        ElementTree.escape(str(value))
+        if hasattr(ElementTree, "escape")
+        else (
+            str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        )
     )
 
 
@@ -50,12 +54,18 @@ def _render(name: str, value: object) -> str:
     if not isinstance(value, dict):
         return f"<{name}>{_escape(value)}</{name}>"
     attrs = value.get("@attr", {})
-    attr_text = "".join(f' {key}="{_escape(val)}"' for key, val in attrs.items() if not key.startswith("__"))
+    attr_text = "".join(
+        f' {key}="{_escape(val)}"'
+        for key, val in attrs.items()
+        if not key.startswith("__")
+    )
     raw_content = value.get("@content", "")
     if isinstance(raw_content, list):
         raw_content = " ".join(str(item) for item in raw_content)
     content = _escape(raw_content) if "@content" in value else ""
-    children = "".join(_render(key, child) for key, child in value.items() if not key.startswith("@"))
+    children = "".join(
+        _render(key, child) for key, child in value.items() if not key.startswith("@")
+    )
     if not content and not children:
         return f"<{name}{attr_text}/>"
     return f"<{name}{attr_text}>{content}{children}</{name}>"

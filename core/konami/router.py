@@ -28,10 +28,15 @@ class EamuseRouter:
     def fallback(self, game_code: str, handler: Handler) -> None:
         self._fallback[game_code] = handler
 
-    async def dispatch(self, body: EamuseBody, info: EamuseInfo, response: EamuseResponse) -> None:
-        handler = self._routes.get(info.game_code, {}).get(f"{body.module}.{body.method}")
+    async def dispatch(
+        self, body: EamuseBody, info: EamuseInfo, response: EamuseResponse
+    ) -> None:
+        handler = self._routes.get(info.game_code, {}).get(
+            f"{body.module}.{body.method}"
+        )
         if handler is None:
             handler = self._fallback.get(info.game_code)
         if handler is not None:
-            await handler(info, body.data.get("call", {}).get(body.module, {}), response)
-
+            await handler(
+                info, body.data.get("call", {}).get(body.module, {}), response
+            )

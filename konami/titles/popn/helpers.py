@@ -27,11 +27,17 @@ def child(node: Any, name: str, default: Any = None) -> Any:
 
 
 def item(type_name: str, value: Any, **extra: Any) -> dict:
-    return {"@attr": {"__type": type_name, **extra}, "@content": value if isinstance(value, list) else [value]}
+    return {
+        "@attr": {"__type": type_name, **extra},
+        "@content": value if isinstance(value, list) else [value],
+    }
 
 
 def array(type_name: str, value: list[Any], **extra: Any) -> dict:
-    return {"@attr": {"__type": type_name, "__count": len(value), **extra}, "@content": value}
+    return {
+        "@attr": {"__type": type_name, "__count": len(value), **extra},
+        "@content": value,
+    }
 
 
 def scalar(value: Any, default: Any = 0) -> Any:
@@ -62,4 +68,3 @@ def walk_set(node: dict, path: str, value: Any) -> None:
     for part in parts[:-1]:
         current = current.setdefault(part, {})
     current[parts[-1]] = value
-

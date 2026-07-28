@@ -50,4 +50,3 @@ class KonmaiEncrypt:
             state[i], state[j] = state[j], state[i]
             result[index] = value ^ state[(state[i] + state[j]) % 256]
         return bytes(result)
-

@@ -13,35 +13,60 @@ class PopnRepository:
         self.game_code = game_code
 
     async def profile(self, refid: str) -> dict:
-        return await self.data.konami.get_document(refid, self.game_code, "profile") or {
-            "collection": "profile", "name": "ゲスト", "friendId": "000000000000", "dataVersion": 2,
+        return await self.data.konami.get_document(
+            refid, self.game_code, "profile"
+        ) or {
+            "collection": "profile",
+            "name": "ゲスト",
+            "friendId": "000000000000",
+            "dataVersion": 2,
         }
 
     async def save_profile(self, refid: str, profile: dict) -> None:
         await self.data.konami.put_document(refid, self.game_code, "profile", profile)
 
     async def params(self, refid: str, version: str) -> dict:
-        return await self.data.konami.get_document(refid, self.game_code, "params", version) or {
-            "collection": "params", "version": version, "params": {},
+        return await self.data.konami.get_document(
+            refid, self.game_code, "params", version
+        ) or {
+            "collection": "params",
+            "version": version,
+            "params": {},
         }
 
     async def save_params(self, refid: str, version: str, params: dict) -> None:
-        await self.data.konami.put_document(refid, self.game_code, "params", params, version)
+        await self.data.konami.put_document(
+            refid, self.game_code, "params", params, version
+        )
 
     async def scores(self, refid: str, version: str) -> dict:
-        return await self.data.konami.get_document(refid, self.game_code, "scores", version) or {
-            "collection": "scores", "version": version, "scores": {},
+        return await self.data.konami.get_document(
+            refid, self.game_code, "scores", version
+        ) or {
+            "collection": "scores",
+            "version": version,
+            "scores": {},
         }
 
     async def save_scores(self, refid: str, version: str, scores: dict) -> None:
-        await self.data.konami.put_document(refid, self.game_code, "scores", scores, version)
+        await self.data.konami.put_document(
+            refid, self.game_code, "scores", scores, version
+        )
 
     async def achievements(self, refid: str, version: str, default: dict) -> dict:
-        return await self.data.konami.get_document(refid, self.game_code, "achievements", version) or deepcopy(default)
+        return await self.data.konami.get_document(
+            refid, self.game_code, "achievements", version
+        ) or deepcopy(default)
 
-    async def save_achievements(self, refid: str, version: str, achievements: dict) -> None:
-        await self.data.konami.put_document(refid, self.game_code, "achievements", achievements, version)
+    async def save_achievements(
+        self, refid: str, version: str, achievements: dict
+    ) -> None:
+        await self.data.konami.put_document(
+            refid, self.game_code, "achievements", achievements, version
+        )
 
     async def rivals(self, refid: str) -> dict:
-        return await self.data.konami.get_document(refid, self.game_code, "rivals") or {"collection": "rivals", "rivals": []}
-
+        return await self.data.konami.get_document(refid, self.game_code, "rivals") or {
+            "collection": "rivals",
+            "rivals": [],
+        }

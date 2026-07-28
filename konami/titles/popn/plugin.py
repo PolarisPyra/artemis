@@ -25,15 +25,51 @@ class PopnPlugin(KonamiPlugin):
         self.cfg = cfg
         self.data = Data(cfg)
         self._handlers = {
-            "v19": PopnVersionHandler(PopnRepository(self.data, "K39"), SPECS["v19"], cfg.konami.popn_force_unlock),
-            "v20": PopnVersionHandler(PopnRepository(self.data, "L39"), SPECS["v20"], cfg.konami.popn_force_unlock),
-            "v21": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v21"], cfg.konami.popn_force_unlock),
-            "v22": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v22"], cfg.konami.popn_force_unlock),
-            "v23": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v23"], cfg.konami.popn_force_unlock),
-            "v24": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v24"], cfg.konami.popn_force_unlock),
-            "v25": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v25"], cfg.konami.popn_force_unlock),
-            "v26": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v26"], cfg.konami.popn_force_unlock),
-            "v27": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v27"], cfg.konami.popn_force_unlock),
+            "v19": PopnVersionHandler(
+                PopnRepository(self.data, "K39"),
+                SPECS["v19"],
+                cfg.konami.popn_force_unlock,
+            ),
+            "v20": PopnVersionHandler(
+                PopnRepository(self.data, "L39"),
+                SPECS["v20"],
+                cfg.konami.popn_force_unlock,
+            ),
+            "v21": PopnVersionHandler(
+                PopnRepository(self.data, "M39"),
+                SPECS["v21"],
+                cfg.konami.popn_force_unlock,
+            ),
+            "v22": PopnVersionHandler(
+                PopnRepository(self.data, "M39"),
+                SPECS["v22"],
+                cfg.konami.popn_force_unlock,
+            ),
+            "v23": PopnVersionHandler(
+                PopnRepository(self.data, "M39"),
+                SPECS["v23"],
+                cfg.konami.popn_force_unlock,
+            ),
+            "v24": PopnVersionHandler(
+                PopnRepository(self.data, "M39"),
+                SPECS["v24"],
+                cfg.konami.popn_force_unlock,
+            ),
+            "v25": PopnVersionHandler(
+                PopnRepository(self.data, "M39"),
+                SPECS["v25"],
+                cfg.konami.popn_force_unlock,
+            ),
+            "v26": PopnVersionHandler(
+                PopnRepository(self.data, "M39"),
+                SPECS["v26"],
+                cfg.konami.popn_force_unlock,
+            ),
+            "v27": PopnVersionHandler(
+                PopnRepository(self.data, "M39"),
+                SPECS["v27"],
+                cfg.konami.popn_force_unlock,
+            ),
         }
 
     def register(self, router: EamuseRouter) -> None:
@@ -52,12 +88,22 @@ class PopnPlugin(KonamiPlugin):
             for version_number, version in ((22, "v22"), (23, "v23"), (24, "v24")):
                 prefix = f"{version_number}"
                 for method, handler_name in (
-                    ("common", "info"), ("new", "new"), ("read", "read"),
-                    ("start", "start"), ("buy", "buy"), ("read_score", "read_score"),
-                    ("write_music", "write_music"), ("write", "write"),
+                    ("common", "info"),
+                    ("new", "new"),
+                    ("read", "read"),
+                    ("start", "start"),
+                    ("buy", "buy"),
+                    ("read_score", "read_score"),
+                    ("write_music", "write_music"),
+                    ("write", "write"),
                     ("friend", "friend"),
                 ):
-                    router.add(code, f"info{prefix}" if method == "common" else f"player{prefix}", method, self._modern(version, handler_name))
+                    router.add(
+                        code,
+                        f"info{prefix}" if method == "common" else f"player{prefix}",
+                        method,
+                        self._modern(version, handler_name),
+                    )
             router.fallback(code, self.unhandled)
 
     def _classic(self, name: str):
@@ -67,12 +113,16 @@ class PopnPlugin(KonamiPlugin):
                 response.content = {"result": {"@attr": {"status": "0"}}}
                 return
             await getattr(self._handlers[version], name)(info, data, response)
+
         return handler
 
     def _modern(self, version: str, name: str):
         async def handler(info: EamuseInfo, data: dict, response: EamuseResponse):
-            selected = self._usaneko_version(info.model) if version == "v24" else version
+            selected = (
+                self._usaneko_version(info.model) if version == "v24" else version
+            )
             await getattr(self._handlers[selected], name)(info, data, response)
+
         return handler
 
     @staticmethod

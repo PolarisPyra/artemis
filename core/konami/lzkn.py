@@ -69,8 +69,12 @@ def deflate(data: bytes) -> bytes:
             best_distance = best_length = 0
             for distance in range(3, min(0x200, cursor + 1)):
                 length = 0
-                while (length < 18 and cursor + length < len(data) and
-                       window[(window_cursor - distance + length) & WINDOW_MASK] == data[cursor + length]):
+                while (
+                    length < 18
+                    and cursor + length < len(data)
+                    and window[(window_cursor - distance + length) & WINDOW_MASK]
+                    == data[cursor + length]
+                ):
                     length += 1
                 if length >= 10:
                     best_distance, best_length = distance, length
@@ -78,7 +82,12 @@ def deflate(data: bytes) -> bytes:
                 if length >= 3 and length > best_length:
                     best_distance, best_length = distance, length
             if best_length >= 3:
-                chunk.extend(((best_distance >> 4) & 0xFF, ((best_distance & 0x0F) << 4) | (best_length - 3)))
+                chunk.extend(
+                    (
+                        (best_distance >> 4) & 0xFF,
+                        ((best_distance & 0x0F) << 4) | (best_length - 3),
+                    )
+                )
                 for _ in range(best_length):
                     window[window_cursor] = data[cursor]
                     cursor += 1

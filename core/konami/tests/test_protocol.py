@@ -15,6 +15,10 @@ def test_lzkn_literal_round_trip():
 
 
 def test_xml_asphyxia_shape_round_trip():
-    payload = {"call": {"@attr": {"model": "K39:2020010100"}, "game": {"@attr": {"method": "get"}}}}
+    payload = {
+        "call": {
+            "@attr": {"model": "K39:2020010100"},
+            "game": {"@attr": {"method": "get"}},
+        }
+    }
     assert xml_to_data(data_to_xml(payload))["call"]["game"]["@attr"]["method"] == "get"
-

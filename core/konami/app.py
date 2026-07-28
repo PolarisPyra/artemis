@@ -66,7 +66,9 @@ class KonamiServlet:
             method=method,
             model=model,
             client_ip=request.client.host if request.client else "",
-            host=request.headers.get("x-forwarded-host", request.headers.get("host", "")),
+            host=request.headers.get(
+                "x-forwarded-host", request.headers.get("host", "")
+            ),
             protocol=request.headers.get("x-forwarded-proto", request.url.scheme),
             proxy=bool(request.headers.get("x-forwarded-host")),
         )
@@ -81,7 +83,9 @@ class KonamiServlet:
             kencoded=kencoded,
             encoding=request_encoding,
         )
-        result = EamuseResponse(root_name=module, compress=compressed, encrypt=encrypted)
+        result = EamuseResponse(
+            root_name=module, compress=compressed, encrypt=encrypted
+        )
         await self.router.dispatch(parsed, info, result)
         if not result.content:
             result.content = {}
@@ -97,7 +101,11 @@ class KonamiServlet:
             }
         }
         encoding = result.encoding or parsed.encoding
-        output = kbin_encode(response_data, encoding, True) if parsed.kencoded else data_to_xml(response_data, encoding)
+        output = (
+            kbin_encode(response_data, encoding, True)
+            if parsed.kencoded
+            else data_to_xml(response_data, encoding)
+        )
         response_headers = {"X-Compress": "none"}
         should_compress = result.compress if result.compress is not None else compressed
         if should_compress and len(output) > 500:
@@ -107,7 +115,9 @@ class KonamiServlet:
             key = KonmaiEncrypt()
             output = key.crypt(output)
             response_headers["X-Eamuse-Info"] = key.public_key
-        return Response(output, media_type="application/octet-stream", headers=response_headers)
+        return Response(
+            output, media_type="application/octet-stream", headers=response_headers
+        )
 
     @staticmethod
     def _find_call(call: dict) -> tuple[str, str]:
