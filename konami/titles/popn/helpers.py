@@ -29,7 +29,7 @@ def child(node: Any, name: str, default: Any = None) -> Any:
 def item(type_name: str, value: Any, **extra: Any) -> dict:
     return {
         "@attr": {"__type": type_name, **extra},
-        "@content": value if isinstance(value, list) else [value],
+        "@content": value if isinstance(value, (list, bytes, bytearray)) else [value],
     }
 
 

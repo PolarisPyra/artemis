@@ -228,9 +228,13 @@ class CoreKonamiPlugin(KonamiPlugin):
                 "dataVersion": 2,
                 "pin": data.get("@attr", {}).get("passwd", "unset"),
             }
-            await self.data.konami.put_document(
-                refid, info.game_code, "profile", profile
+        else:
+            # Asphyxia treats getrefid on an existing card as the PIN update
+            # operation, rather than silently retaining the old PIN.
+            profile["pin"] = data.get("@attr", {}).get(
+                "passwd", profile.get("pin", "unset")
             )
+        await self.data.konami.put_document(refid, info.game_code, "profile", profile)
         response.content = {"@attr": {"dataid": refid, "refid": refid}}
 
     async def card_authpass(

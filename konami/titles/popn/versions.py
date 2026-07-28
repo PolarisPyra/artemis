@@ -325,6 +325,9 @@ class PopnVersionHandler:
     async def write(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ) -> None:
+        if self.spec.version == "v19":
+            await self._write_tunestreet(data, response)
+            return
         refid = field(data, "ref_id", "")
         if not refid:
             response.status = 1
@@ -342,6 +345,144 @@ class PopnVersionHandler:
         await self._save_extras(refid, data)
         if self.spec.version in ("v22", "v23", "v24", "v25", "v26", "v27"):
             await self._save_achievements(refid, data)
+        profile = await self.repo.profile(refid)
+        response.content = {
+            "pref": item("s8", -1),
+            "name": item("str", profile.get("name", "ゲスト")),
+        }
+
+    async def town(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ) -> None:
+        refid = field(data, "ref_id", "")
+        if not refid:
+            response.status = 1
+            return
+        profile = await self.repo.profile(refid)
+        params = await self.repo.params(refid, "v19")
+        achievements = await self.repo.achievements(
+            refid,
+            "v19",
+            {
+                "apply": [""] * 6,
+                "building": [[0] * 8 for _ in range(8)],
+                "base": [0] * 4,
+            },
+        )
+        town = bytearray(180)
+        chara = scalar(params.get("params", {}).get("chara", 0), 0)
+        town[0:2] = chara.to_bytes(2, "little", signed=False)
+        for row in range(8):
+            for column in range(8):
+                town[42 + row * 8 + column] = (
+                    scalar(achievements.get("building", [[0] * 8] * 8)[row][column], 0)
+                    & 0xFF
+                )
+        friend_id = str(profile.get("friendId", ""))[:12].encode("ascii", "replace")
+        town[106 : 106 + len(friend_id)] = friend_id
+        name = str(profile.get("name", "ゲスト")).encode("shift_jis", "replace")[:12]
+        town[119 : 119 + len(name)] = name
+        for index, value in enumerate(achievements.get("base", [0] * 4)[:4]):
+            town[173 + index] = scalar(value, 0) & 0xFF
+        response.content = {
+            "residence": {"@attr": {"id": "0"}},
+            "map": [
+                item("bin", bytes(town), residence="0"),
+            ],
+        }
+
+    async def _write_tunestreet(self, data: dict, response: EamuseResponse) -> None:
+        refid = field(data, "ref_id", "")
+        if not refid:
+            response.status = 1
+            return
+        params = await self.repo.params(refid, "v19")
+        saved = params.setdefault("params", {})
+        for name in (
+            "tp",
+            "play_mode",
+            "chara_num",
+            "option",
+            "last_play_flag",
+            "medal_and_friend",
+            "music_num",
+            "sheet_num",
+            "category_num",
+            "skin_sd_bgm",
+            "skin_sd_se",
+            "skin_tex_cmn",
+            "skin_tex_note",
+        ):
+            value = field(data, name, None)
+            if value is not None:
+                saved[name] = scalar(value, 0)
+        await self.repo.save_params(refid, "v19", params)
+        scores = await self.repo.scores(refid, "v19")
+        for music_node in elements(data, "music"):
+            music = scalar(field(music_node, "music_num", 0), 0)
+            sheet = scalar(field(music_node, "sheet_num", 0), 0)
+            score = scalar(field(music_node, "score", 0), 0)
+            packed = scalar(field(music_node, "data", 0), 0)
+            if music > self.spec.max_music or sheet in (4, 5):
+                continue
+            play_mode = saved.get("play_mode", 0)
+            if play_mode == 4:
+                if sheet in (2, 6, 7):
+                    continue
+                sheet = {0: 1, 1: 2, 3: 3}.get(sheet, sheet)
+            else:
+                sheet = {0: 4, 1: 5, 2: 9, 3: 6, 6: 7, 7: 8}.get(sheet, sheet)
+            shift = {9: 4, 4: 0, 5: 2, 6: 6, 1: 0, 2: 2, 3: 6, 7: 9, 8: 8}.get(sheet, 0)
+            mask = 0x1 if sheet in (7, 8) else 0x3
+            flags = (packed >> shift) & mask
+            clear_type = {0: 100, 1: 500, 2: 800, 3: 1100}.get(flags, 100)
+            self._merge_score(scores, music, sheet, score, clear_type)
+        await self.repo.save_scores(refid, "v19", scores)
+        town = child(data, "town", {})
+        if isinstance(town, dict):
+            achievements = await self.repo.achievements(
+                refid,
+                "v19",
+                {
+                    "collection": "achievements",
+                    "version": "v19",
+                    "apply": [""] * 6,
+                    "bought_flg": [0] * 3,
+                    "build_flg": [0] * 8,
+                    "chara_flg": [0] * 19,
+                    "event_flg": [0] * 4,
+                    "base": [0] * 4,
+                    "building": [[0] * 8 for _ in range(8)],
+                    "play_type": 0,
+                },
+            )
+            town_attrs = town.get("@attr", {})
+            for index in range(6):
+                achievements.setdefault("apply", [""] * 6)[index] = town_attrs.get(
+                    f"apply_gpmid_{index}", ""
+                )
+            for key, count in (
+                ("bought_flg", 3),
+                ("build_flg", 8),
+                ("chara_flg", 19),
+                ("event_flg", 4),
+                ("base", 4),
+            ):
+                raw = town_attrs.get(key)
+                if raw is not None:
+                    achievements[key] = [scalar(x, 0) for x in str(raw).split(",")][
+                        :count
+                    ]
+                    achievements[key] += [0] * (count - len(achievements[key]))
+            for index in range(8):
+                raw = town_attrs.get(f"building_{index}")
+                if raw is not None:
+                    values = [scalar(x, 0) for x in str(raw).split(",")][:8]
+                    achievements.setdefault("building", [[0] * 8 for _ in range(8)])[
+                        index
+                    ] = values + [0] * (8 - len(values))
+            achievements["play_type"] = scalar(town_attrs.get("play_type", 0), 0)
+            await self.repo.save_achievements(refid, "v19", achievements)
         profile = await self.repo.profile(refid)
         response.content = {
             "pref": item("s8", -1),
@@ -501,6 +642,16 @@ class PopnVersionHandler:
             0, 20 - len(play_order[:20])
         )
         if self.spec.version in ("v19", "v20", "v21"):
+            if self.spec.version == "v19":
+                binary_profile, hiscore, town = await self._tunestreet_blobs(
+                    refid, profile, await self.repo.params(refid, "v19")
+                )
+                response.content = {
+                    "b": item("bin", binary_profile),
+                    "hiscore": item("bin", hiscore),
+                    "town": item("bin", town),
+                }
+                return
             base = {
                 "name": item("str", profile.get("name", "ゲスト")),
                 "g_pm_id": item("str", profile.get("friendId", "000000000000")),
@@ -532,6 +683,7 @@ class PopnVersionHandler:
                 },
                 "hiscore": item("bin", bytes(scores["hiscore_array"])),
             }
+
         else:
             music = []
             for key, score in (
@@ -676,6 +828,123 @@ class PopnVersionHandler:
                 )
                 event.setdefault("team", [])
                 event.setdefault("battery", [])
+
+    async def _tunestreet_blobs(
+        self, refid: str, profile: dict, params_document: dict
+    ) -> tuple[bytes, bytes, bytes]:
+        params = params_document.get("params", {})
+        achievements = await self.repo.achievements(
+            refid,
+            "v19",
+            {
+                "apply": [""] * 6,
+                "building": [[0] * 8 for _ in range(8)],
+                "base": [0] * 4,
+            },
+        )
+        binary = bytearray(2892)
+        name = str(profile.get("name", "ゲスト")).encode("shift_jis", "replace")[:12]
+        binary[: len(name)] = name
+        friend = str(profile.get("friendId", "000000000000")).encode(
+            "ascii", "replace"
+        )[:12]
+        binary[17 : 17 + len(friend)] = friend
+        for offset, key, width in (
+            (38, "skin_tex_note", 1),
+            (39, "skin_tex_cmn", 1),
+            (40, "skin_sd_bgm", 1),
+            (41, "skin_sd_se", 1),
+            (44, "option", 4),
+            (60, "chara", 2),
+            (62, "music", 2),
+            (64, "sheet", 1),
+            (65, "category", 1),
+        ):
+            value = scalar(params.get(key, 0), 0)
+            binary[offset : offset + width] = value.to_bytes(
+                width, "little", signed=False
+            )
+        mode = scalar(params.get("play_mode", 0), 0)
+        binary[13] = {2: 1, 3: 1, 4: 5, 5: 2, 6: 4}.get(mode, 0)
+        binary[14] = {0: 1, 2: 1, 4: 255, 5: 255, 6: 255}.get(mode, 0)
+        binary[15] = scalar(params.get("last_play_flag", 0), 0) & 0xFF
+        binary[16] = scalar(params.get("medal_and_friend", 0), 0) & 0xFF
+        scores = (await self.repo.scores(refid, "v19")).get("scores", {})
+        hiscore = bytearray(((self.spec.max_music * 7 * 17) + 7) // 8)
+        play_count: dict[int, int] = {}
+        slots = {9: 0, 4: 1, 5: 2, 6: 3, 1: 4, 2: 5, 3: 6}
+        shifts = {9: 4, 4: 0, 5: 2, 6: 6, 1: 0, 2: 2, 3: 6, 7: 9, 8: 8}
+        played = {
+            9: 0x2000,
+            4: 0x0800,
+            5: 0x1000,
+            6: 0x4000,
+            1: 0x0800,
+            2: 0x1000,
+            3: 0x4000,
+            7: 0,
+            8: 0,
+        }
+        flag_values = {
+            100: 0,
+            200: 0,
+            300: 0,
+            400: 1,
+            500: 1,
+            600: 1,
+            700: 1,
+            800: 2,
+            900: 2,
+            1000: 2,
+            1100: 3,
+        }
+        for key, score_data in scores.items():
+            try:
+                music, sheet = (int(value) for value in key.split(":", 1))
+            except (TypeError, ValueError):
+                continue
+            if music > self.spec.max_music or sheet == 0:
+                continue
+            flags = flag_values.get(int(score_data.get("clear_type", 100)), 0)
+            packed = (flags << shifts.get(sheet, 0)) | played.get(sheet, 0)
+            pos = 108 + music * 2
+            if pos + 1 < len(binary):
+                binary[pos] |= packed & 0xFF
+                binary[pos + 1] |= packed >> 8
+            slot = slots.get(sheet)
+            if slot is None:
+                continue
+            bit = (music * 7 + slot) * 17
+            pos = bit // 8
+            packed_score = int(score_data.get("score", 0)) << (bit % 8)
+            if pos + 2 < len(hiscore):
+                hiscore[pos] |= packed_score & 0xFF
+                hiscore[pos + 1] |= packed_score >> 8
+                hiscore[pos + 2] |= packed_score >> 16
+            play_count[music] = play_count.get(music, 0) + int(score_data.get("cnt", 0))
+        for index, music in enumerate(
+            sorted(play_count, key=play_count.get, reverse=True)[:20]
+        ):
+            binary[68 + index * 2 : 70 + index * 2] = int(music).to_bytes(2, "little")
+        town = bytearray(272)
+        town[0:4] = scalar(params.get("tp", 100), 100).to_bytes(
+            4, "little", signed=False
+        )
+        for key, offset, count in (
+            ("bought_flg", 4, 3),
+            ("build_flg", 16, 8),
+            ("chara_flg", 48, 19),
+            ("event_flg", 124, 4),
+        ):
+            for index, value in enumerate(achievements.get(key, [])[:count]):
+                town[offset + index * 4 : offset + index * 4 + 4] = scalar(
+                    value, 0
+                ).to_bytes(4, "little", signed=False)
+        town[140] = scalar(achievements.get("play_type", 0), 0) & 0xFF
+        for index, value in enumerate(achievements.get("apply", [])[:6]):
+            encoded = str(value).encode("shift_jis", "replace")[:12]
+            town[141 + index * 13 : 141 + index * 13 + len(encoded)] = encoded
+        return bytes(binary), bytes(hiscore), bytes(town)
 
     @staticmethod
     def _apply_defaults(player: dict, version: str, params: dict) -> None:

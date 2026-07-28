@@ -8,7 +8,6 @@ from core.konami.protocol import EamuseInfo, EamuseResponse
 from core.konami.router import EamuseRouter, KonamiPlugin
 
 from .repository import PopnRepository
-from .helpers import item
 from .versions import SPECS, PopnVersionHandler
 
 
@@ -128,9 +127,7 @@ class PopnPlugin(KonamiPlugin):
         async def handler(info: EamuseInfo, data: dict, response: EamuseResponse):
             version = {"K39": "v19", "L39": "v20", "M39": "v21"}[info.game_code]
             if name == "town":
-                response.content = {
-                    "town": item("bin", bytes((100, 0, 0, 0) + (0,) * 268))
-                }
+                await self._handlers[version].town(info, data, response)
                 return
             await getattr(self._handlers[version], name)(info, data, response)
 
