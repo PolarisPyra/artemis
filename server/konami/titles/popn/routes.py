@@ -124,6 +124,10 @@ class PopnRoutes:
                     code, f"info{prefix}", "common", self._modern(version, "info")
                 )
 
+            # Hi Cheers labels its common game-data call ``info23.common``
+            # even though the cabinet model is M39.
+            router.add(code, "info23", "common", self._modern("v21", "info"))
+
             # M39/Hi Cheers still exposes the original generic XRPC module
             # names in addition to the versioned playerdata modules.  The
             # DLL registers these methods as CXrpcPlayer* classes.  Reuse the

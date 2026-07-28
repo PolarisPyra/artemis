@@ -59,6 +59,7 @@ class ArtemisServices:
             router.add(game_code, "cardmng", "inquire", self.card_inquire)
             router.add(game_code, "cardmng", "getrefid", self.card_getrefid)
             router.add(game_code, "cardmng", "getdatalist", self.card_getdatalist)
+            router.add(game_code, "cardmng", "getkeepspan", self.card_getkeepspan)
             router.add(game_code, "cardmng", "authpass", self.card_authpass)
             router.add(game_code, "cardmng", "bindmodel", self.card_bindmodel)
             router.fallback(game_code, self.success)
@@ -318,6 +319,12 @@ class ArtemisServices:
     ):
         """Return an empty card data list for the initial card flow."""
         response.content = {"card": []}
+
+    async def card_getkeepspan(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ):
+        """Return the standard profile retention period expected by EA3 clients."""
+        response.content = {"@attr": {"keepspan": "30"}}
 
     @staticmethod
     def _refid(cardid: str) -> str:
