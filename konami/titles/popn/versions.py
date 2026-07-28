@@ -877,6 +877,51 @@ class PopnVersionHandler:
                         "friendship": item("s32", 0),
                     },
                 }
+            if self.spec.version == "v23":
+                response.content["account"]["meteor_flg"] = item("bool", True)
+                response.content.update(
+                    {
+                        "gakuen_data": {"music_list": item("s32", -1)},
+                        "flying_saucer": {
+                            "music_list": item("s32", -1),
+                            "tune_count": item("s32", -1),
+                            "clear_norma": item("u32", 0),
+                            "clear_norma_add": item("u32", 0),
+                        },
+                        "triple_journey": {
+                            "music_list": item("s32", -1),
+                            "boss_damage": array("s32", [65534] * 4),
+                            "boss_stun": array("s32", [0] * 4),
+                            "magic_gauge": item("s32", 0),
+                            "today_party": item("s32", 0),
+                            "union_magic": item("bool", False),
+                            "base_attack_rate": item("float", 1.0),
+                            "iidx_play_num": item("s32", 0),
+                            "reflec_play_num": item("s32", 0),
+                            "voltex_play_num": item("s32", 0),
+                            "iidx_play_flg": item("bool", True),
+                            "reflec_play_flg": item("bool", True),
+                            "voltex_play_flg": item("bool", True),
+                        },
+                        "ios": {
+                            "continueRightAnswer": item("s32", 30),
+                            "totalRightAnswer": item("s32", 30),
+                        },
+                        "kac2013": {
+                            "music_num": item("s8", 0),
+                            "music": item("s16", 0),
+                            "sheet": item("u8", 0),
+                        },
+                        "baseball_data": {"music_list": item("s64", -1)},
+                        "floor_infection": [
+                            {
+                                "infection_id": item("s32", infection),
+                                "music_list": item("s32", -1),
+                            }
+                            for infection in (3, 5, 7)
+                        ],
+                    }
+                )
         params = await self.repo.params(refid, self.spec.version)
         self._apply_defaults(
             response.content, self.spec.version, params.get("params", {})
