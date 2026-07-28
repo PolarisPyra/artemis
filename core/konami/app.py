@@ -32,7 +32,17 @@ class KonamiServlet:
         # Konami clients commonly post to /, while services discovered through
         # services.get may use arbitrary module paths.  The catch-all route is
         # therefore intentional.
-        return [Route("/{path:path}", self.handle, methods=["POST"])]
+        return [
+            Route("/", self.health, methods=["GET"]),
+            Route("/{path:path}", self.handle, methods=["POST"]),
+        ]
+
+    async def health(self, request: Request) -> Response:
+        return Response(
+            "<!doctype html><html><head><title>Konami Service</title></head>"
+            "<body><h1>Service OK</h1></body></html>",
+            media_type="text/html",
+        )
 
     async def dispatch_webui_event(
         self, game_code: str, name: str, data: dict
