@@ -1143,7 +1143,12 @@ class PopnVersionHandler:
             value = params.get(name, params.get(f"{path}.{name}", default))
             target = player
             for part in path.split("."):
+                if not isinstance(target, dict):
+                    target = None
+                    break
                 target = target.setdefault(part, {})
+            if not isinstance(target, dict):
+                continue
             target_name = name.split("__", 1)[0]
             target[target_name] = (
                 array(type_name, value) if is_array else item(type_name, value)
