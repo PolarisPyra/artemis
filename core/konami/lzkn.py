@@ -60,11 +60,14 @@ def deflate(data: bytes) -> bytes:
     window = bytearray(WINDOW_SIZE)
     output = bytearray()
     cursor = window_cursor = 0
+    partial = False
     while cursor < len(data):
         flags = 0
         chunk = bytearray()
+        partial = False
         for bit in range(8):
             if cursor >= len(data):
+                partial = True
                 break
             best_distance = best_length = 0
             for distance in range(3, min(0x200, cursor + 1)):
@@ -99,7 +102,12 @@ def deflate(data: bytes) -> bytes:
                 window[window_cursor] = data[cursor]
                 cursor += 1
                 window_cursor = (window_cursor + 1) & WINDOW_MASK
+        if partial:
+            # The reference encoder pads a short final token group with two
+            # zero bytes and omits the normal three-byte stream terminator.
+            chunk.extend(b"\0\0")
         output.append(flags)
         output.extend(chunk)
-    output.extend(b"\0\0\0")
+    if not partial:
+        output.extend(b"\0\0\0")
     return bytes(output)
