@@ -18,7 +18,7 @@ depends_on = None
 
 
 def upgrade():
-    op.drop_table("schema_versions")
+    op.drop_table("schema_versions", if_exists=True)
 
 
 def downgrade():
