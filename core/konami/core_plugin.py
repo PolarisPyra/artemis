@@ -54,6 +54,7 @@ class CoreKonamiPlugin(KonamiPlugin):
                     "cardmng",
                     "facility",
                     "message",
+                    "numbering",
                     "services",
                     "package",
                     "pcbevent",
