@@ -72,12 +72,14 @@ def deflate(data: bytes) -> bytes:
             best_distance = best_length = 0
             for distance in range(3, min(0x200, cursor + 1)):
                 length = 0
-                while (
-                    length < 18
-                    and cursor + length < len(data)
-                    and window[(window_cursor - distance + length) & WINDOW_MASK]
-                    == data[cursor + length]
-                ):
+                # Asphyxia caps a candidate match by its distance.  This is
+                # important for byte-for-byte parity because allowing longer
+                # overlapping matches changes the emitted stream even though
+                # both streams decompress successfully.
+                max_length = min(distance, 0x0F + 3)
+                while length < max_length and cursor + length < len(data) and window[
+                    (window_cursor - distance + length) & WINDOW_MASK
+                ] == data[cursor + length]:
                     length += 1
                 if length >= 10:
                     best_distance, best_length = distance, length
