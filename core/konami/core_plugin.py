@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import time
 
 from core.config import CoreConfig
 from core.data import Data
@@ -24,11 +25,13 @@ class CoreKonamiPlugin(KonamiPlugin):
             router.add(game_code, "message", "get", self.message_get)
             router.add(game_code, "package", "list", self.success)
             router.add(game_code, "pcbevent", "put", self.success)
-            router.add(game_code, "pcbtracker", "alive", self.success)
+            router.add(game_code, "tax", "get_phase", self.tax_get_phase)
+            router.add(game_code, "dlstatus", "progress", self.success)
+            router.add(game_code, "pcbtracker", "alive", self.pcbtracker_alive)
             router.add(game_code, "eacoin", "checkout", self.success)
             router.add(game_code, "eacoin", "checkin", self.eacoin_checkin)
             router.add(game_code, "eacoin", "consume", self.eacoin_consume)
-            router.add(game_code, "posevent", "income", self.success)
+            router.add(game_code, "posevent", "income", self.posevent_income)
             router.add(game_code, "posevent", "outcome", self.success)
             router.add(game_code, "lobby", "get", self.success)
             router.add(game_code, "cardmng", "inquire", self.card_inquire)
@@ -41,13 +44,13 @@ class CoreKonamiPlugin(KonamiPlugin):
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ):
         host = info.host or "localhost"
+        if not info.proxy and ":" not in host:
+            host = f"{host}:{self.data.config.konami.port}"
         response.content = {
             "@attr": {"expire": "10800", "method": "get", "mode": "operation"},
             "item": [
                 {"@attr": {"name": name, "url": f"{info.protocol}://{host}"}}
                 for name in (
-                    "ntp",
-                    "keepalive",
                     "cardmng",
                     "facility",
                     "message",
@@ -71,6 +74,15 @@ class CoreKonamiPlugin(KonamiPlugin):
                 )
             ],
         }
+        response.content["item"][:0] = [
+            {"@attr": {"name": "ntp", "url": "ntp://pool.ntp.org/"}},
+            {
+                "@attr": {
+                    "name": "keepalive",
+                    "url": f"{info.protocol}://{host}/core/keepalive?pa={host}&ia={host}&ga={host}&ma={host}&t1=2&t2=10",
+                }
+            },
+        ]
 
     async def facility_get(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
@@ -122,6 +134,41 @@ class CoreKonamiPlugin(KonamiPlugin):
 
     async def message_get(self, info: EamuseInfo, data: dict, response: EamuseResponse):
         response.content = {"@attr": {"expire": "300"}}
+
+    async def tax_get_phase(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ):
+        response.content = {"phase": _item("s32", 0)}
+
+    async def pcbtracker_alive(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ):
+        response.content = {
+            "@attr": {
+                "ecenable": "0",
+                "eclimit": "0",
+                "expire": "1200",
+                "limit": "0",
+                "time": str(int(time.time())),
+            }
+        }
+
+    async def posevent_sale(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ):
+        response.content = [
+            {"@attr": {"status": "0"}},
+            {"@attr": {"status": "0"}},
+            {"@attr": {"status": "0"}},
+        ]
+
+    async def posevent_income(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ):
+        if "sales" in data:
+            await self.posevent_sale(info, data, response)
+        else:
+            await self.success(info, data, response)
 
     async def eacoin_checkin(
         self, info: EamuseInfo, data: dict, response: EamuseResponse

@@ -91,15 +91,26 @@ class KonamiServlet:
             result.content = {}
 
         response_attrs = {"status": str(result.status)}
-        response_attrs.update(result.content.pop("@attr", {}))
-        response_data = {
-            "response": {
-                result.root_name or module: {
-                    "@attr": response_attrs,
-                    **result.content,
+        response_content = result.content
+        if isinstance(response_content, list):
+            response_nodes = []
+            for node in response_content:
+                node = dict(node)
+                attrs = response_attrs.copy()
+                attrs.update(node.pop("@attr", {}))
+                node["@attr"] = attrs
+                response_nodes.append(node)
+            response_data = {"response": {result.root_name or module: response_nodes}}
+        else:
+            response_attrs.update(response_content.pop("@attr", {}))
+            response_data = {
+                "response": {
+                    result.root_name or module: {
+                        "@attr": response_attrs,
+                        **response_content,
+                    }
                 }
             }
-        }
         encoding = result.encoding or parsed.encoding
         output = (
             kbin_encode(response_data, encoding, True)

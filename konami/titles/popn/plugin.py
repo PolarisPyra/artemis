@@ -8,6 +8,7 @@ from core.konami.protocol import EamuseInfo, EamuseResponse
 from core.konami.router import EamuseRouter, KonamiPlugin
 
 from .repository import PopnRepository
+from .helpers import item
 from .versions import SPECS, PopnVersionHandler
 
 
@@ -87,30 +88,49 @@ class PopnPlugin(KonamiPlugin):
 
             for version_number, version in ((22, "v22"), (23, "v23"), (24, "v24")):
                 prefix = f"{version_number}"
-                for method, handler_name in (
-                    ("common", "info"),
-                    ("new", "new"),
-                    ("read", "read"),
-                    ("start", "start"),
-                    ("buy", "buy"),
-                    ("read_score", "read_score"),
-                    ("write_music", "write_music"),
-                    ("write", "write"),
-                    ("friend", "friend"),
-                ):
+                methods = {
+                    22: ("new", "read", "write_music", "write", "friend"),
+                    23: (
+                        "new",
+                        "read",
+                        "start",
+                        "buy",
+                        "read_score",
+                        "write_music",
+                        "write",
+                        "friend",
+                    ),
+                    24: (
+                        "new",
+                        "read",
+                        "start",
+                        "buy",
+                        "read_score",
+                        "write_music",
+                        "write",
+                        "friend",
+                    ),
+                }[version_number]
+                for method in methods:
+                    handler_name = method
                     router.add(
                         code,
-                        f"info{prefix}" if method == "common" else f"player{prefix}",
+                        f"player{prefix}",
                         method,
                         self._modern(version, handler_name),
                     )
+                router.add(
+                    code, f"info{prefix}", "common", self._modern(version, "info")
+                )
             router.fallback(code, self.unhandled)
 
     def _classic(self, name: str):
         async def handler(info: EamuseInfo, data: dict, response: EamuseResponse):
             version = {"K39": "v19", "L39": "v20", "M39": "v21"}[info.game_code]
             if name == "town":
-                response.content = {"result": {"@attr": {"status": "0"}}}
+                response.content = {
+                    "town": item("bin", bytes((100, 0, 0, 0) + (0,) * 268))
+                }
                 return
             await getattr(self._handlers[version], name)(info, data, response)
 

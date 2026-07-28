@@ -37,6 +37,12 @@ class EamuseRouter:
         if handler is None:
             handler = self._fallback.get(info.game_code)
         if handler is not None:
+            module_data = body.data.get("call", {}).get(body.module, {})
+            # K-bin represents repeated top-level nodes as arrays.  The title
+            # handlers consume the object convention used by Asphyxia, so a
+            # single repeated module is unwrapped here.
+            if isinstance(module_data, list) and len(module_data) == 1:
+                module_data = module_data[0]
             await handler(
-                info, body.data.get("call", {}).get(body.module, {}), response
+                info, module_data if isinstance(module_data, dict) else {}, response
             )

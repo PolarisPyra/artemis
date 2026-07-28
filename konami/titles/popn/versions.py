@@ -285,7 +285,7 @@ class PopnVersionHandler:
                     }
                     for i in range(1, 101)
                 ],
-                "goods": self._goods(420),
+                "goods": self._goods("v23", 420),
             }
         else:
             response.content = {
@@ -298,7 +298,8 @@ class PopnVersionHandler:
                     for i in range(5)
                 ],
                 "goods": self._goods(
-                    {"v24": 97, "v25": 133, "v26": 133, "v27": 81}[self.spec.version]
+                    self.spec.version,
+                    {"v24": 97, "v25": 133, "v26": 133, "v27": 81}[self.spec.version],
                 ),
             }
 
@@ -891,6 +892,33 @@ class PopnVersionHandler:
             achievements.setdefault("stamps", {})[
                 str(scalar(field(node, "stamp_id")))
             ] = scalar(field(node, "cnt"))
+        riddle_data = child(data, "riddles_data", {})
+        for index, node in enumerate(elements(riddle_data, "sp_riddles")):
+            achievements.setdefault("riddles", {})[str(index)] = {
+                "kaimei_gauge": scalar(field(node, "kaimei_gauge")),
+                "is_cleared": bool(scalar(field(node, "is_cleared"))),
+                "riddles_cleared": bool(scalar(field(node, "riddles_cleared"))),
+                "select_count": scalar(field(node, "select_count")),
+                "other_count": scalar(field(node, "other_count")),
+            }
+        event = child(data, "event_p27", {})
+        for node in elements(event, "team"):
+            achievements.setdefault("team", []).append(
+                {
+                    "team_id": scalar(field(node, "team_id")),
+                    "ex_no": scalar(field(node, "ex_no")),
+                    "point": scalar(field(node, "point")),
+                    "is_cleared": bool(scalar(field(node, "is_cleared"))),
+                }
+            )
+        for node in elements(event, "battery"):
+            achievements.setdefault("battery", []).append(
+                {
+                    "battery_id": scalar(field(node, "battery_id")),
+                    "energy": scalar(field(node, "energy")),
+                    "is_cleared": bool(scalar(field(node, "is_cleared"))),
+                }
+            )
         await self.repo.save_achievements(refid, self.spec.version, achievements)
 
     @staticmethod
@@ -931,9 +959,45 @@ class PopnVersionHandler:
         }
 
     @staticmethod
-    def _goods(count: int) -> list[dict]:
+    def _goods(version: str, count: int) -> list[dict]:
         result = []
         for index in range(count):
-            price = 150 if index >= 80 else 60
-            result.append({"goods_id": item("s16", index), "price": item("s16", price)})
+            if version == "v23":
+                number = index + 1
+                if number <= 80:
+                    price = 60
+                elif number <= 120:
+                    price = 250
+                elif number <= 142:
+                    price = 500
+                elif number <= 300:
+                    price = 100
+                else:
+                    price = 150
+                result.append(
+                    {
+                        "goods_id": item("s16", number),
+                        "price": item("s32", price),
+                        "goods_type": item("s16", 0),
+                    }
+                )
+                continue
+            if index < 15:
+                price = 30
+            elif index < 30:
+                price = 40
+            elif index < 45:
+                price = 60
+            elif index < 60:
+                price = 80
+            else:
+                price = 200
+            result.append(
+                {
+                    "item_id": item("s32", index + 1),
+                    "item_type": item("s16", 3),
+                    "price": item("s32", price),
+                    "goods_type": item("s16", 0),
+                }
+            )
         return result
