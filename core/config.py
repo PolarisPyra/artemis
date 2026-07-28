@@ -506,6 +506,10 @@ class KonamiConfig:
         return CoreConfig.str_to_loglevel(
             CoreConfig.get_config_field(self.__config, "core", "konami", "loglevel", default="info")
         )
+
+    @property
+    def popn_force_unlock(self) -> bool:
+        return CoreConfig.get_config_field(self.__config, "core", "konami", "popn_force_unlock", default=True)
 class ChimedbConfig:
     def __init__(self, parent_config: "CoreConfig") -> None:
         self.__config = parent_config

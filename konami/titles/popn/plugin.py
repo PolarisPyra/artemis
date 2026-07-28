@@ -25,15 +25,15 @@ class PopnPlugin(KonamiPlugin):
         self.cfg = cfg
         self.data = Data(cfg)
         self._handlers = {
-            "v19": PopnVersionHandler(PopnRepository(self.data, "K39"), SPECS["v19"]),
-            "v20": PopnVersionHandler(PopnRepository(self.data, "L39"), SPECS["v20"]),
-            "v21": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v21"]),
-            "v22": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v22"]),
-            "v23": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v23"]),
-            "v24": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v24"]),
-            "v25": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v25"]),
-            "v26": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v26"]),
-            "v27": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v27"]),
+            "v19": PopnVersionHandler(PopnRepository(self.data, "K39"), SPECS["v19"], cfg.konami.popn_force_unlock),
+            "v20": PopnVersionHandler(PopnRepository(self.data, "L39"), SPECS["v20"], cfg.konami.popn_force_unlock),
+            "v21": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v21"], cfg.konami.popn_force_unlock),
+            "v22": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v22"], cfg.konami.popn_force_unlock),
+            "v23": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v23"], cfg.konami.popn_force_unlock),
+            "v24": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v24"], cfg.konami.popn_force_unlock),
+            "v25": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v25"], cfg.konami.popn_force_unlock),
+            "v26": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v26"], cfg.konami.popn_force_unlock),
+            "v27": PopnVersionHandler(PopnRepository(self.data, "M39"), SPECS["v27"], cfg.konami.popn_force_unlock),
         }
 
     def register(self, router: EamuseRouter) -> None:
@@ -71,8 +71,23 @@ class PopnPlugin(KonamiPlugin):
 
     def _modern(self, version: str, name: str):
         async def handler(info: EamuseInfo, data: dict, response: EamuseResponse):
-            await getattr(self._handlers[version], name)(info, data, response)
+            selected = self._usaneko_version(info.model) if version == "v24" else version
+            await getattr(self._handlers[selected], name)(info, data, response)
         return handler
+
+    @staticmethod
+    def _usaneko_version(model: str) -> str:
+        try:
+            timestamp = int(model.rsplit(":", 1)[1])
+        except (IndexError, ValueError):
+            return "v24"
+        if timestamp >= 2022091300:
+            return "v27"
+        if timestamp >= 2021042600:
+            return "v26"
+        if timestamp >= 2018101700:
+            return "v25"
+        return "v24"
 
     async def unhandled(self, info: EamuseInfo, data: dict, response: EamuseResponse):
         response.status = 0

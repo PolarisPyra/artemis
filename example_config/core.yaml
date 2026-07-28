@@ -77,3 +77,4 @@ konami:
   port: 5730
   hostname: "localhost"
   loglevel: "info"
+  popn_force_unlock: True

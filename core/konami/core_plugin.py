@@ -30,7 +30,7 @@ class CoreKonamiPlugin(KonamiPlugin):
             router.add(game_code, "eacoin", "consume", self.eacoin_consume)
             router.add(game_code, "posevent", "income", self.success)
             router.add(game_code, "posevent", "outcome", self.success)
-            router.add(game_code, "lobby", " services", self.success)
+            router.add(game_code, "lobby", "get", self.success)
             router.add(game_code, "cardmng", "inquire", self.card_inquire)
             router.add(game_code, "cardmng", "getrefid", self.card_getrefid)
             router.add(game_code, "cardmng", "authpass", self.card_authpass)
@@ -39,13 +39,19 @@ class CoreKonamiPlugin(KonamiPlugin):
 
     async def services_get(self, info: EamuseInfo, data: dict, response: EamuseResponse):
         host = info.host or "localhost"
-        response.content = {"item": [
+        response.content = {"@attr": {"expire": "10800", "method": "get", "mode": "operation"}, "item": [
             {"@attr": {"name": name, "url": f"{info.protocol}://{host}"}}
             for name in ("ntp", "keepalive", "cardmng", "facility", "message", "services", "package", "pcbevent", "pcbtracker", "pkglist", "posevent", "userdata", "userid", "eacoin", "local", "local2", "lobby", "lobby2", "dlstatus", "netlog", "sidmgr", "globby")
         ]}
 
     async def facility_get(self, info: EamuseInfo, data: dict, response: EamuseResponse):
-        response.content = {"location": {"@attr": {"id": "ea", "country": "JP", "region": "JP-13", "name": "ARTEMIS"}}}
+        response.content = {
+            "location": {"id": _item("str", "ea"), "country": _item("str", "JP"), "region": _item("str", "JP-13"), "name": _item("str", "ARTEMIS"), "type": _item("u8", 0), "countryname": _item("str", "UNKNOWN"), "countryjname": _item("str", "不明"), "regionname": _item("str", "ARTEMIS"), "regionjname": _item("str", "ARTEMIS"), "customercode": _item("str", "AXUSR"), "companycode": _item("str", "AXCPY"), "latitude": _item("s32", 6666), "longitude": _item("s32", 6666), "accuracy": _item("u8", 0)},
+            "line": {"id": _item("str", "."), "class": _item("u8", 0)},
+            "portfw": {"globalip": _item("ip4", 0), "globalport": _item("u16", 80), "privateport": _item("u16", 80)},
+            "public": {"flag": _item("u8", 1), "name": _item("str", "UNKNOWN"), "latitude": _item("str", "0"), "longitude": _item("str", "0")},
+            "share": {"eacoin": {"notchamount": _item("s32", 0), "notchcount": _item("s32", 0), "supplylimit": _item("s32", 100000)}, "url": {"eapass": _item("str", "ARTEMIS"), "arcadefan": _item("str", "ARTEMIS"), "konaminetdx": _item("str", "ARTEMIS"), "konamiid": _item("str", "ARTEMIS"), "eagate": _item("str", "ARTEMIS")}},
+        }
 
     async def message_get(self, info: EamuseInfo, data: dict, response: EamuseResponse):
         response.content = {"@attr": {"expire": "300"}}
@@ -55,7 +61,6 @@ class CoreKonamiPlugin(KonamiPlugin):
 
     async def eacoin_consume(self, info: EamuseInfo, data: dict, response: EamuseResponse):
         response.content = {"autocharge": {"@attr": {"__type": "u8"}, "@content": [0]}, "acstatus": {"@attr": {"__type": "u8"}, "@content": [0]}, "balance": {"@attr": {"__type": "s32"}, "@content": [88410]}}
-
     async def success(self, info: EamuseInfo, data: dict, response: EamuseResponse):
         response.status = 0
 
@@ -92,3 +97,7 @@ class CoreKonamiPlugin(KonamiPlugin):
     @staticmethod
     def _refid(cardid: str) -> str:
         return hashlib.sha256(f"artemis-konami:{cardid}".encode()).hexdigest()[:16].upper()
+
+
+def _item(type_name: str, value):
+    return {"@attr": {"__type": type_name}, "@content": [value] if type_name != "str" else value}
