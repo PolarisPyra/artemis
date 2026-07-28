@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import OrderedDict
+import re
 from xml.etree import ElementTree
 
 
@@ -33,7 +34,22 @@ def _element_to_data(element: ElementTree.Element) -> dict:
     return value
 
 
-def xml_to_data(raw: bytes, encoding: str = "utf-8") -> dict:
+def detect_xml_encoding(raw: bytes) -> str:
+    declaration = re.match(rb"\s*<\?xml[^>]+encoding=['\"]([^'\"]+)", raw[:256], re.I)
+    if declaration is None:
+        return "utf-8"
+    value = declaration.group(1).decode("ascii", errors="ignore").lower()
+    return {
+        "utf8": "utf-8",
+        "utf-8": "utf-8",
+        "shift_jis": "shift_jis",
+        "shift-jis": "shift_jis",
+        "euc-jp": "euc_jp",
+    }.get(value, value)
+
+
+def xml_to_data(raw: bytes, encoding: str | None = None) -> dict:
+    encoding = encoding or detect_xml_encoding(raw)
     root = ElementTree.fromstring(raw.decode(encoding, errors="replace"))
     return {root.tag: _element_to_data(root)}
 

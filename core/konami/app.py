@@ -16,7 +16,7 @@ from .kbin import decode as kbin_decode, encode as kbin_encode, is_kbin
 from .lzkn import deflate, inflate
 from .protocol import EamuseBody, EamuseInfo, EamuseResponse
 from .router import EamuseRouter, KonamiPlugin
-from .xml import data_to_xml, xml_to_data
+from .xml import data_to_xml, detect_xml_encoding, xml_to_data
 
 
 class KonamiServlet:
@@ -49,8 +49,8 @@ class KonamiServlet:
                 data, request_encoding = kbin_decode(body)
                 kencoded = True
             else:
-                data = xml_to_data(body)
-                request_encoding = "utf-8"
+                request_encoding = detect_xml_encoding(body)
+                data = xml_to_data(body, request_encoding)
                 kencoded = False
             call = data.get("call", {})
             module, method = self._find_call(call)
