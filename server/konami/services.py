@@ -80,6 +80,7 @@ class ArtemisServices:
                     "netlog",
                     "sidmgr",
                     "globby",
+                    "game",
                 )
             ],
         }
