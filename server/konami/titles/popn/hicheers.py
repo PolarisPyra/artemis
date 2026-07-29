@@ -1335,6 +1335,17 @@ class PopnVersionHandler:
                     "total_score": item("s32", value.get("total_score", 0)),
                     "update_count": item("s32", value.get("update_count", 0)),
                     "sheet_num": item("u8", value.get("sheet_num", 0)),
+                    **{
+                        f"seal_{index}": item(
+                            "u16", value.get(f"seal_{index}", 0)
+                        )
+                        for index in range(7)
+                    },
+                    "seat": item("u16", value.get("seat", 0)),
+                    "touch_th": item("u16", value.get("touch_th", 0)),
+                    "lane_cover": item("u16", value.get("lane_cover", 0)),
+                    "stage_bk": item("u16", value.get("stage_bk", 0)),
+                    "highlight": item("u16", value.get("highlight", 0)),
                 }
             )
         for key, value in achievements.get("fes", {}).items():
@@ -1497,6 +1508,18 @@ class PopnVersionHandler:
                     "total_score",
                     "update_count",
                     "sheet_num",
+                    "seal_0",
+                    "seal_1",
+                    "seal_2",
+                    "seal_3",
+                    "seal_4",
+                    "seal_5",
+                    "seal_6",
+                    "seat",
+                    "touch_th",
+                    "lane_cover",
+                    "stage_bk",
+                    "highlight",
                 ),
             ),
             ("fes", "fes", ("fes_id", "chapter_index", "gauge_point", "is_cleared")),

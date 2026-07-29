@@ -212,6 +212,32 @@ def test_popn_m39_player_boot_payload_round_trip_shape():
     assert response.content["option"]["roof"]["@attr"]["__type"] == "s16"
 
 
+def test_popn_course_data_uses_complete_hi_cheers_psmap_shape():
+    from server.konami.titles.popn.hicheers import PopnVersionHandler
+
+    player = {}
+    PopnVersionHandler._apply_achievements(
+        player,
+        {
+            "courses": {
+                "1": {
+                    "clear_type": 1,
+                    "clear_rank": 2,
+                    "total_score": 3,
+                    "update_count": 4,
+                    "sheet_num": 5,
+                }
+            }
+        },
+    )
+    course = player["course_data"][0]
+    for name in (
+        "seal_0", "seal_1", "seal_2", "seal_3", "seal_4", "seal_5", "seal_6",
+        "seat", "touch_th", "lane_cover", "stage_bk", "highlight",
+    ):
+        assert course[name]["@attr"]["__type"] == "u16"
+
+
 def test_popn_only_exposes_hi_cheers():
     from server.konami.router import EamuseRouter
     from server.konami.titles.popn.hicheers import PopnRoutes
