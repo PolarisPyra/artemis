@@ -547,6 +547,33 @@ def test_services_response_includes_popn_modules():
     assert keepalive["@attr"]["url"].startswith("http://127.0.0.1/core/keepalive?")
 
 
+def test_facility_response_uses_bemaniutils_defaults():
+    import asyncio
+    from types import SimpleNamespace
+
+    from server.konami.protocol import EamuseInfo, EamuseResponse
+    from server.konami.services import ArtemisServices
+
+    services = ArtemisServices.__new__(ArtemisServices)
+    services.data = SimpleNamespace(
+        config=SimpleNamespace(
+            konami=SimpleNamespace(hostname="localhost", matching_port=5730)
+        )
+    )
+    response = EamuseResponse(root_name="facility")
+    info = EamuseInfo(
+        game_code="M39", module="facility", method="get", model="M39:J:D:A:2026041500"
+    )
+
+    asyncio.run(services.facility_get(info, {}, response))
+    facility = response.content
+    assert facility["public"]["name"]["@content"] == "."
+    assert facility["share"]["eacoin"]["notchamount"]["@content"] == [3000]
+    assert facility["share"]["eacoin"]["notchcount"]["@content"] == [3]
+    assert facility["share"]["eacoin"]["supplylimit"]["@content"] == [10000]
+    assert facility["share"]["eapass"]["valid"]["@content"] == [365]
+
+
 def test_services_remote_client_does_not_receive_loopback_keepalive():
     import asyncio
     from types import SimpleNamespace

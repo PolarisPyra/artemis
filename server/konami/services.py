@@ -210,15 +210,15 @@ class ArtemisServices:
             },
             "public": {
                 "flag": _item("u8", 1),
-                "name": _item("str", "UNKNOWN"),
+                "name": _item("str", "."),
                 "latitude": _item("str", "0"),
                 "longitude": _item("str", "0"),
             },
             "share": {
                 "eacoin": {
-                    "notchamount": _item("s32", 0),
-                    "notchcount": _item("s32", 0),
-                    "supplylimit": _item("s32", 100000),
+                    "notchamount": _item("s32", 3000),
+                    "notchcount": _item("s32", 3),
+                    "supplylimit": _item("s32", 10000),
                 },
                 "url": {
                     "eapass": _item("str", "ARTEMIS"),
