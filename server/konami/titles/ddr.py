@@ -11,14 +11,13 @@ from server.konami.router import EamuseRouter
 from server.sega.config import ArtemisConfig
 from server.sega.data import Data
 
-from .popn_support.helpers import attr, content, item
+from .popn import attr, content, item
 
 
 class DDRRoutes:
     """Port the shared DDR X/A playerdata protocol."""
 
-    # MDX is the modern plugin code; HDX is the older bemanitools DDR code.
-    game_codes: ClassVar[tuple[str, ...]] = ("MDX", "HDX")
+    game_codes: ClassVar[tuple[str, ...]] = ("HDX", "JDX", "KDX", "MDX")
 
     @classmethod
     def service_modules(cls, game_code: str, model: str = "") -> tuple[str, ...]:

@@ -173,7 +173,7 @@ class KonamiServlet:
             request.url.path,
             model or "-",
             info.client_ip or "-",
-            "matched" if matched else "fallback",
+            "matched" if matched else "unmatched",
             result.status,
         )
         if not result.content:
@@ -212,12 +212,13 @@ class KonamiServlet:
             output = deflate(output)
             response_headers["X-Compress"] = "lz77"
         if result.encrypt if result.encrypt is not None else encrypted:
-            # EA3 expects the response to use the same negotiated key that
-            # arrived in X-Eamuse-Info.  Generating a fresh key here makes a
-            # correct response impossible for the client to decrypt.
-            key = KonmaiEncrypt(eamuse_info)
+            # EA3 negotiates a fresh response key.  The client uses the
+            # returned X-Eamuse-Info header to decrypt this response; reusing
+            # the request key leaves Pop'n reporting a network error after
+            # services.get even though the HTTP exchange succeeded.
+            key = KonmaiEncrypt()
             output = key.crypt(output)
-            response_headers["X-Eamuse-Info"] = eamuse_info or key.public_key
+            response_headers["X-Eamuse-Info"] = key.public_key
         self.logger.info(
             "%s %s response_bytes=%s response_compress=%s response_encrypt=%s",
             module,
@@ -286,7 +287,7 @@ def build_konami_servlet(cfg) -> KonamiServlet:
     from server.konami.titles.ddr import DDRRoutes
     from server.konami.titles.iidx import IIDXRoutes
     from server.konami.titles.jubeat import JubeatRoutes
-    from server.konami.titles.legacy import LegacyTitleRoutes
+    from server.konami.titles.museca import MusecaRoutes
     from server.konami.titles.popn import PopnRoutes
     from server.konami.titles.sdvx import SDVXRoutes
 
@@ -294,14 +295,14 @@ def build_konami_servlet(cfg) -> KonamiServlet:
     ddr = DDRRoutes(cfg)
     iidx = IIDXRoutes(cfg)
     jubeat = JubeatRoutes(cfg)
-    legacy = LegacyTitleRoutes(cfg)
+    museca = MusecaRoutes(cfg)
     sdvx = SDVXRoutes(cfg)
     game_codes = (
         popn.game_codes
         + ddr.game_codes
         + iidx.game_codes
         + jubeat.game_codes
-        + legacy.game_codes
+        + museca.game_codes
         + sdvx.game_codes
     )
 
@@ -314,8 +315,8 @@ def build_konami_servlet(cfg) -> KonamiServlet:
             return jubeat.service_modules(game_code, model)
         if game_code in sdvx.game_codes:
             return sdvx.service_modules(game_code, model)
-        if game_code in legacy.game_codes:
-            return legacy.service_modules(game_code, model)
+        if game_code in museca.game_codes:
+            return museca.service_modules(game_code, model)
         return popn.service_modules(game_code, model)
 
     services = ArtemisServices(cfg, game_codes, service_modules)
@@ -327,7 +328,7 @@ def build_konami_servlet(cfg) -> KonamiServlet:
             iidx.register,
             jubeat.register,
             sdvx.register,
-            legacy.register,
+            museca.register,
         )
     )
 

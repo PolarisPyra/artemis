@@ -8,9 +8,8 @@ from server.konami.lzkn import deflate, deflate_dummy, inflate
 from server.konami.titles.ddr import DDRRoutes
 from server.konami.titles.iidx import IIDXRoutes
 from server.konami.titles.jubeat import JubeatRoutes
-from server.konami.titles.legacy import LegacyTitleRoutes
-from server.konami.titles.popn import PopnRoutes
-from server.konami.titles.popn_support.repository import PopnRepository
+from server.konami.titles.museca import MusecaRoutes
+from server.konami.titles.popn import PopnRepository, PopnRoutes
 from server.konami.titles.sdvx import SDVXRoutes
 from server.konami.xml import data_to_xml, detect_xml_encoding, xml_to_data
 
@@ -124,7 +123,8 @@ def test_unknown_title_calls_are_not_silently_acknowledged():
 
 def test_popn_modules_are_advertised_for_m39():
     modules = PopnRoutes.service_modules("M39", "M39:J:D:A:2026041500")
-    assert {"game", "info", "player", "playerdata", "player24"} <= set(modules)
+    assert {"game", "info", "player", "playerdata", "player24", "local2", "lobby2"} <= set(modules)
+    assert "JMP" not in PopnRoutes.game_codes
 
 
 def test_popn_m39_runtime_route_aliases_are_registered():
@@ -133,7 +133,10 @@ def test_popn_m39_runtime_route_aliases_are_registered():
     routes = PopnRoutes.__new__(PopnRoutes)
     router = EamuseRouter()
     routes.register(router)
-    assert {"player.shop_buy", "player.read_option", "game.e", "game.s"} <= set(
+    assert {
+        "player.shop_buy", "player.read_option", "game.e", "game.s",
+        "game.active", "pcb24.boot", "lobby24.getList",
+    } <= set(
         router._routes["M39"]
     )
     assert not hasattr(router, "_fallback")
@@ -143,7 +146,7 @@ def test_popn_m39_player_boot_payload_round_trip_shape():
     import asyncio
 
     from server.konami.protocol import EamuseInfo, EamuseResponse
-    from server.konami.titles.popn_support.versions import SPECS, PopnVersionHandler
+    from server.konami.titles.popn import SPECS, PopnVersionHandler
 
     class Repo:
         async def profile(self, refid):
@@ -193,8 +196,7 @@ def test_iidx_route_surface_covers_supported_asphyxia_modules():
     } <= set(registered)
     assert "pc.common" in router._routes["LDJ"]
     assert any(name.startswith("IIDX21pc.") for name in router._routes["LDJ"])
-    assert "863" in IIDXRoutes.game_codes
-    assert "FDD" in IIDXRoutes.game_codes
+    assert IIDXRoutes.game_codes == ("JDJ", "JDZ", "KDZ", "LDJ")
 
 
 def test_iidx_common_payload_has_versioned_boot_fields():
@@ -293,7 +295,7 @@ def test_jubeat_route_surface_covers_supported_asphyxia_modules():
         "netlog.send",
         "logger.report",
     } <= set(registered)
-    assert {"H44", "J44", "L44"} <= set(JubeatRoutes.game_codes)
+    assert JubeatRoutes.game_codes == ("H44", "I44", "J44", "K44", "L44")
     assert set(JubeatRoutes.service_modules("L44")) == {
         "gametop",
         "gameend",
@@ -508,32 +510,25 @@ def test_sdvx_feature_state_round_trip():
     assert loaded.content["automation"]["mix_name"]["@content"] == ["TEST MIX"]
 
 
-def test_legacy_title_route_surfaces_are_explicit():
+def test_museca_title_route_surface_matches_bemaniutils():
     from server.konami.router import EamuseRouter
 
-    routes = LegacyTitleRoutes.__new__(LegacyTitleRoutes)
+    routes = MusecaRoutes.__new__(MusecaRoutes)
     router = EamuseRouter()
     routes.register(router)
-    assert {
-        "info2.common",
-        "pcb2.boot",
-        "player2.read",
-        "player2.write",
-    } <= set(router._routes["NBT"])
-    assert {
-        "game_3.common",
-        "game_3.new",
-        "game_3.load_m",
-    } <= set(router._routes["PIX"])
-    assert {
-        "common.get_common_info",
-        "player.get_playdata",
-        "op2_player.regist_playdata",
-    } <= set(router._routes["PAN"])
-    assert {"G15", "H16", "I17", "J39"} <= set(routes.game_codes)
-    assert {"game.get", "playerdata.get", "playerdata.set"} <= set(
-        router._routes["J39"]
-    )
+    assert {"game_3.common", "game_3.hiscore", "game_3.new", "game_3.load_m", "game_3.play_e"} <= set(router._routes["PIX"])
+    assert routes.game_codes == ("PIX",)
+
+
+def test_popn_old_versions_use_the_popn_title_module():
+    from server.konami.router import EamuseRouter
+    from server.konami.titles.popn import PopnRoutes
+
+    routes = PopnRoutes.__new__(PopnRoutes)
+    router = EamuseRouter()
+    routes.register(router)
+    assert {"G15", "H16", "I17", "J39"} <= set(PopnRoutes.game_codes)
+    assert {"game.get", "playerdata.get", "playerdata.set"} <= set(router._routes["J39"])
 
 
 def test_services_response_includes_popn_modules():
@@ -564,7 +559,7 @@ def test_services_response_includes_popn_modules():
 
     asyncio.run(services.services_get(info, {}, response))
     names = {item["@attr"]["name"] for item in response.content["item"]}
-    assert {"keepalive", "game", "player24"} <= names
+    assert {"keepalive", "game", "player24", "local2", "lobby2"} <= names
     keepalive = next(
         item for item in response.content["item"] if item["@attr"]["name"] == "keepalive"
     )
@@ -956,7 +951,9 @@ def test_core_discovery_chain_survives_encrypted_kbin_transport():
         plain = kbin_encode(request_data, "utf-8", True)
         wire = KonmaiEncrypt(key).crypt(deflate(plain))
         response = await _asgi_response(servlet, module, wire, key)
-        body = KonmaiEncrypt(key).crypt(response["body"])
+        response_key = response["headers"]["x-eamuse-info"]
+        assert response_key != key
+        body = KonmaiEncrypt(response_key).crypt(response["body"])
         if response["headers"].get("x-compress") == "lz77":
             body = inflate(body)
         decoded, _ = kbin_decode(body)

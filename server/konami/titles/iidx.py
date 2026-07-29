@@ -15,58 +15,15 @@ from server.konami.router import EamuseRouter
 from server.sega.config import ArtemisConfig
 from server.sega.data import Data
 
-from .popn_support.helpers import array, attr, content, item, scalar
+from .popn import array, attr, content, item, scalar
 
 
 class IIDXRoutes:
     """Register the common IIDX PC/shop/music route surface."""
 
-    game_codes: ClassVar[tuple[str, ...]] = (
-        "863",
-        "896",
-        "983",
-        "984",
-        "985",
-        "992",
-        "A03",
-        "A17",
-        "B4U",
-        "B44",
-        "C44",
-        "C02",
-        "D01",
-        "E11",
-        "ECO",
-        "FDD",
-        "GLD",
-        "HDD",
-        "I00",
-        "JDJ",
-        "JDZ",
-        "KDZ",
-        "LDJ",
-    )
+    game_codes: ClassVar[tuple[str, ...]] = ("JDJ", "JDZ", "KDZ", "LDJ")
 
     _version_by_code: ClassVar[dict[str, int]] = {
-        "863": 1,
-        "896": 1,
-        "983": 1,
-        "984": 1,
-        "985": 2,
-        "992": 3,
-        "A03": 4,
-        "A17": 5,
-        "B4U": 6,
-        "B44": 7,
-        "C44": 8,
-        "C02": 9,
-        "D01": 10,
-        "E11": 11,
-        "ECO": 12,
-        "FDD": 13,
-        "GLD": 14,
-        "HDD": 15,
-        "I00": 16,
         "JDJ": 17,
         "JDZ": 18,
         "KDZ": 19,

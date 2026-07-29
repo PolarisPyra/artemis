@@ -10,13 +10,13 @@ from server.konami.router import EamuseRouter
 from server.sega.config import ArtemisConfig
 from server.sega.data import Data
 
-from .popn_support.helpers import array, attr, content, item
+from .popn import array, attr, content, item
 
 
 class JubeatRoutes:
     """Port the jubeat plugin's gametop/gameend route contract."""
 
-    game_codes: ClassVar[tuple[str, ...]] = ("H44", "J44", "L44")
+    game_codes: ClassVar[tuple[str, ...]] = ("H44", "I44", "J44", "K44", "L44")
 
     @classmethod
     def service_modules(cls, game_code: str, model: str = "") -> tuple[str, ...]:

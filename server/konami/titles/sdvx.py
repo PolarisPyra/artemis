@@ -10,7 +10,7 @@ from server.konami.router import EamuseRouter
 from server.sega.config import ArtemisConfig
 from server.sega.data import Data
 
-from .popn_support.helpers import array, attr, content, item, scalar
+from .popn import array, attr, content, item, scalar
 
 
 class SDVXRoutes:
