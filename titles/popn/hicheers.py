@@ -66,6 +66,31 @@ class PopnHiCheers(PopnJamFizz):
             )
             config.children.insert(category + 1, XMLNode("disp_setting", Type.S8, 0))
 
+        option = next((child for child in root.children if child.name == "option"), None)
+        if option is not None:
+            # Hi Cheers' psmap validates these legacy option properties even
+            # though the inherited UniLab payload does not use them.
+            gauge_type = next(
+                (index for index, child in enumerate(option.children) if child.name == "gauge_type"),
+                len(option.children),
+            )
+            if not any(child.name == "judge_ad" for child in option.children):
+                option.children.insert(gauge_type + 1, XMLNode("judge_ad", Type.S8, 0))
+
+            judge_ad = next(
+                (index for index, child in enumerate(option.children) if child.name == "judge_ad"),
+                len(option.children),
+            )
+            if not any(child.name == "roof" for child in option.children):
+                option.children.insert(judge_ad + 1, XMLNode("roof", Type.S16, 0))
+
+            guide_se = next(
+                (index for index, child in enumerate(option.children) if child.name == "guide_se"),
+                len(option.children),
+            )
+            if not any(child.name == "guide_se_vol" for child in option.children):
+                option.children.insert(guide_se + 1, XMLNode("guide_se_vol", Type.U8, 0))
+
         account = next((child for child in root.children if child.name == "account"), None)
         if account is not None:
             base = XMLNode.void("base")
