@@ -123,10 +123,16 @@ class ArtemisServices:
             modules.extend(self.module_provider(info.game_code, info.model))
         # Preserve declaration order while avoiding duplicate service entries.
         modules = list(dict.fromkeys(modules))
+        service_url = f"{info.protocol}://{host}/"
         response.content = {
-            "@attr": {"expire": "10800", "method": "get", "mode": "operation"},
+            "@attr": {
+                "expire": "600",
+                "method": "get",
+                "mode": "operation",
+                "product_domain": "1",
+            },
             "item": [
-                {"@attr": {"name": name, "url": f"{info.protocol}://{host}"}}
+                {"@attr": {"name": name, "url": service_url}}
                 for name in modules
             ],
         }
@@ -142,7 +148,7 @@ class ArtemisServices:
         logger.info(
             "services advertise game=%s url=%s modules=%s",
             info.game_code,
-            f"{info.protocol}://{host}",
+            service_url,
             len(modules) + 2,
         )
 
