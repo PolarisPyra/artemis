@@ -344,6 +344,9 @@ def encode(data: dict, encoding: str = "shift_jis", compressed: bool = True) -> 
     root_name = next(iter(data))
     write_node(root_name, data[root_name])
     nodes.extend((TYPES["endSection"] | 0x40,))
+    # The reference encoder pads the node/header section before writing the
+    # value-body length.  EA3 clients use that boundary when locating values.
+    nodes.extend(b"\0" * (_align(len(nodes)) - len(nodes)))
     values.extend(b"\0" * (max(len(values), byte_cursor, word_cursor) - len(values)))
     values.extend(b"\0" * (_align(len(values)) - len(values)))
     header = bytearray(
