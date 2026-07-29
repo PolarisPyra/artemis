@@ -22,6 +22,8 @@ class JSONResponseNoASCII(Response):
 class BaseServlet:
     def __init__(self, core_cfg: CoreConfig, cfg_dir: str) -> None:
         self.core_cfg = core_cfg
+        # Keep compatibility with title modules that use the newer name.
+        self.artemis_cfg = core_cfg
         self.game_cfg = None
         self.logger = logging.getLogger("title")
 
