@@ -200,6 +200,7 @@ DEFAULT_FIELDS = {
         ("sudden_rate", "s16", "option", -1, False),
         ("randmir", "s8", "option", 0, False),
         ("gauge_type", "s8", "option", 0, False),
+        ("judge_ad", "s8", "option", 0, False),
         ("ojama_0", "u8", "option", 0, False),
         ("ojama_1", "u8", "option", 0, False),
         ("forever_0", "bool", "option", 0, False),

@@ -196,6 +196,7 @@ def test_popn_m39_player_boot_payload_round_trip_shape():
     assert response.content["account"]["name"]["@attr"]["__type"] == "str"
     assert response.content["music"] == []
     assert response.content["config"]["disp_setting"]["@content"] == [0]
+    assert response.content["option"]["judge_ad"]["@content"] == [0]
 
 
 def test_popn_only_exposes_hi_cheers():
