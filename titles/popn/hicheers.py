@@ -1,13 +1,5 @@
-"""Pop'n Music Hi Cheers! protocol compatibility.
-
-Hi Cheers keeps the M39 game code and the UniLab profile layout, but its
-current cabinet advertises a few legacy module names.  The cabinet uses those
-names during login, so they must be handled by the same inherited profile
-implementation rather than falling through to an empty e-amusement response.
-"""
-
-from core.eamuse import EAProtocol
 from core.config import CoreConfig
+from core.eamuse import EAProtocol
 from core.eaapi import XMLNode, Type
 
 from .config import PopnConfig
@@ -16,8 +8,6 @@ from .jamfizz import PopnJamFizz
 
 
 class PopnHiCheers(PopnJamFizz):
-    """Hi Cheers title handler, extending the UniLab protocol implementation."""
-
     def __init__(
         self,
         core_config: CoreConfig,
@@ -26,7 +16,6 @@ class PopnHiCheers(PopnJamFizz):
     ) -> None:
         super().__init__(core_config, game_config, protocol)
         self.version = PopnConstants.VER_HI_CHEERS
-        # These are the services advertised by the captured M39 Hi Cheers PCB.
         self.extra_services.update({"local3": ""})
 
     async def handle_pcb_boot(self, request: XMLNode) -> XMLNode:
@@ -39,129 +28,243 @@ class PopnHiCheers(PopnJamFizz):
         return XMLNode.void("pcb")
 
     async def handle_info_common(self, request: XMLNode) -> XMLNode:
-        """Serve Hi Cheers' legacy ``info.common`` alias.
-
-        The response fields are shared with the inherited info24 response;
-        only the root module name differs in the captured protocol.
-        """
         root = await self.handle_info24_common(request)
         root.name = "info"
         return root
 
     async def handle_player_read(self, request: XMLNode) -> XMLNode:
-        """Serve the M39 ``player.read`` login request.
-
-        Hi Cheers sends the legacy module name but expects the modern profile
-        payload.  Reuse the inherited profile response and add the legacy
-        ``base`` block used by the captured cabinet.
+        root = XMLNode('player')
         """
-        root = await self.handle_player24_read(request)
-        root.name = "player"
+        [2024/09/28 04:03:14] M:automap: property_search error: course_data ( course_id S16, clear_type U8, clear_rank U8, total_score S32, update_count S32, sheet_num U8 )
+        [2024/09/28 04:03:14] M:automap: property_search error: navi_data (
+            raisePoint -> raisePoint S32[54],
+            navi_param -> navi_id U16, friendship S32
+        )
+        [2024/09/28 04:03:14] M:automap: property_search error: area ( area_id U32, chapter_index U8, gauge_point U16, is_cleared Bool, diary U32 )
+        [2024/09/28 04:03:14] M:automap: property_search error: fes ( fes_id U32, chapter_index U8, gauge_point U16, is_cleared Bool )
+        [2024/09/28 04:03:14] M:automap: property_search error: mission ( mission_id U32, gauge_point U32, mission_comp U32 )
+        [2024/09/28 04:03:14] M:automap: property_search error: riddles_data (
+            sp_riddles -> kaimei_gauge U16, is_cleared Bool, riddles_cleared Bool, select_count U8, other_count U32
+            sh_riddles ->  sh_riddles_id U32
+        )
+        """
+        root.append('result', Type.U8, 0) # doesn't seem to matter
 
-        config = next((child for child in root.children if child.name == "config"), None)
-        if config is not None and not any(child.name == "disp_setting" for child in config.children):
-            category = next(
-                (index for index, child in enumerate(config.children) if child.name == "chara_category"),
-                len(config.children),
-            )
-            config.children.insert(category + 1, XMLNode("disp_setting", Type.S8, 0))
+        acct = XMLNode.void("account")
+        acct.append('g_pm_id', Type.Str, '123456789012')
+        acct.append('name', Type.Str, 'ＨＡＹ１ＴＳ')
+        acct.append('tutorial', Type.S16, 308)
+        acct.append('area_id', Type.S16, 0)
+        acct.append('use_navi', Type.S16, 0)
+        acct.append('read_news', Type.S16, 0)
+        acct.append('staff', Type.S8, 0)
+        acct.append('item_type', Type.S16, 0)
+        acct.append('item_id', Type.S16, 0)
+        acct.append('is_conv', Type.S8, 0)
+        acct.append('active_fr_num', Type.U8, 0)
+        acct.append('total_play_cnt', Type.S16, 2) # 0 or 1 triggers first play free, 0 acts as not first play for tutorials?
+        acct.append('today_play_cnt', Type.S16, 1)
+        acct.append('consecutive_days', Type.S16, 1)
+        acct.append('total_days', Type.S16, 1)
+        acct.append('interval_day', Type.S16, 0)
+        acct.append('my_best', Type.S16, [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1])
+        acct.append('latest_music', Type.S16, [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1])
+        acct.append('nice', Type.S16, [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1])
+        acct.append('favorite_chara', Type.S16, [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1])
+        acct.append('special_area', Type.S16, [-1, -1, -1, -1, -1, -1, -1, -1])
+        acct.append('chocolate_charalist', Type.S16, [-1, -1, -1, -1, -1])
+        acct.append('chocolate_sp_chara', Type.S32, 0)
+        acct.append('chocolate_pass_cnt', Type.S32, 0)
+        acct.append('chocolate_hon_cnt', Type.S32, 0)
+        acct.append('teacher_setting', Type.S16, [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1])
+        acct.append('license_data', Type.S16, [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1])
+        acct.append('welcom_pack', Type.Bool, False) # Always grants extra stage
+        acct.append('ranking_node', Type.S32, 0)
+        acct.append('chara_ranking_kind_id', Type.S32, 0)
+        acct.append('navi_evolution_flg', Type.S8, 0)
+        acct.append('ranking_news_last_no', Type.S32, 0)
+        acct.append('power_point', Type.S32, 0)
+        acct.append('player_point', Type.S32, 300)
+        acct.append('power_point_list', Type.S32, [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1])
+        acct.append('sp_riddles_id', Type.S16, 0)
 
-        if config is not None:
-            disp_setting = next(
-                (index for index, child in enumerate(config.children) if child.name == "disp_setting"),
-                len(config.children) - 1,
-            )
-            legacy_config_fields = (
-                ("h_vol", Type.S8),
-                ("hiscore_disp", Type.S8),
-                ("lane_type", Type.S8),
-                ("brightness", Type.S8),
-                ("key_beam", Type.S8),
-                ("lane_line", Type.S8),
-            )
-            for offset, (name, field_type) in enumerate(legacy_config_fields, start=1):
-                if not any(child.name == name for child in config.children):
-                    config.children.insert(disp_setting + offset, XMLNode(name, field_type, 0))
+        info = XMLNode.void('info')
+        info.append('ep', Type.U16, 0)
 
-            # The M39 psmap reads config properties in this order.  The
-            # inherited UniLab response has disp_setting before the ms_*
-            # fields, which makes Hi Cheers consume the following value under
-            # the wrong property name.
-            config_order = (
-                "mode", "chara", "music", "sheet", "category", "sub_category",
-                "chara_category", "ms_banner_disp", "ms_down_info", "ms_side_info",
-                "ms_raise_type", "ms_rnd_type", "banner_sort", "disp_setting",
-                "h_vol", "hiscore_disp", "lane_type", "brightness", "key_beam",
-                "lane_line", "course_id", "course_folder",
-            )
-            ordered = []
-            for name in config_order:
-                child = next((child for child in config.children if child.name == name), None)
-                if child is not None:
-                    ordered.append(child)
-            ordered.extend(child for child in config.children if child.name not in config_order)
-            config.children = ordered
+        eaappli = XMLNode.void("eaappli")
+        eaappli.append('relation', Type.S8, 1)
 
-        option = next((child for child in root.children if child.name == "option"), None)
-        if option is not None:
-            guide_se = next(
-                (index for index, child in enumerate(option.children) if child.name == "guide_se"),
-                len(option.children),
-            )
-            if not any(child.name == "guide_se_vol" for child in option.children):
-                option.children.insert(guide_se + 1, XMLNode("guide_se_vol", Type.U8, 0))
+        cfg = XMLNode.void("config")
+        cfg.append('mode', Type.U8, 0)
+        cfg.append('chara', Type.S16, -1)
+        cfg.append('music', Type.S16, -1)
+        cfg.append('sheet', Type.U8, 0)
+        cfg.append('category', Type.S8, -1)
+        cfg.append('sub_category', Type.S8, -1)
+        cfg.append('chara_category', Type.S8, -1)
+        cfg.append('ms_banner_disp', Type.S8, 0)
+        cfg.append('ms_down_info', Type.S8, 0)
+        cfg.append('ms_side_info', Type.S8, 0)
+        cfg.append('ms_raise_type', Type.S8, 0)
+        cfg.append('ms_rnd_type', Type.S8, 0)
+        cfg.append('banner_sort', Type.S8, 0)
+        cfg.append('disp_setting', Type.S8, 0)
+        cfg.append('h_vol', Type.S8, 0)
+        cfg.append('hiscore_disp', Type.S8, 0)
+        cfg.append('lane_type', Type.S8, 0)
+        cfg.append('brightness', Type.S8, 0)
+        cfg.append('key_beam', Type.S8, 0)
+        cfg.append('lane_line', Type.S8, 0)
+        cfg.append('course_id', Type.S16, 0)
+        cfg.append('course_folder', Type.S8, 0)
 
-            lift_rate = next(
-                (index for index, child in enumerate(option.children) if child.name == "lift_rate"),
-                len(option.children),
-            )
-            if not any(child.name == "judge_ad" for child in option.children):
-                option.children.insert(lift_rate + 1, XMLNode("judge_ad", Type.S8, 0))
+        opt = XMLNode.void("option")
+        opt.append('hispeed', Type.S16, 10)
+        opt.append('popkun', Type.U8, 0)
+        opt.append('hidden', Type.Bool, False)
+        opt.append('hidden_rate', Type.S16, -1)
+        opt.append('sudden', Type.Bool, False)
+        opt.append('sudden_rate', Type.S16, -1)
+        opt.append('randmir', Type.S8, 0)
+        opt.append('gauge_type', Type.S8, 0)
+        opt.append('ojama_0', Type.U8, 0)
+        opt.append('ojama_1', Type.U8, 0)
+        opt.append('forever_0', Type.Bool, False)
+        opt.append('forever_1', Type.Bool, False)
+        opt.append('full_setting', Type.Bool, True)
+        opt.append('judge', Type.U8, 1)
+        opt.append('guide_se', Type.S8, 0)
+        opt.append('guide_se_vol', Type.U8, 0)
+        opt.append('lift', Type.Bool, False)
+        opt.append('lift_rate', Type.S16, -1)
+        opt.append('judge_ad', Type.S8, 0)
+        opt.append('roof', Type.S16, 0)
+        opt.append('long_pop', Type.Bool, False)
 
-            judge_ad = next(
-                (index for index, child in enumerate(option.children) if child.name == "judge_ad"),
-                len(option.children),
-            )
-            if not any(child.name == "roof" for child in option.children):
-                option.children.insert(judge_ad + 1, XMLNode("roof", Type.S16, 0))
-            roof = next(
-                (index for index, child in enumerate(option.children) if child.name == "roof"),
-                len(option.children),
-            )
-            if not any(child.name == "long_pop" for child in option.children):
-                option.children.insert(roof + 1, XMLNode("long_pop", Type.Bool, False))
+        cate = XMLNode.void("custom_cate")
+        cate.append('valid', Type.S8, 0)
+        cate.append('lv_min', Type.S8, -1)
+        cate.append('lv_max', Type.S8, -1)
+        cate.append('medal_min', Type.S8, -1)
+        cate.append('medal_max', Type.S8, -1)
+        cate.append('friend_no', Type.S8, -1)
+        cate.append('score_flg', Type.S8, -1)
 
-        account = next((child for child in root.children if child.name == "account"), None)
-        if account is not None:
-            base = XMLNode.void("base")
-            for field in (
-                "name", "g_pm_id", "staff", "is_conv", "item_type", "item_id",
-                "license_data", "active_fr_num", "total_play_cnt", "today_play_cnt",
-                "consecutive_days", "total_days", "interval_day", "latest_music",
-                "my_best", "play_id", "start_type", "tutorial", "area_id",
-                "read_news", "nice", "favorite_chara", "special_area",
-                "chocolate_charalist", "chocolate_sp_chara", "chocolate_pass_cnt",
-                "chocolate_hon_cnt", "teacher_setting", "welcom_pack", "use_navi",
-                "ranking_node", "chara_ranking_kind_id", "navi_evolution_flg",
-                "ranking_news_last_no", "power_point", "player_point",
-                "power_point_list", "card_again_count", "sp_riddles_id",
-            ):
-                source = next((child for child in account.children if child.name == field), None)
-                if source is not None:
-                    base.children.append(source)
-            root.children.append(base)
+        custom = XMLNode.void('customize')
+        custom.append('effect_left', Type.U16, 0)
+        custom.append('effect_center', Type.U16, 0)
+        custom.append('effect_right', Type.U16, 0)
+        custom.append('hukidashi', Type.U16, 0)
+        custom.append('comment_1', Type.U16, 0)
+        custom.append('comment_2', Type.U16, 0)
 
+        netvs = XMLNode.void('netvs')
+        netvs.append('record', Type.S16, [0, 0, 0, 0, 0, 0])
+        netvs.append('dialog', Type.Str, '')
+        netvs.append('dialog', Type.Str, '')
+        netvs.append('dialog', Type.Str, '')
+        netvs.append('dialog', Type.Str, '')
+        netvs.append('dialog', Type.Str, '')
+        netvs.append('dialog', Type.Str, '')
+        netvs.append('ojama_condition', Type.S8, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        netvs.append('set_ojama', Type.S8, [0, 0, 0])
+        netvs.append('set_recommend', Type.S8, [0, 0, 0])
+        netvs.append('netvs_play_cnt', Type.U32, 0)
+
+        for x in []:
+            friend = XMLNode.void("friend")
+            friend.append("no", Type.S16, x)
+            friend.append("g_pm_id", Type.Str, "")
+            friend.append("name", Type.Str, "")
+            friend.append("chara_num", Type.S16, 1)
+            friend.append("is_open", Type.S8, 1)
+
+            for y in []:
+                friend.append(XMLNode.void("music", {"music_num": "", "sheet_num": "", "score": "", "clearrank": "", "cleartype": ""}))
+
+            for y in []:
+                fcourse = XMLNode.void("course_data")
+                fcourse.append('course_id', Type.S16, 1)
+                fcourse.append('clear_type', Type.U8, 0)
+                fcourse.append('clear_rank', Type.U8, 0)
+                fcourse.append('total_score', Type.S32, 0)
+                fcourse.append('update_count', Type.S32, 0)
+                fcourse.append('sheet_num', Type.U8, 0)
+                friend.children.append(fcourse)
+
+            root.children.append(friend)
+
+        for x in []:
+            charprm = XMLNode.void('chara_param')
+            charprm.append('chara_id', Type.U16, 0)
+            charprm.append('friendship', Type.U16, 0)
+            root.children.append(charprm)
+
+        for x in []:
+            itm = XMLNode.void('item')
+            itm.append('type', Type.U8, 0)
+            itm.append('id', Type.U16, 0)
+            itm.append('param', Type.U16, 0)
+            itm.append('is_new', Type.Bool, False)
+            itm.append('get_time', Type.U64, 0)
+            root.children.append(itm)
+
+        stamp = XMLNode.void("stamp")
+        stamp.append("stamp_id", Type.S16, 0)
+        stamp.append("cnt", Type.S16, 0)
+
+        evt2021 = XMLNode.void("event2021")
+        evt2021.append("point", Type.U32, 0)
+        evt2021.append("step", Type.U8, 0)
+        evt2021.append("quest_point", Type.U32, [0] * 8)
+        evt2021.append("step_nos", Type.U8, 0)
+        evt2021.append("quest_point_nos", Type.U32, [0] * 13)
+
+        evt27 = XMLNode.void("event_p27")
+        evt27.append("team_id", Type.S16, 0)
+        evt27.append("first_play", Type.Bool, True) # show tutorial
+        evt27.append("select_battery_id", Type.S16, 0)
+        evt27.append("elem_first_play", Type.Bool, True)
+        evt27.append("today_first_play", Type.Bool, True)
+
+        for x in range(8):
+            evt27_team = XMLNode.void("team")
+            evt27_team.append("team_id", Type.S16, x)
+            evt27_team.append("ex_no", Type.S16, 0)
+            evt27_team.append("point", Type.U32, 0)
+            evt27_team.append("is_cleared", Type.Bool, False)
+            evt27.children.append(evt27_team)
+
+        root.children.append(acct)
+        root.children.append(cfg)
+        root.children.append(opt)
+        root.children.append(cate)
+        root.children.append(custom)
+        root.children.append(eaappli)
+        root.children.append(info)
+        root.children.append(netvs)
+        root.children.append(stamp)
+        root.children.append(evt2021)
+        root.children.append(evt27)
         try:
             submitted_name = request.xpath("player/name").value
         except Exception:
             submitted_name = None
-        if submitted_name and account is not None:
-            name = next((child for child in account.children if child.name == "name"), None)
+
+        if submitted_name:
+            name = next((child for child in acct.children if child.name == "name"), None)
             if name is not None:
                 name.value = submitted_name
 
         root.attributes["status"] = "0"
         return root
+
+
+    async def handle_player_new(self, request: XMLNode) -> XMLNode:
+        return await self.handle_player_read(request)
+
+    async def handle_player_conversion(self, request: XMLNode) -> XMLNode:
+        return await self.handle_player_read(request)
 
     async def handle_player_write(self, request: XMLNode) -> XMLNode:
         return XMLNode.void("player")
@@ -172,18 +275,8 @@ class PopnHiCheers(PopnJamFizz):
     async def handle_player_end(self, request: XMLNode) -> XMLNode:
         return XMLNode.void("player")
 
-    async def handle_player_new(self, request: XMLNode) -> XMLNode:
-        # Hi Cheers expects the newly-created profile payload immediately
-        # after name selection.  An empty status-only response is treated as
-        # a failed receiver operation and returns the cabinet to the title
-        # screen.
-        return await self.handle_player_read(request)
-
     async def handle_player_logout(self, request: XMLNode) -> XMLNode:
         return XMLNode.void("player")
-
-    async def handle_player_conversion(self, request: XMLNode) -> XMLNode:
-        return await self.handle_player_read(request)
 
     async def handle_player_write_music(self, request: XMLNode) -> XMLNode:
         return XMLNode.void("player")
