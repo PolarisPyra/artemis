@@ -911,6 +911,10 @@ class PopnVersionHandler:
     async def _profile(
         self, info: EamuseInfo, data: dict, response: EamuseResponse, update_name: bool
     ) -> None:
+        # Hi Cheers' psmap parser rejects the large compressed profile payload
+        # even though the generated K-bin tree is valid.  Keep profile reads
+        # uncompressed until the client-compatible LZ77 layout is verified.
+        response.compress = False
         refid = field(data, "ref_id", "")
         if not refid:
             response.status = 1
