@@ -566,12 +566,27 @@ class BaseHandler:
             if not self.core_config.server.allow_user_registration:
                 self.logger.error(f"Registration of card {cardid} (type {card_type}) blocked!")
                 return XMLNode("cardmng", Type.Void, attributes={"status": "110"})
-            
-            userid = await self.data.user.create_user()
+
+            userid = await self.data.arcade.get_machine_owner(self.protocol.pcbid)
             if userid is None:
-                self.logger.error("handle_cardmng_getrefid: Failed to create user!")
+                self.logger.error(
+                    f"handle_cardmng_getrefid: No unique arcade owner for PCBID {self.protocol.pcbid}"
+                )
                 return XMLNode("cardmng", Type.Void, attributes={"status": "110"})
-            
+
+            user = await self.data.user.get_user(userid)
+            if user is None:
+                self.logger.error(
+                    f"handle_cardmng_getrefid: Arcade owner {userid} does not exist"
+                )
+                return XMLNode("cardmng", Type.Void, attributes={"status": "110"})
+
+            if user["pin"] is not None and user["pin"] != passwd:
+                self.logger.error(
+                    f"handle_cardmng_getrefid: PIN mismatch for arcade owner {userid}"
+                )
+                return XMLNode("cardmng", Type.Void, attributes={"status": "116"})
+
             if card_type == "2": # type 2 cards could reasonably also be used on sega games
                 kid = self.data.card.to_access_code(cardid)
             else:
@@ -580,11 +595,12 @@ class BaseHandler:
             card = await self.data.card.create_card(userid, kid)
             if card is None:
                 self.logger.error(
-                    f"handle_cardmng_getrefid: Failed to create card for user {user}!"
+                    f"handle_cardmng_getrefid: Failed to create card for user {userid}!"
                 )
                 return XMLNode("cardmng", Type.Void, attributes={"status": "110"})
-            
-            await self.data.user.set_user_pin(userid, passwd)
+
+            if user["pin"] is None:
+                await self.data.user.set_user_pin(userid, passwd)
             await self.data.card.set_idm_by_access_code(kid, cardid)
 
         else:

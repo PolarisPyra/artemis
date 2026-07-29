@@ -373,6 +373,17 @@ class ArcadeData(BaseData):
             return None
         return result.fetchall()
 
+    async def get_machine_owner(self, pcbid: str) -> Optional[int]:
+        machine_row = await self.get_bemani_machine(pcbid)
+        if machine_row is None or machine_row["arcade"] is None:
+            return None
+
+        owners = await self.get_arcade_owners(machine_row["arcade"])
+        if owners is None or len(owners) != 1:
+            return None
+
+        return owners[0]["user"]
+
     async def add_arcade_owner(self, arcade_id: int, user_id: int, permissions: int = 1) -> Optional[int]:
         sql = insert(arcade_owner).values(arcade=arcade_id, user=user_id, permissions=permissions)
 
