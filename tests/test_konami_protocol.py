@@ -952,7 +952,7 @@ def test_core_discovery_chain_survives_encrypted_kbin_transport():
         wire = KonmaiEncrypt(key).crypt(deflate(plain))
         response = await _asgi_response(servlet, module, wire, key)
         response_key = response["headers"]["x-eamuse-info"]
-        assert response_key != key
+        assert response_key == key
         body = KonmaiEncrypt(response_key).crypt(response["body"])
         if response["headers"].get("x-compress") == "lz77":
             body = inflate(body)

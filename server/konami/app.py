@@ -212,13 +212,13 @@ class KonamiServlet:
             output = deflate(output)
             response_headers["X-Compress"] = "lz77"
         if result.encrypt if result.encrypt is not None else encrypted:
-            # EA3 negotiates a fresh response key.  The client uses the
-            # returned X-Eamuse-Info header to decrypt this response; reusing
-            # the request key leaves Pop'n reporting a network error after
-            # services.get even though the HTTP exchange succeeded.
-            key = KonmaiEncrypt()
+            # bemaniutils and the stock EA3 clients use the request key for
+            # both directions of this exchange.  Rotating the key here makes
+            # services.get return HTTP 200 while the cabinet cannot decrypt
+            # the response and reports a network error.
+            key = KonmaiEncrypt(eamuse_info)
             output = key.crypt(output)
-            response_headers["X-Eamuse-Info"] = key.public_key
+            response_headers["X-Eamuse-Info"] = eamuse_info or key.public_key
         self.logger.info(
             "%s %s response_bytes=%s response_compress=%s response_encrypt=%s",
             module,
