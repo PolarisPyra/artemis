@@ -66,16 +66,38 @@ class PopnHiCheers(PopnJamFizz):
             )
             config.children.insert(category + 1, XMLNode("disp_setting", Type.S8, 0))
 
+        if config is not None:
+            disp_setting = next(
+                (index for index, child in enumerate(config.children) if child.name == "disp_setting"),
+                len(config.children) - 1,
+            )
+            legacy_config_fields = (
+                ("h_vol", Type.S8),
+                ("hiscore_disp", Type.S8),
+                ("lane_type", Type.S8),
+                ("brightness", Type.S8),
+                ("key_beam", Type.S8),
+                ("lane_line", Type.S8),
+            )
+            for offset, (name, field_type) in enumerate(legacy_config_fields, start=1):
+                if not any(child.name == name for child in config.children):
+                    config.children.insert(disp_setting + offset, XMLNode(name, field_type, 0))
+
         option = next((child for child in root.children if child.name == "option"), None)
         if option is not None:
-            # Hi Cheers' psmap validates these legacy option properties even
-            # though the inherited UniLab payload does not use them.
-            gauge_type = next(
-                (index for index, child in enumerate(option.children) if child.name == "gauge_type"),
+            guide_se = next(
+                (index for index, child in enumerate(option.children) if child.name == "guide_se"),
+                len(option.children),
+            )
+            if not any(child.name == "guide_se_vol" for child in option.children):
+                option.children.insert(guide_se + 1, XMLNode("guide_se_vol", Type.U8, 0))
+
+            lift_rate = next(
+                (index for index, child in enumerate(option.children) if child.name == "lift_rate"),
                 len(option.children),
             )
             if not any(child.name == "judge_ad" for child in option.children):
-                option.children.insert(gauge_type + 1, XMLNode("judge_ad", Type.S8, 0))
+                option.children.insert(lift_rate + 1, XMLNode("judge_ad", Type.S8, 0))
 
             judge_ad = next(
                 (index for index, child in enumerate(option.children) if child.name == "judge_ad"),
@@ -83,13 +105,12 @@ class PopnHiCheers(PopnJamFizz):
             )
             if not any(child.name == "roof" for child in option.children):
                 option.children.insert(judge_ad + 1, XMLNode("roof", Type.S16, 0))
-
-            guide_se = next(
-                (index for index, child in enumerate(option.children) if child.name == "guide_se"),
+            roof = next(
+                (index for index, child in enumerate(option.children) if child.name == "roof"),
                 len(option.children),
             )
-            if not any(child.name == "guide_se_vol" for child in option.children):
-                option.children.insert(guide_se + 1, XMLNode("guide_se_vol", Type.U8, 0))
+            if not any(child.name == "long_pop" for child in option.children):
+                option.children.insert(roof + 1, XMLNode("long_pop", Type.Bool, False))
 
         account = next((child for child in root.children if child.name == "account"), None)
         if account is not None:
