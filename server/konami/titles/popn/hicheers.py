@@ -1153,6 +1153,8 @@ class PopnVersionHandler:
                 {"items": {}, "achievements": {}, "stories": {}, "charas": {}},
             )
             self._apply_achievements(response.content, achievements)
+            if not response.content.get("course_data"):
+                response.content["course_data"] = [self._default_course_data()]
             if self.force_unlock:
                 response.content.setdefault("item", []).extend(
                     {
@@ -1272,6 +1274,23 @@ class PopnVersionHandler:
                     parent[parts[-1]] = array(type_name, value)
                 else:
                     parent[parts[-1]] = item(type_name, value)
+
+    @staticmethod
+    def _default_course_data() -> dict[str, dict[str, Any]]:
+        return {
+            "course_id": item("s16", 0),
+            "clear_type": item("u8", 0),
+            "clear_rank": item("u8", 0),
+            "total_score": item("s32", 0),
+            "update_count": item("s32", 0),
+            "sheet_num": item("u8", 0),
+            **{f"seal_{index}": item("u16", 0) for index in range(7)},
+            "seat": item("u16", 0),
+            "touch_th": item("u16", 0),
+            "lane_cover": item("u16", 0),
+            "stage_bk": item("u16", 0),
+            "highlight": item("u16", 0),
+        }
 
     @staticmethod
     def _apply_achievements(player: dict, achievements: dict) -> None:

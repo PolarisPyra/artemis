@@ -195,6 +195,7 @@ def test_popn_m39_player_boot_payload_round_trip_shape():
     assert response.status == 0
     assert response.content["account"]["name"]["@attr"]["__type"] == "str"
     assert response.content["music"] == []
+    assert response.content["course_data"][0]["seal_0"]["@attr"]["__type"] == "u16"
     assert response.content["config"]["disp_setting"]["@content"] == [0]
     assert response.content["config"]["h_vol"]["@content"] == [0]
     assert response.content["config"]["hiscore_disp"]["@content"] == [0]
