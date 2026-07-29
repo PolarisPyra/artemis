@@ -58,6 +58,14 @@ class PopnHiCheers(PopnJamFizz):
         root = await self.handle_player24_read(request)
         root.name = "player"
 
+        config = next((child for child in root.children if child.name == "config"), None)
+        if config is not None and not any(child.name == "disp_setting" for child in config.children):
+            category = next(
+                (index for index, child in enumerate(config.children) if child.name == "chara_category"),
+                len(config.children),
+            )
+            config.children.insert(category + 1, XMLNode("disp_setting", Type.S8, 0))
+
         account = next((child for child in root.children if child.name == "account"), None)
         if account is not None:
             base = XMLNode.void("base")
@@ -77,6 +85,15 @@ class PopnHiCheers(PopnJamFizz):
                 if source is not None:
                     base.children.append(source)
             root.children.append(base)
+
+        try:
+            submitted_name = request.xpath("player/name").value
+        except Exception:
+            submitted_name = None
+        if submitted_name and account is not None:
+            name = next((child for child in account.children if child.name == "name"), None)
+            if name is not None:
+                name.value = submitted_name
 
         root.attributes["status"] = "0"
         return root
