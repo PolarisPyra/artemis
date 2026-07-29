@@ -57,6 +57,25 @@ def test_kbin_typed_nodes_with_attributes_round_trip():
     assert facility["portfw"]["globalip"]["@content"] == [0x01020304]
 
 
+def test_kbin_scalar_string_list_content_round_trip():
+    payload = {
+        "response": {
+            "player": {
+                "base": {
+                    "g_pm_id": {
+                        "@attr": {"__type": "str"},
+                        "@content": ["000000000001"],
+                    }
+                }
+            }
+        }
+    }
+    decoded, _ = kbin_decode(kbin_encode(payload, "utf-8", True))
+    assert decoded["response"]["player"]["base"]["g_pm_id"]["@content"] == (
+        "000000000001"
+    )
+
+
 def test_kbin_scalar_numeric_lanes_match_avs_layout():
     payload = {
         "response": {

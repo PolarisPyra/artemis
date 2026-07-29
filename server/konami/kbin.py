@@ -312,8 +312,11 @@ def encode(data: dict, encoding: str = "shift_jis", compressed: bool = True) -> 
         nodes.append(token | (0x40 if count is not None else 0))
         nodes.extend(_pack_name(name, compressed, encoding))
         if type_name == "str":
+            content = node.get("@content", "")
+            if isinstance(content, list):
+                content = content[0] if content else ""
             stream(
-                (str(node.get("@content", "")) + "\0").encode(
+                (str(content) + "\0").encode(
                     encoding, errors="replace"
                 )
             )
