@@ -106,6 +106,14 @@ class XMLNode:
             return " ".join(map(self._value_str, value))
         if self.type == Type.Blob:
             return binascii.hexlify(value).decode()
+        if self.type in (
+            Type.Bool,
+            Type.TwoBool,
+            Type.ThreeBool,
+            Type.FourBool,
+            Type.VecBool,
+        ):
+            return "1" if value else "0"
         if self.type == Type.IPv4 or self.type == Type.IPv4_Int:
             if isinstance(value, int):
                 value = (
