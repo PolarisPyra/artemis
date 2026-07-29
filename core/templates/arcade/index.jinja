@@ -1,0 +1,105 @@
+{% extends "core/templates/index.jinja" %}
+{% block content %}
+{% if arcade is defined %}
+<h1>{{ arcade.name }}</h1>
+<h2>Assigned Machines</h2>
+{% if success is defined and success == 3 %}
+<div style="background-color: #00AA00; padding: 20px; margin-bottom: 10px; width: 15%;">
+Cab added successfully
+</div>
+{% endif %}
+{% if success is defined and success == 1 %}
+<div style="background-color: #00AA00; padding: 20px; margin-bottom: 10px; width: 15%;">
+Info Updated
+</div>
+{% endif %}
+{% include "core/templates/widgets/err_banner.jinja" %}
+<ul style="font-size: 20px;">
+{% for c in cablst %}
+<li><a href="/cab/{{ c.id }}">{{ c.serial }}</a> ({{ c.game if c.game else "Any" }})</li>
+{% endfor %}
+</ul>
+Info
+<form style="max-width: 50%;" action="/shop/{{ arcade.id }}/info.update" method="post" id="shop_info">
+    <div class="row">
+        <div class="col mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" name="name" maxlength="255" value="{{ arcade.name if arcade.name is not none else "" }}">
+        </div>
+        <div class="col mb-3">
+            <label for="nickname" class="form-label">Nickname</label>
+            <input type="text" class="form-control" id="nickname" name="nickname" maxlength="255" value="{{ arcade.nickname if arcade.nickname is not none else "" }}">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col mb-3">
+            <label for="country" class="form-label">Country</label>
+            <select id="country" name="country" class="form-select bg-dark text-white">
+                <option value="JPN" {{ 'selected' if arcade.country == 'JPN' else ''}}>Japan</option>
+                <option value="USA" {{ 'selected' if arcade.country == 'USA' else ''}}>USA</option>
+                <option value="HKG" {{ 'selected' if arcade.country == 'HKG' else ''}}>Hong Kong</option>
+                <option value="SGP" {{ 'selected' if arcade.country == 'SGP' else ''}}>Singapore</option>
+                <option value="KOR" {{ 'selected' if arcade.country == 'KOR' else ''}}>South Korea</option>
+                <option value="TWN" {{ 'selected' if arcade.country == 'TWN' else ''}}>Taiwan</option>
+                <option value="CHN" {{ 'selected' if arcade.country == 'CHN' else ''}}>China</option>
+                <option value="AUS" {{ 'selected' if arcade.country == 'AUS' else ''}}>Australia</option>
+                <option value="IDN" {{ 'selected' if arcade.country == 'IDN' else ''}}>Indonesia</option>
+                <option value="MMR" {{ 'selected' if arcade.country == 'MMR' else ''}}>Myanmar</option>
+                <option value="MYS" {{ 'selected' if arcade.country == 'MYS' else ''}}>Malaysia</option>
+                <option value="NZL" {{ 'selected' if arcade.country == 'NZL' else ''}}>New Zealand</option>
+                <option value="PHL" {{ 'selected' if arcade.country == 'PHL' else ''}}>Philippines</option>
+                <option value="THA" {{ 'selected' if arcade.country == 'THA' else ''}}>Thailand</option>
+                <option value="VNM" {{ 'selected' if arcade.country == 'VNM' else ''}}>Vietnam</option>
+            </select>
+        </div>
+        <div class="col mb-3">
+            <label for="region1" class="form-label">Region 1</label>
+            <input type="text" class="form-control" id="region1" name="region1" maxlength="255" value="{{ arcade.state if arcade.state is not none else "" }}">
+        </div>
+        <div class="col mb-3">
+            <label for="region2" class="form-label">Region 2</label>
+            <input type="text" class="form-control" id="region2" name="region2" maxlength="255" value="{{ arcade.city if arcade.city is not none else "" }}">
+        </div>
+        <div class="col mb-3">
+            <label for="tz" class="form-label">Timezone</label>
+            <input type="text" class="form-control" id="tz" name="tz" placeholder="+09:00" maxlength="255" value="{{ arcade.timezone if arcade.timezone is not none else "" }}">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col mb-3">
+            <label for="ip" class="form-label">VPN IP</label>
+            <input type="text" class="form-control" id="ip" name="ip" maxlength="39" value="{{ arcade.ip if arcade.ip is not none else "" }}">
+        </div>
+    </div>
+    {% if can_edit %}
+    <div class="row">
+        <div class="col mb-3">
+            <input type="submit" value="Update" class="btn btn-primary">
+        </div>
+    </div>
+    {% endif %}
+</form>
+{% if is_owner or is_acmod %}
+<br>
+<h2>Arcade Managers&nbsp;<button type="button" class="btn btn-success">Add</button></h2>
+<ul style="font-size: 20px;">
+{% for u in managers %}
+<li>{{ u.name }}:
+<label for="is_view_{{ u.user }}" class="form-label">View Arcade</label>
+<input type="checkbox" class="form-control-check" id="is_view_{{ u.user }}" name="is_view" {{ 'checked' if u.is_view else ''}}>&nbsp;|
+<label for="is_bookkeep_{{ u.user }}" class="form-label">View Bookkeeping</label>
+<input type="checkbox" class="form-control-check" id="is_bookkeep_{{ u.user }}" name="is_bookkeep" {{ 'checked' if u.is_bookkeep else ''}}>&nbsp;|
+<label for="is_edit_{{ u.user }}" class="form-label">Edit Arcade</label>
+<input type="checkbox" class="form-control-check" id="is_edit_{{ u.user }}" name="is_edit" {{ 'checked' if u.is_edit else ''}}>&nbsp;|
+<label for="is_owner_{{ u.user }}" class="form-label">Owner</label>
+<input type="checkbox" class="form-control-check" id="is_owner_{{ u.user }}" name="is_owner" {{ 'checked' if u.is_owner else ''}}>&nbsp;|
+<button type="submit" class="btn btn-primary">Update</button>
+<button type="button" class="btn btn-danger">Delete</button>
+</li>
+{% endfor %}
+</ul>
+{% endif %}
+{% else %}
+<h3>Arcade Not Found</h3>
+{% endif %}
+{% endblock content %}

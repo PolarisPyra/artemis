@@ -1,5 +1,5 @@
 server:
-  enable: True
+  enable: False
   loglevel: "info"
   hostname: ""
   news: ""

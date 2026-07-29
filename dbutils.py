@@ -6,12 +6,14 @@ from os import W_OK, access, environ, mkdir, path
 
 import yaml
 
-from server.sega.config import ArtemisConfig
-from server.sega.data import Data
-
+from core.config import CoreConfig
+from core.data import Data
 
 async def main():
     parser = argparse.ArgumentParser(description="Database utilities")
+    parser.add_argument(
+        "--config", "-c", type=str, help="Config folder to use", default="config"
+    )
     parser.add_argument(
         "--version",
         "-v",
@@ -19,27 +21,16 @@ async def main():
         help="Version of the database to upgrade/rollback to",
     )
     parser.add_argument("--email", "-e", type=str, help="Email for the new user")
-    parser.add_argument(
-        "--access_code",
-        "-a",
-        type=str,
-        help="Access code for new/transfer user",
-        default="00000000000000000000",
-    )
+    parser.add_argument("--access_code", "-a", type=str, help="Access code for new/transfer user", default="00000000000000000000")
     parser.add_argument("--message", "-m", type=str, help="Revision message")
-    parser.add_argument(
-        "action",
-        type=str,
-        help="create, upgrade, downgrade, create-owner, migrate, create-revision, create-autorevision",
-    )
+    parser.add_argument("action", type=str, help="create, upgrade, downgrade, create-owner, migrate, create-revision, create-autorevision")
     args = parser.parse_args()
 
-    config_dir = "config"
-    environ["ARTEMIS_CFG_DIR"] = config_dir
+    environ["ARTEMIS_CFG_DIR"] = args.config
 
-    cfg = ArtemisConfig()
-    if path.exists(f"{config_dir}/core.yaml"):
-        cfg_dict = yaml.safe_load(open(f"{config_dir}/core.yaml"))
+    cfg = CoreConfig()
+    if path.exists(f"{args.config}/core.yaml"):
+        cfg_dict = yaml.safe_load(open(f"{args.config}/core.yaml"))
         cfg.update(cfg_dict)
 
     if not path.exists(cfg.server.log_dir):
@@ -55,15 +46,13 @@ async def main():
 
     if args.action == "create":
         await data.create_database()
-
+    
     elif args.action == "upgrade":
         data.schema_upgrade(args.version)
 
     elif args.action == "downgrade":
         if not args.version:
-            logging.getLogger("database").error(
-                f"Version argument required for downgrade"
-            )
+            logging.getLogger("database").error(f"Version argument required for downgrade")
             exit(1)
         data.schema_downgrade(args.version)
 

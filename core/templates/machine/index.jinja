@@ -1,0 +1,109 @@
+{% extends "core/templates/index.jinja" %}
+{% block content %}
+<script type="text/javascript">
+function swap_ota() {
+    let is_cab = document.getElementById("is_cab").checked;
+    let txt_ota = document.getElementById("ota_channel");
+
+    cbx_ota.disabled = !is_cab;
+}
+</script>
+<h1>Machine: {{machine.serial}}</h1>
+<h3>Arcade: <a href=/shop/{{ arcade.id }}>{{ arcade.name }}</a>{% if is_acmod %}&nbsp;<button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#reassign_modal">Reassign</button>{% endif %}</h3>
+{% include "core/templates/widgets/err_banner.jinja" %}
+{% if success is defined and success == 1 %}
+<div style="background-color: #00AA00; padding: 20px; margin-bottom: 10px; width: 15%;">
+Info Updated
+</div>
+{% endif %}
+{% if success is defined and success == 2 %}
+<div style="background-color: #00AA00; padding: 20px; margin-bottom: 10px; width: 15%;">
+Machine successfully reassigned
+</div>
+{% endif %}
+Info
+<form style="max-width: 50%;" action="/cab/{{ machine.id }}/info.update" method="post" id="mech_info">
+    <div class="row">
+        <div class="col mb-3">
+            <label for="game" class="form-label">Game</label>
+            <input type="text" class="form-control" id="game" name="game" placeholder="SXXX" maxlength="4" value="{{ machine.game if machine.game is not none else "" }}">
+        </div>
+        <div class="col mb-3">
+            <label for="country" class="form-label">Country Override</label>
+            <select id="country" name="country" class="form-select bg-dark text-white">
+                <option value="" {{ 'selected' if machine.country is none else ''}}>Same As Arcade</option>
+                <option value="JPN" {{ 'selected' if machine.country == 'JPN' else ''}}>Japan</option>
+                <option value="USA" {{ 'selected' if machine.country == 'USA' else ''}}>USA</option>
+                <option value="HKG" {{ 'selected' if machine.country == 'HKG' else ''}}>Hong Kong</option>
+                <option value="SGP" {{ 'selected' if machine.country == 'SGP' else ''}}>Singapore</option>
+                <option value="KOR" {{ 'selected' if machine.country == 'KOR' else ''}}>South Korea</option>
+                <option value="TWN" {{ 'selected' if machine.country == 'TWN' else ''}}>Taiwan</option>
+                <option value="CHN" {{ 'selected' if machine.country == 'CHN' else ''}}>China</option>
+                <option value="AUS" {{ 'selected' if machine.country == 'AUS' else ''}}>Australia</option>
+                <option value="IDN" {{ 'selected' if machine.country == 'IDN' else ''}}>Indonesia</option>
+                <option value="MMR" {{ 'selected' if machine.country == 'MMR' else ''}}>Myanmar</option>
+                <option value="MYS" {{ 'selected' if machine.country == 'MYS' else ''}}>Malaysia</option>
+                <option value="NZL" {{ 'selected' if machine.country == 'NZL' else ''}}>New Zealand</option>
+                <option value="PHL" {{ 'selected' if machine.country == 'PHL' else ''}}>Philippines</option>
+                <option value="THA" {{ 'selected' if machine.country == 'THA' else ''}}>Thailand</option>
+                <option value="VNM" {{ 'selected' if machine.country == 'VNM' else ''}}>Vietnam</option>
+            </select>
+        </div>
+        <div class="col mb-3">
+            <label for="tz" class="form-label">Timezone Override</label>
+            <input type="text" class="form-control" id="tz" name="tz" placeholder="+09:00" maxlength="6" value="{{ machine.timezone if machine.timezone is not none else "" }}">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col mb-3">
+            <input type="checkbox" class="form-control-check" id="is_cab" name="is_cab" {{ 'checked' if machine.is_cab else ''}} onchange="swap_ota()">
+            <label for="is_cab" class="form-label">Real Cabinet</label>
+        </div>
+        <div class="col mb-3">
+            <input type="text" class="form-control-check" id="ota_channel" name="ota_channel" value={{ machine.ota_channel }} {{ 'disabled' if not machine.is_cab else '' }}>
+            <label for="ota_channel" class="form-label">OTA Update Channel</label>
+        </div>
+        <div class="col mb-3">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col mb-3">
+            <label for="memo" class="form-label">Memo</label>
+            <input type="text" class="form-control" id="memo" name="memo" maxlength="255" value="{{ machine.memo if machine.memo is not none else "" }}">
+        </div>
+    </div>
+    {% if can_edit %}
+    <div class="row">
+        <div class="col mb-3">
+            <input type="submit" value="Update" class="btn btn-primary">
+        </div>
+    </div>
+    {% endif %}
+</form>
+{% if is_acmod %}
+<form id="frm_reassign" method="post" action="/cab/{{ machine.id }}/reassign" style="outline: 0px;">
+<div class="modal" tabindex="-1" id="reassign_modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Reassign {{ machine.serial }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>This will reassign this cabinet from the current arcade "{{ arcade.name }}" to the arcade who's ID you enter below.</p>
+        <label for="new_arcade" class="form-label">New Arcade</label>
+        <input type="text" class="form-control" id="new_arcade" name="new_arcade" value="{{ arcade.id }}">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endif %}
+<script type="text/javascript">
+swap_ota();
+</script>
+{% endblock content %}

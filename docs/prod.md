@@ -33,10 +33,10 @@ For most cases, the config in `example_config` will suffice. It makes the follow
 
 If this describes you, your only configuration needs are to edit the `server_name` and `certificate_*` directives. Otherwise, please see nginx configuration documentation to configure it to best suit your setup.
 
-## Standalone Konami service
+## Standalone e-amusement service
 
-When `konami.enable` and `konami.standalone` are enabled, Artemis listens on
-`konami.port` (5730 by default). A public HTTPS hostname can proxy to that port:
+When `eamuse.enable` and `eamuse.standalone` are enabled, Artemis listens on
+`eamuse.port` (5730 by default). A public HTTPS hostname can proxy to that port:
 
 ```nginx
 server {

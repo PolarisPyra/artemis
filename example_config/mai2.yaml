@@ -1,11 +1,16 @@
 server:
   enable: True
   loglevel: "info"
+  use_https: False # for DX and later
 
 deliver:
   enable: False
   udbdl_enable: False
   content_folder: ""
+
+chart_deliver: #for Prism and later
+  enable: False
+  chart_folder: ""
 
 uploads:
   photos: False

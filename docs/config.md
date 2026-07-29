@@ -47,12 +47,14 @@
 - `ssl_key`: Location of the ssl server key for the billing server. Ignored if `standalone` is `False`. Default `cert/server.key`
 - `ssl_cert`: Location of the ssl server certificate for the billing server. Ignored if `standalone` is `False`.  Must match the CA distributed to users or the billing server will not connect. Default `cert/server.pem`
 - `signing_key`: Location of the RSA Private key used to sign billing requests. Must match the public key distributed to users or the billing server will not connect. Default `cert/billing.key`
-## Konami
-- `konami_database`: Optional separate MariaDB connection for e-amusement profiles and scores. It defaults to the main database host, credentials, and port, but uses the database name `konami`.
-- `enable`: Enables the native Konami e-amusement service and Pop'n Music routes. Default `False`
-- `standalone`: Runs Konami on its own port instead of the main Artemis HTTP service. Default `False`
-- `port`: Standalone Konami service port. Default `5730`
-- `hostname`: Advertised Konami hostname. Default `localhost`
+## E-amusement
+- `eamuse_database`: Optional separate MariaDB connection for e-amusement profiles and scores. It defaults to the main database host, credentials, and port, but uses the database name `eamuse`.
+- `enable`: Enables the native e-amusement service and Pop'n Music routes. Default `False`
+- `standalone`: Runs e-amusement on its own port instead of the main Artemis HTTP service. Default `False`
+- `port`: Standalone e-amusement service port. Default `5730`
+- `hostname`: Advertised e-amusement hostname. Default `localhost`
+- `public_url`: Optional absolute public URL used verbatim for e-amusement service discovery, for example `https://eamuse.example.com`.
+- `protocol`: Discovery protocol when `public_url` is empty. Default `http`.
 - When running behind a reverse proxy, forward the original `Host`, scheme, and
   port using `X-Forwarded-Host`, `X-Forwarded-Proto`, and `X-Forwarded-Port` so
   e-amusement service discovery advertises the public URL instead of port `5730`.
@@ -62,6 +64,10 @@
 - `matching_port`: Port reported for facility matching. Default `5700`
 - `enable_paseli`: Enables PASELI in `pcbtracker.alive`. Default `True`
 - `maintenance_mode`: Adds system maintenance messages to `message.get`. Default `False`
+
+Pop'n-specific settings live in `popn.yaml`, matching the per-title layout used
+by `artemis-ea`. Set `server.enable` and `server.loglevel` there; `force_unlock`
+controls whether Hi Cheers profile reads include the full unlock list.
 ## Aimedb
 - `enable`: Whether or not aimedb should run. Default `True`
 - `listen_address`: IP Address or hostname that the aimedb server will listen for connections on. Leave this blank to use the listen address under `server`. Default `""`

@@ -7,12 +7,12 @@ gachas:
   enabled_gachas:
     - 1011
     - 1012
-    - 1043
-    - 1067
-    - 1068
-    - 1069
-    - 1070
-    - 1071
+    # - 1043
+    # - 1067
+    # - 1068
+    # - 1069
+    # - 1070
+    # - 1071
     - 1072
     - 1073
     - 1074
@@ -30,12 +30,22 @@ gachas:
     - 1156
     - 1163
     - 1164
+    # 5th anniversary gacha
+    - 1165
+    # 2024 gacha
+    - 1166
+    # 6th anniversary gacha
+    - 1167
+    # 2025 gacha
+    - 1168
 
 version:
   6:
     card_maker: 1.30.01
   7:
     card_maker: 1.35.03
+  8:
+    card_maker: 1.45.01
 
 crypto:
   encrypted_only: False

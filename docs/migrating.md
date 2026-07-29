@@ -32,3 +32,14 @@ If you wish to make use of aimedb's SegaAuthId system to better protect the few 
 `mucha`'s only option is now just log level.
 
 `aimedb` now has it's own `listen_address` field, in case you want to proxy everything but aimedb, so it can still listen on `0.0.0.0` instead of `127.0.0.1`.
+## E-amusement / Pop'n configuration migration
+
+Move the native e-amusement settings in `core.yaml` from `konami` to
+`eamuse`, and rename `konami_database` to `eamuse_database`. The server keeps
+read-only compatibility with the old names during migration, but new config
+should use the e-amusement names.
+
+Copy `example_config/popn.yaml` to the live config directory as `popn.yaml`.
+For a TLS reverse proxy, set `eamuse.public_url` to the exact public URL the
+cabinet can reach, such as `https://eamuse.example.com`. This makes every
+service URL and `/core/keepalive` match the automap shape.
