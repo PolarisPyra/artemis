@@ -251,9 +251,20 @@ class ArtemisServices:
         refid = self._refid(cardid)
         profile = await self._card_profile(refid, info.game_code)
         if profile is None or profile.get("pin", "unset") == "unset":
+            logger.info(
+                "card inquire unregistered card_suffix=%s refid_suffix=%s",
+                str(cardid)[-4:],
+                refid[-4:],
+            )
             response.status = 112
             return
         bound = await self.data.konami.get_extid(refid, info.game_code)
+        logger.info(
+            "card inquire registered card_suffix=%s refid_suffix=%s bound=%s",
+            str(cardid)[-4:],
+            refid[-4:],
+            bound is not None,
+        )
         response.content = {
             "@attr": {
                 "binded": "1" if bound is not None else "0",
@@ -287,6 +298,14 @@ class ArtemisServices:
             )
         await self.data.konami.put_profile(refid, profile)
         await self.data.konami.put_card(cardid, refid)
+        saved = await self._card_profile(refid, info.game_code)
+        logger.info(
+            "card getrefid created card_suffix=%s refid_suffix=%s pin_present=%s persisted=%s",
+            str(cardid)[-4:],
+            refid[-4:],
+            bool(profile.get("pin") not in (None, "", "unset")),
+            saved is not None,
+        )
         response.content = {"@attr": {"dataid": refid, "refid": refid}}
 
     async def card_authpass(
