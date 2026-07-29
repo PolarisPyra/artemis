@@ -900,6 +900,7 @@ class FE_System(FE_Base):
         frm = await request.form()
         shopid = frm.get("cabShop", None)
         serial = frm.get("cabSerial", None)
+        pcbid = frm.get("cabPcbid", None)
         game_code = frm.get("cabGame", None)
 
         if not shopid or not shopid.isdigit():
@@ -918,7 +919,9 @@ class FE_System(FE_Base):
             serial_dash = self.data.arcade.format_serial(ARTEMIS_SERIAL_PREFIX, 1, serial_letter, serial_num, int(append), True)
             serial = serial_dash.replace("-", "")
         
-        cab_id = await self.data.arcade.create_machine(int(shopid), serial, None, game_code if game_code else None)
+        cab_id = await self.data.arcade.create_machine(
+            int(shopid), serial, None, game_code if game_code else None, False, pcbid or None
+        )
         if cab_id is None:
             return RedirectResponse("/sys/?e=4", 303)
         

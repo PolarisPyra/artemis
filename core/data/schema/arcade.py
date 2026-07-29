@@ -39,6 +39,7 @@ machine: Table = Table(
         nullable=False,
     ),
     Column("serial", VARCHAR(16), nullable=False),
+    Column("pcbid", CHAR(20), unique=True),
     Column("board", String(15)),
     Column("game", String(4)),
     Column("country", String(3)),  # overwrites if not null
@@ -194,13 +195,19 @@ class ArcadeData(BaseData):
         board: Optional[str] = None,
         game: Optional[str] = None,
         is_cab: bool = False,
+        pcbid: Optional[str] = None,
     ) -> Optional[int]:
         if not arcade_id:
             self.logger.error(f"{__name__ }: Need arcade id!")
             return None
 
         sql = machine.insert().values(
-            arcade=arcade_id, serial=serial, board=board, game=game, is_cab=is_cab
+            arcade=arcade_id,
+            serial=serial,
+            pcbid=pcbid,
+            board=board,
+            game=game,
+            is_cab=is_cab,
         )
 
         result = await self.execute(sql)
@@ -226,6 +233,15 @@ class ArcadeData(BaseData):
                 f"Failed to update serial for machine {machine_id} -> {serial}"
             )
         return result.lastrowid
+
+    async def set_machine_pcbid(self, machine_id: int, pcbid: str) -> bool:
+        result = await self.execute(
+            machine.update(machine.c.id == machine_id).values(pcbid=pcbid)
+        )
+        if result is None:
+            self.logger.error(f"Failed to update PCBID for machine {machine_id} -> {pcbid}")
+            return False
+        return True
 
     async def set_machine_boardid(self, machine_id: int, boardid: str) -> None:
         result = await self.execute(
@@ -623,22 +639,30 @@ class ArcadeData(BaseData):
         return (year, month)
 
     async def get_bemani_machine(self, pcbid: str) -> Optional[Row]:
-        cab_id = self.from_pcbid(pcbid)
-        if not cab_id:
+        if not pcbid:
             return
         
-        sql = machine.select(machine.c.serial == cab_id)
+        sql = machine.select(machine.c.pcbid == pcbid)
         result = await self.execute(sql)
         if result is None:
             return None
-        return result.fetchone()
+        row = result.fetchone()
+        if row is not None:
+            return row
 
-    async def set_bemani_machine_name(self, pcbid: str, new_name: str) -> None:
+        # Compatibility for machines created before the explicit PCBID field.
         cab_id = self.from_pcbid(pcbid)
         if not cab_id:
+            return None
+        result = await self.execute(machine.select(machine.c.serial == cab_id))
+        return result.fetchone() if result is not None else None
+
+    async def set_bemani_machine_name(self, pcbid: str, new_name: str) -> None:
+        machine_row = await self.get_bemani_machine(pcbid)
+        if machine_row is None:
             return
         
-        sql = machine.update(machine.c.serial == cab_id).values(
+        sql = machine.update(machine.c.id == machine_row["id"]).values(
             name=new_name
         )
 
@@ -647,11 +671,11 @@ class ArcadeData(BaseData):
             self.logger.error(f"Failed to set machine {pcbid} name to {new_name}")
 
     async def set_bemani_machine_settings(self, pcbid: str, new_settings: Dict) -> None:
-        cab_id = self.from_pcbid(pcbid)
-        if not cab_id:
+        machine_row = await self.get_bemani_machine(pcbid)
+        if machine_row is None:
             return
         
-        sql = machine.update(machine.c.serial == cab_id).values(
+        sql = machine.update(machine.c.id == machine_row["id"]).values(
             data=new_settings
         )
 
