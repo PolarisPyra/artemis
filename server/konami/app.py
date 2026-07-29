@@ -51,6 +51,7 @@ class KonamiServlet:
         )
 
     async def keepalive(self, request: Request) -> Response:
+        self.logger.info("keepalive path=%s client=%s", request.url.path, request.client.host if request.client else "-")
         return Response("OK", media_type="text/plain")
 
     async def dispatch_webui_event(

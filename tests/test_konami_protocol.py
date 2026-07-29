@@ -1009,4 +1009,4 @@ def test_core_discovery_chain_survives_encrypted_kbin_transport():
     local_service = next(item for item in service_items if item["@attr"]["name"] == "local2")
     assert local_service["@attr"]["url"] == "https://public.example"
     keepalive_service = next(item for item in service_items if item["@attr"]["name"] == "keepalive")
-    assert keepalive_service["@attr"]["url"].startswith("http://192.0.2.10/core/keepalive?")
+    assert keepalive_service["@attr"]["url"].startswith("https://192.0.2.10/core/keepalive?")

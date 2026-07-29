@@ -135,7 +135,7 @@ class ArtemisServices:
             {
                 "@attr": {
                     "name": "keepalive",
-                    "url": f"http://{keepalive_host}/core/keepalive?pa={keepalive_host}&ia={keepalive_host}&ga={keepalive_host}&ma={keepalive_host}&t1=2&t2=10",
+                    "url": f"{info.protocol}://{keepalive_host}/core/keepalive?pa={keepalive_host}&ia={keepalive_host}&ga={keepalive_host}&ma={keepalive_host}&t1=2&t2=10",
                 }
             },
         ]
