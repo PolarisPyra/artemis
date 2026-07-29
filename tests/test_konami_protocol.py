@@ -208,7 +208,8 @@ def test_popn_m39_player_boot_payload_round_trip_shape():
     assert response.content["option"]["guide_se_vol"]["@attr"]["__type"] == "u8"
     assert response.content["option"]["long_pop"]["@content"] == [0]
     assert response.content["option"]["long_pop"]["@attr"]["__type"] == "s8"
-    assert response.content["customize"]["roof"]["@content"] == [0]
+    assert response.content["option"]["roof"]["@content"] == [0]
+    assert response.content["option"]["roof"]["@attr"]["__type"] == "s16"
 
 
 def test_popn_only_exposes_hi_cheers():
