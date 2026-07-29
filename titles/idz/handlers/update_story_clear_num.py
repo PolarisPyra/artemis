@@ -11,8 +11,8 @@ class IDZHandlerUpdateStoryClearNum(IDZHandlerBase):
     rsp_codes = [0x0080, 0x013E, 0x013E, 0x0145]
     name = "update_story_clear_num"
 
-    def __init__(self, artemis_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
-        super().__init__(artemis_cfg, game_cfg, version)
+    def __init__(self, core_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
+        super().__init__(core_cfg, game_cfg, version)
 
         if self.version == IDZConstants.VER_IDZ_110:
             self.size = 0x0220

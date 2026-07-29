@@ -47,7 +47,7 @@ class PokkenServerConfig:
     @property
     def stun_server_host(self) -> str:
         """
-        Hostname of the EXTERNAL stun server the game should connect to. This is not handled by core.
+        Hostname of the EXTERNAL stun server the game should connect to. This is not handled by artemis.
         """
         return CoreConfig.get_config_field(
             self.__config,
@@ -60,7 +60,7 @@ class PokkenServerConfig:
     @property
     def stun_server_port(self) -> int:
         """
-        Port of the EXTERNAL stun server the game should connect to. This is not handled by core.
+        Port of the EXTERNAL stun server the game should connect to. This is not handled by artemis.
         """
         return CoreConfig.get_config_field(
             self.__config, "pokken", "server", "stun_server_port", default=3478

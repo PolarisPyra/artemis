@@ -22,25 +22,25 @@ class CxbRev(CxbBase):
 
     async def handle_data_putlog_request(self, data: Dict) -> Dict:
         if data["putlog"]["type"] == "ResultLog":
-            sartemis_data = json.loads(data["putlog"]["data"])
-            userid = sartemis_data["usid"]
+            score_data = json.loads(data["putlog"]["data"])
+            userid = score_data["usid"]
 
             await self.data.score.put_playlog(
                 userid,
-                sartemis_data["mcode"],
-                sartemis_data["difficulty"],
-                sartemis_data["score"],
-                int(Decimal(sartemis_data["clearrate"]) * 100),
-                sartemis_data["flawless"],
-                sartemis_data["super"],
-                sartemis_data["cool"],
-                sartemis_data["fast"],
-                sartemis_data["fast2"],
-                sartemis_data["slow"],
-                sartemis_data["slow2"],
-                sartemis_data["fail"],
-                sartemis_data["combo"],
-                sartemis_data["grade"],
+                score_data["mcode"],
+                score_data["difficulty"],
+                score_data["score"],
+                int(Decimal(score_data["clearrate"]) * 100),
+                score_data["flawless"],
+                score_data["super"],
+                score_data["cool"],
+                score_data["fast"],
+                score_data["fast2"],
+                score_data["slow"],
+                score_data["slow2"],
+                score_data["fail"],
+                score_data["combo"],
+                score_data["grade"],
             )
             return {"data": True}
         return {"data": True}

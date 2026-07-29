@@ -1655,8 +1655,8 @@ class QuestScenePlayEndRequestData(BaseHelper):
         )
         off += new_off
 
-        self.sartemis_data: List[QuestScenePlayEndScoreData] = []
-        self.sartemis_data, new_off = decode_arr_cls(data, off, QuestScenePlayEndScoreData)
+        self.score_data: List[QuestScenePlayEndScoreData] = []
+        self.score_data, new_off = decode_arr_cls(data, off, QuestScenePlayEndScoreData)
         off += new_off
 
         self._sz = off - offset
@@ -1674,7 +1674,7 @@ class QuestScenePlayEndRequestData(BaseHelper):
         ret.discovery_enemy_data_list = []
         ret.destroy_boss_data_list = []
         ret.mission_data_list = []
-        ret.sartemis_data = []
+        ret.score_data = []
         return ret
 
     def make(self) -> bytes:
@@ -1690,7 +1690,7 @@ class QuestScenePlayEndRequestData(BaseHelper):
             + encode_arr_cls(self.discovery_enemy_data_list)
             + encode_arr_cls(self.destroy_boss_data_list)
             + encode_arr_cls(self.mission_data_list)
-            + encode_arr_cls(self.sartemis_data)
+            + encode_arr_cls(self.score_data)
         )
 
 
@@ -2068,14 +2068,14 @@ class PlayEndRequestData(BaseHelper):
             sz += tmp.get_size()
             self.mission_data_list.append(tmp)
 
-        self.sartemis_data_count = decode_int(data, offset + sz)
+        self.score_data_count = decode_int(data, offset + sz)
         sz += INT_OFF
 
-        self.sartemis_data_list: List[ScoreData] = []
-        for _ in range(self.sartemis_data_count):
+        self.score_data_list: List[ScoreData] = []
+        for _ in range(self.score_data_count):
             tmp = ScoreData(data, offset + sz)
             sz += tmp.get_size()
-            self.sartemis_data_list.append(tmp)
+            self.score_data_list.append(tmp)
 
         self._sz = sz
 

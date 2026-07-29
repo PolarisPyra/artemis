@@ -22,8 +22,8 @@ from .cm135 import CardMaker135
 
 
 class CardMakerServlet(BaseServlet):
-    def __init__(self, artemis_cfg: CoreConfig, cfg_dir: str) -> None:
-        super().__init__(artemis_cfg, cfg_dir)
+    def __init__(self, core_cfg: CoreConfig, cfg_dir: str) -> None:
+        super().__init__(core_cfg, cfg_dir)
         self.game_cfg = CardMakerConfig()
         if path.exists(f"{cfg_dir}/{CardMakerConstants.CONFIG_NAME}"):
             self.game_cfg.update(
@@ -31,15 +31,15 @@ class CardMakerServlet(BaseServlet):
             )
 
         self.versions = [
-            CardMakerBase(artemis_cfg, self.game_cfg),
-            CardMaker135(artemis_cfg, self.game_cfg),
+            CardMakerBase(core_cfg, self.game_cfg),
+            CardMaker135(core_cfg, self.game_cfg),
         ]
 
         self.logger = logging.getLogger("cardmaker")
         log_fmt_str = "[%(asctime)s] Card Maker | %(levelname)s | %(message)s"
         log_fmt = logging.Formatter(log_fmt_str)
         fileHandler = TimedRotatingFileHandler(
-            "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "cardmaker"),
+            "{0}/{1}.log".format(self.core_cfg.server.log_dir, "cardmaker"),
             encoding="utf8",
             when="d",
             backupCount=10,
@@ -60,7 +60,7 @@ class CardMakerServlet(BaseServlet):
 
     @classmethod
     def is_game_enabled(
-        cls, game_code: str, artemis_cfg: CoreConfig, cfg_dir: str
+        cls, game_code: str, core_cfg: CoreConfig, cfg_dir: str
     ) -> bool:
         game_cfg = CardMakerConfig()
         if path.exists(f"{cfg_dir}/{CardMakerConstants.CONFIG_NAME}"):

@@ -13,20 +13,20 @@ from titles.idac.base import IDACBase
 
 
 class IDACSeason2(IDACBase):
-    def __init__(self, artemis_cfg: CoreConfig, game_cfg: IDACConfig) -> None:
-        super().__init__(artemis_cfg, game_cfg)
+    def __init__(self, core_cfg: CoreConfig, game_cfg: IDACConfig) -> None:
+        super().__init__(core_cfg, game_cfg)
         self.version = IDACConstants.VER_IDAC_SEASON_2
 
         # load the play stamps and timetrial events into memory
         self.stamp_info = []
         if self.game_config.stamp.enable:
             for stamp in self.game_config.stamp.enabled_stamps:
-                if not os.path.exists(f"titles/idac/data/stamps/{stamp}.json"):
+                if not os.path.exists(f"./titles/idac/data/stamps/{stamp}.json"):
                     self.logger.warning(f"Stamp {stamp} is enabled but does not exist!")
                     continue
 
                 with open(
-                    f"titles/idac/data/stamps/{stamp}.json", encoding="UTF-8"
+                    f"./titles/idac/data/stamps/{stamp}.json", encoding="UTF-8"
                 ) as f:
                     self.logger.debug(f"Loading stamp {stamp}")
                     self.stamp_info.append(self._fix_dates(json.load(f)))
@@ -36,14 +36,14 @@ class IDACSeason2(IDACBase):
         if self.game_config.timetrial.enable:
             timetrial = self.game_config.timetrial.enabled_timetrial
             if timetrial is not None:
-                if not os.path.exists(f"titles/idac/data/timetrial/{timetrial}.json"):
+                if not os.path.exists(f"./titles/idac/data/timetrial/{timetrial}.json"):
                     self.logger.warning(
                         f"Timetrial {timetrial} is enabled but does not exist!"
                     )
                 else:
                     self.logger.debug(f"Loading timetrial {timetrial}")
                     with open(
-                        f"titles/idac/data/timetrial/{timetrial}.json",
+                        f"./titles/idac/data/timetrial/{timetrial}.json",
                         encoding="UTF-8",
                     ) as f:
                         self.timetrial_event = self._fix_dates(json.load(f))
@@ -109,10 +109,10 @@ class IDACSeason2(IDACBase):
         version = headers["device_version"]
         ver_str = version.replace(".", "")[:3]
 
-        if self.artemis_cfg.server.is_using_proxy:
-            domain_api_game = f"http://{self.artemis_cfg.server.hostname}/{ver_str}/"
+        if self.core_cfg.server.is_using_proxy:
+            domain_api_game = f"http://{self.core_cfg.server.hostname}/{ver_str}/"
         else:
-            domain_api_game = f"http://{self.artemis_cfg.server.hostname}:{Utils.get_title_port(self.artemis_cfg)}/{ver_str}/"
+            domain_api_game = f"http://{self.core_cfg.server.hostname}:{Utils.get_title_port(self.core_cfg)}/{ver_str}/"
 
         return {
             "status_code": "0",
@@ -138,14 +138,14 @@ class IDACSeason2(IDACBase):
             "server_maintenance_end_minutes": 0,
             "domain_api_game": domain_api_game,
             "domain_matching": f"{domain_api_game}initiald-matching/",
-            "domain_echo1": f"{self.artemis_cfg.server.hostname}:{self.game_config.server.echo1}",
-            "domain_echo2": f"{self.artemis_cfg.server.hostname}:{self.game_config.server.echo1}",
-            "domain_ping": f"{self.artemis_cfg.server.hostname}",
+            "domain_echo1": f"{self.core_cfg.server.hostname}:{self.game_config.server.echo1}",
+            "domain_echo2": f"{self.core_cfg.server.hostname}:{self.game_config.server.echo1}",
+            "domain_ping": f"{self.core_cfg.server.hostname}",
             "battle_gift_event_master": [],
             "round_event": [
                 {
                     "round_event_id": 30,
-                    "round_event_nm": f"{self.artemis_cfg.server.name} Event",
+                    "round_event_nm": f"{self.core_cfg.server.name} Event",
                     "start_dt": int(
                         datetime.strptime("2023-01-01", "%Y-%m-%d").timestamp()
                     ),
@@ -313,7 +313,7 @@ class IDACSeason2(IDACBase):
         18: Background
         """
 
-        with open("titles/idac/data/avatarGacha.json", encoding="UTF-8") as f:
+        with open("./titles/idac/data/avatarGacha.json", encoding="UTF-8") as f:
             avatar_gacha_data = json.load(f)
 
         # avatar_gacha_data = {
@@ -358,7 +358,7 @@ class IDACSeason2(IDACBase):
         3 = Bunta: 15, 16, 17, 18, 19, 20, (21, 21, 22?)
         4 = Special Event: 23, 24, 25, 26, 27, 28 (Touhou Project)
         """
-        path = "titles/idac/data/"
+        path = "./titles/idac/data/"
 
         # 1.00.00 is default
         device_version_data = headers.get("device_version", "1.00.00")
@@ -403,7 +403,7 @@ class IDACSeason2(IDACBase):
 
                 if arcade is None:
                     arcade = {}
-                    arcade["name"] = self.artemis_cfg.server.name
+                    arcade["name"] = self.core_cfg.server.name
 
                 # should never happen
                 if profile is None:
@@ -604,7 +604,7 @@ class IDACSeason2(IDACBase):
         del user_data["version"]
         user_data["id"] = user_id
         user_data["store_name"] = (
-            self.artemis_cfg.server.name if arcade is None else arcade["name"]
+            self.core_cfg.server.name if arcade is None else arcade["name"]
         )
         user_data["last_play_date"] = int(user_data["last_play_date"].timestamp())
         user_data["create_date"] = int(user_data["create_date"].timestamp())
@@ -913,7 +913,7 @@ class IDACSeason2(IDACBase):
                     "value": course["goal_time"],
                     # total number of entries per course?
                     "total": 10,
-                    "store": self.artemis_cfg.server.name,
+                    "store": self.core_cfg.server.name,
                     # use car_id from request?
                     "car_id": 0,
                     "style_car_id": course["style_car_id"],
@@ -942,7 +942,7 @@ class IDACSeason2(IDACBase):
                         # no clue
                         "member": user_id,
                         "value": car["goal_time"],
-                        "store": self.artemis_cfg.server.name,
+                        "store": self.core_cfg.server.name,
                         # use car_id from request?
                         "car_id": 0,
                         "style_car_id": car["style_car_id"],
@@ -992,7 +992,7 @@ class IDACSeason2(IDACBase):
 
             if arcade is None:
                 arcade = {}
-                arcade["name"] = self.artemis_cfg.server.name
+                arcade["name"] = self.core_cfg.server.name
 
             # should never happen
             if profile is None:
@@ -1030,7 +1030,7 @@ class IDACSeason2(IDACBase):
 
             if arcade is None:
                 arcade = {}
-                arcade["name"] = self.artemis_cfg.server.name
+                arcade["name"] = self.core_cfg.server.name
 
             # should never happen
             if profile is None:
@@ -2054,7 +2054,7 @@ class IDACSeason2(IDACBase):
             arcade = await self.data.arcade.get_arcade(profile["store"])
             if arcade is None:
                 arcade = {}
-                arcade["name"] = self.artemis_cfg.server.name
+                arcade["name"] = self.core_cfg.server.name
 
             rival_data.append(
                 {
@@ -2332,7 +2332,7 @@ class IDACSeason2(IDACBase):
                         # no clue
                         "member": user_id,
                         "value": car["goal_time"],
-                        "store": self.artemis_cfg.server.name,
+                        "store": self.core_cfg.server.name,
                         # use car_id from request?
                         "car_id": 0,
                         "style_car_id": car["style_car_id"],

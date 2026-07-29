@@ -11,8 +11,8 @@ class IDZHandlerDiscoverProfile(IDZHandlerBase):
     rsp_codes = [0x006C, 0x0068, 0x0068, 0x0068]
     name = "discover_profile"
 
-    def __init__(self, artemis_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
-        super().__init__(artemis_cfg, game_cfg, version)
+    def __init__(self, core_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
+        super().__init__(core_cfg, game_cfg, version)
         self.size = 0x0010
 
     def handle(self, data: bytes) -> bytearray:

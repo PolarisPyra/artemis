@@ -11,8 +11,8 @@ class IDZHandlerLoadTopTen(IDZHandlerBase):
     rsp_codes = [0x00CE] * 4
     name = "load_top_ten"
 
-    def __init__(self, artemis_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
-        super().__init__(artemis_cfg, game_cfg, version)
+    def __init__(self, core_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
+        super().__init__(core_cfg, game_cfg, version)
         self.size = 0x1720
 
     def handle(self, data: bytes) -> bytearray:

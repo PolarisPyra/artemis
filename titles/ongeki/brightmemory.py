@@ -11,8 +11,8 @@ from titles.ongeki.config import OngekiConfig
 
 
 class OngekiBrightMemory(OngekiBright):
-    def __init__(self, artemis_cfg: CoreConfig, game_cfg: OngekiConfig) -> None:
-        super().__init__(artemis_cfg, game_cfg)
+    def __init__(self, core_cfg: CoreConfig, game_cfg: OngekiConfig) -> None:
+        super().__init__(core_cfg, game_cfg)
         self.version = OngekiConstants.VER_ONGEKI_BRIGHT_MEMORY
 
     async def handle_get_game_setting_api_request(self, data: Dict) -> Dict:

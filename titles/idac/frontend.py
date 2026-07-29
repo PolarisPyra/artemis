@@ -133,7 +133,7 @@ class IDACFrontend(FE_Base):
 
         return Response(
             template.render(
-                title=f"{self.artemis_config.server.name} | {self.nav_name}",
+                title=f"{self.core_config.server.name} | {self.nav_name}",
                 game_list=self.environment.globals["game_list"],
                 profile=profile_data,
                 tickets=tickets,

@@ -223,12 +223,12 @@ class ChuniScoreData(BaseData):
             return None
         return result.fetchall()
 
-    async def put_score(self, aime_id: int, sartemis_data: Dict) -> Optional[int]:
-        sartemis_data["user"] = aime_id
-        sartemis_data = self.fix_bools(sartemis_data)
+    async def put_score(self, aime_id: int, score_data: Dict) -> Optional[int]:
+        score_data["user"] = aime_id
+        score_data = self.fix_bools(score_data)
 
-        sql = insert(best_score).values(**sartemis_data)
-        conflict = sql.on_duplicate_key_update(**sartemis_data)
+        sql = insert(best_score).values(**score_data)
+        conflict = sql.on_duplicate_key_update(**score_data)
 
         result = await self.execute(conflict)
         if result is None:

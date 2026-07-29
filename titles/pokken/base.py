@@ -10,12 +10,12 @@ from .const import PokkenConstants
 
 
 class PokkenBase:
-    def __init__(self, artemis_cfg: CoreConfig, game_cfg: PokkenConfig) -> None:
-        self.artemis_cfg = artemis_cfg
+    def __init__(self, core_cfg: CoreConfig, game_cfg: PokkenConfig) -> None:
+        self.core_cfg = core_cfg
         self.game_cfg = game_cfg
         self.version = 0
         self.logger = logging.getLogger("pokken")
-        self.data = PokkenData(artemis_cfg)
+        self.data = PokkenData(core_cfg)
 
     async def handle_noop(self, request: Any) -> bytes:
         res = jackal_pb2.Response()
@@ -53,7 +53,7 @@ class PokkenBase:
 
         minfo = await self.data.arcade.get_machine(netid)
 
-        if not minfo and not self.artemis_cfg.server.allow_unregistered_serials:
+        if not minfo and not self.core_cfg.server.allow_unregistered_serials:
             self.logger.warn(f"netID {netid} does not belong to any shop!")
             res.result = 0
             return res
@@ -86,7 +86,7 @@ class PokkenBase:
             "logfilename": "J:\\JackalMatchingLibrary.log",
             "biwalogfilename": "J:\\biwa_log.log",
         }
-        regist_pcb.bnp_baseuri = f"{self.artemis_cfg.server.hostname}/bna"
+        regist_pcb.bnp_baseuri = f"{self.core_cfg.server.hostname}/bna"
         regist_pcb.biwa_setting = json.dumps(biwa_setting)
 
         res.register_pcb.CopyFrom(regist_pcb)

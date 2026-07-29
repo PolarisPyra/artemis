@@ -13,8 +13,8 @@ from .xverse import ChuniXVerse, add_linked_gate_opened_by_map, generate_course_
 
 
 class ChuniXVerseX(ChuniXVerse):
-    def __init__(self, artemis_cfg: CoreConfig, game_cfg: ChuniConfig) -> None:
-        super().__init__(artemis_cfg, game_cfg)
+    def __init__(self, core_cfg: CoreConfig, game_cfg: ChuniConfig) -> None:
+        super().__init__(core_cfg, game_cfg)
         self.version = ChuniConstants.VER_CHUNITHM_X_VERSE_X
 
     async def handle_cm_get_user_preview_api_request(self, data: Dict) -> Dict:

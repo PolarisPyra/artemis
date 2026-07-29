@@ -90,10 +90,10 @@ class OngekiGPLogKind(Enum):
 
 
 class OngekiBase:
-    def __init__(self, artemis_cfg: CoreConfig, game_cfg: OngekiConfig) -> None:
-        self.artemis_cfg = artemis_cfg
+    def __init__(self, core_cfg: CoreConfig, game_cfg: OngekiConfig) -> None:
+        self.core_cfg = core_cfg
         self.game_cfg = game_cfg
-        self.data = OngekiData(artemis_cfg)
+        self.data = OngekiData(core_cfg)
         self.date_time_format = "%Y-%m-%d %H:%M:%S"
         self.date_time_format_ext = (
             "%Y-%m-%d %H:%M:%S.%f"  # needs to be lopped off at [:-5]
@@ -106,8 +106,8 @@ class OngekiBase:
     async def handle_get_game_setting_api_request(self, data: Dict) -> Dict:
         # if reboot start/end time is not defined use the default behavior of being a few hours ago
         if (
-            self.artemis_cfg.title.reboot_start_time == ""
-            or self.artemis_cfg.title.reboot_end_time == ""
+            self.core_cfg.title.reboot_start_time == ""
+            or self.core_cfg.title.reboot_end_time == ""
         ):
             reboot_start = datetime.strftime(
                 datetime.utcnow() + timedelta(hours=6), self.date_time_format
@@ -121,10 +121,10 @@ class OngekiBase:
 
             # parse config start/end times into datetime
             reboot_start_time = datetime.strptime(
-                self.artemis_cfg.title.reboot_start_time, "%H:%M"
+                self.core_cfg.title.reboot_start_time, "%H:%M"
             )
             reboot_end_time = datetime.strptime(
-                self.artemis_cfg.title.reboot_end_time, "%H:%M"
+                self.core_cfg.title.reboot_end_time, "%H:%M"
             )
 
             # offset datetimes with current date/time
@@ -280,7 +280,7 @@ class OngekiBase:
         }
 
     async def handle_upsert_client_setting_api_request(self, data: Dict) -> Dict:
-        if self.artemis_cfg.server.is_develop:
+        if self.core_cfg.server.is_develop:
             return {"returnCode": 1, "apiName": "UpsertClientSettingApi"}
 
         client_id = data["clientId"]
@@ -291,7 +291,7 @@ class OngekiBase:
         return {"returnCode": 1, "apiName": "UpsertClientSettingApi"}
 
     async def handle_upsert_client_testmode_api_request(self, data: Dict) -> Dict:
-        if self.artemis_cfg.server.is_develop:
+        if self.core_cfg.server.is_develop:
             return {"returnCode": 1, "apiName": "UpsertClientTestmodeApi"}
 
         region_id = data["regionId"]

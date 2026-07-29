@@ -76,7 +76,7 @@ class Mai2Frontend(FE_Base):
 
             resp = Response(
                 template.render(
-                    title=f"{self.artemis_config.server.name} | {self.nav_name}",
+                    title=f"{self.core_config.server.name} | {self.nav_name}",
                     game_list=self.environment.globals["game_list"],
                     sesh=vars(usr_sesh),
                     user_id=usr_sesh.user_id,
@@ -118,7 +118,7 @@ class Mai2Frontend(FE_Base):
             if playlog_count < index * 20:
                 return Response(
                     template.render(
-                        title=f"{self.artemis_config.server.name} | {self.nav_name}",
+                        title=f"{self.core_config.server.name} | {self.nav_name}",
                         game_list=self.environment.globals["game_list"],
                         sesh=vars(usr_sesh),
                         playlog_count=0,
@@ -152,7 +152,7 @@ class Mai2Frontend(FE_Base):
                 )
             return Response(
                 template.render(
-                    title=f"{self.artemis_config.server.name} | {self.nav_name}",
+                    title=f"{self.core_config.server.name} | {self.nav_name}",
                     game_list=self.environment.globals["game_list"],
                     sesh=vars(usr_sesh),
                     user_id=usr_sesh.user_id,
@@ -262,7 +262,7 @@ class Mai2Frontend(FE_Base):
 
         resp = Response(
             template.render(
-                title=f"{self.artemis_config.server.name} | {self.nav_name} Events",
+                title=f"{self.core_config.server.name} | {self.nav_name} Events",
                 game_list=self.environment.globals["game_list"],
                 sesh=vars(usr_sesh),
                 version_list=Mai2Constants.VERSION_STRING,
@@ -298,7 +298,7 @@ class Mai2Frontend(FE_Base):
 
         return Response(
             template.render(
-                title=f"{self.artemis_config.server.name} | {self.nav_name} Edit Event {evt_id}",
+                title=f"{self.core_config.server.name} | {self.nav_name} Edit Event {evt_id}",
                 game_list=self.environment.globals["game_list"],
                 sesh=vars(usr_sesh),
                 user_id=usr_sesh.user_id,

@@ -22,8 +22,8 @@ from titles.idac.echo import IDACEchoUDP
 
 
 class IDACServlet(BaseServlet):
-    def __init__(self, artemis_cfg: CoreConfig, cfg_dir: str) -> None:
-        self.artemis_cfg = artemis_cfg
+    def __init__(self, core_cfg: CoreConfig, cfg_dir: str) -> None:
+        self.core_cfg = core_cfg
         self.game_cfg = IDACConfig()
         if path.exists(f"{cfg_dir}/{IDACConstants.CONFIG_NAME}"):
             self.game_cfg.update(
@@ -31,15 +31,15 @@ class IDACServlet(BaseServlet):
             )
 
         self.versions = [
-            IDACBase(artemis_cfg, self.game_cfg),
-            IDACSeason2(artemis_cfg, self.game_cfg),
+            IDACBase(core_cfg, self.game_cfg),
+            IDACSeason2(core_cfg, self.game_cfg),
         ]
 
         self.logger = logging.getLogger("idac")
         log_fmt_str = "[%(asctime)s] IDAC | %(levelname)s | %(message)s"
         log_fmt = logging.Formatter(log_fmt_str)
         fileHandler = TimedRotatingFileHandler(
-            "{0}/{1}.log".format(self.artemis_cfg.server.log_dir, "idac"),
+            "{0}/{1}.log".format(self.core_cfg.server.log_dir, "idac"),
             encoding="utf8",
             when="d",
             backupCount=10,
@@ -60,7 +60,7 @@ class IDACServlet(BaseServlet):
 
     @classmethod
     def is_game_enabled(
-        cls, game_code: str, artemis_cfg: CoreConfig, cfg_dir: str
+        cls, game_code: str, core_cfg: CoreConfig, cfg_dir: str
     ) -> bool:
         game_cfg = IDACConfig()
 
@@ -91,17 +91,17 @@ class IDACServlet(BaseServlet):
     def get_allnet_info(
         self, game_code: str, game_ver: int, keychip: str
     ) -> Tuple[bool, str, str]:
-        title_port_int = Utils.get_title_port(self.artemis_cfg)
+        title_port_int = Utils.get_title_port(self.core_cfg)
         t_port = (
             f":{title_port_int}"
-            if title_port_int and not self.artemis_cfg.server.is_using_proxy
+            if title_port_int and not self.core_cfg.server.is_using_proxy
             else ""
         )
 
         return (
             f"",
             # requires http or else it defaults to https
-            f"http://{self.artemis_cfg.server.hostname}{t_port}/{game_ver}/",
+            f"http://{self.core_cfg.server.hostname}{t_port}/{game_ver}/",
         )
 
     async def render_POST(self, request: Request) -> bytes:
@@ -198,7 +198,7 @@ class IDACServlet(BaseServlet):
                 loop.create_datagram_endpoint(
                     lambda: IDACEchoUDP(),
                     local_addr=(
-                        self.artemis_cfg.server.listen_address,
+                        self.core_cfg.server.listen_address,
                         self.game_cfg.server.echo1,
                     ),
                 )

@@ -22,7 +22,7 @@ class IDACEchoTCP(BaseRequestHandler):
     def __init__(
         self, request, client_address, server, cfg: CoreConfig, game_cfg: IDACConfig
     ) -> None:
-        self.artemis_config = cfg
+        self.core_config = cfg
         self.game_config = game_cfg
         self.logger = logging.getLogger("idac")
         self.data = IDACData(cfg)
@@ -47,10 +47,10 @@ class IDACEchoTCPFactory(TCPServer):
         bind_and_activate: bool = ...,
     ) -> None:
         super().__init__(server_address, RequestHandlerClass, bind_and_activate)
-        self.artemis_config = cfg
+        self.core_config = cfg
         self.game_config = game_cfg
 
     def finish_request(self, request, client_address):
         self.RequestHandlerClass(
-            request, client_address, self, self.artemis_config, self.game_config
+            request, client_address, self, self.core_config, self.game_config
         )

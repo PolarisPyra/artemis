@@ -21,19 +21,19 @@ class Mai2DX(Mai2Base):
         # game will auto add MaimaiServlet endpoint behind return uri
         # so do not add "MaimaiServlet"
         if (
-            not self.artemis_config.server.is_using_proxy
-            and Utils.get_title_port(self.artemis_config) != 80
+            not self.core_config.server.is_using_proxy
+            and Utils.get_title_port(self.core_config) != 80
         ):
-            self.old_server = f"http://{self.artemis_config.server.hostname}:{Utils.get_title_port(cfg)}/SDEY/197/"
+            self.old_server = f"http://{self.core_config.server.hostname}:{Utils.get_title_port(cfg)}/SDEY/197/"
 
         else:
-            self.old_server = f"http://{self.artemis_config.server.hostname}/SDEY/197/"
+            self.old_server = f"http://{self.core_config.server.hostname}/SDEY/197/"
 
     async def handle_get_game_setting_api_request(self, data: Dict):
         # if reboot start/end time is not defined use the default behavior of being a few hours ago
         if (
-            self.artemis_config.title.reboot_start_time == ""
-            or self.artemis_config.title.reboot_end_time == ""
+            self.core_config.title.reboot_start_time == ""
+            or self.core_config.title.reboot_end_time == ""
         ):
             reboot_start = datetime.strftime(
                 datetime.utcnow() + timedelta(hours=6), self.date_time_format
@@ -47,10 +47,10 @@ class Mai2DX(Mai2Base):
 
             # parse config start/end times into datetime
             reboot_start_time = datetime.strptime(
-                self.artemis_config.title.reboot_start_time, "%H:%M"
+                self.core_config.title.reboot_start_time, "%H:%M"
             )
             reboot_end_time = datetime.strptime(
-                self.artemis_config.title.reboot_end_time, "%H:%M"
+                self.core_config.title.reboot_end_time, "%H:%M"
             )
 
             # offset datetimes with current date/time

@@ -7,21 +7,18 @@ import logging
 import coloredlogs
 import urllib.parse
 import math
-import random
 from typing import Dict, List, Any, Optional, Union, Final
 from logging.handlers import TimedRotatingFileHandler
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 from starlette.applications import Starlette
 from starlette.routing import Route
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_403_FORBIDDEN, HTTP_422_UNPROCESSABLE_ENTITY
 from datetime import datetime
 from enum import Enum
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
 from Crypto.Signature import PKCS1_v1_5
-import os
 from os import path, environ, mkdir, access, W_OK
 
 from .config import CoreConfig
@@ -32,15 +29,18 @@ from .title import TitleServlet
 
 BILLING_DT_FORMAT: Final[str] = "%Y%m%d%H%M%S"
 
+
 class DLIMG_TYPE(Enum):
     app = 0
     opt = 1
+
 
 class ALLNET_STAT(Enum):
     ok = 0
     bad_game = -1
     bad_machine = -2
     bad_shop = -3
+
 
 class DLI_STATUS(Enum):
     START = 0
@@ -88,7 +88,7 @@ class DLI_STATUS(Enum):
     ERROR_GET_DLI_INTERNAL = 900
     ERROR_ICF = 901
     ERROR_CHECK_RELEASE_INTERNAL = 902
-    UNKNOWN = 999 # Not the actual enum val but it needs to be here as a catch-all
+    UNKNOWN = 999  # Not the actual enum val but it needs to be here as a catch-all
 
     @classmethod
     def from_int(cls, num: int) -> "DLI_STATUS":
@@ -97,8 +97,10 @@ class DLI_STATUS(Enum):
         except ValueError:
             return cls.UNKNOWN
 
+
 class AllnetServlet:
     allnet_registry: Dict[str, Any] = {}
+
     def __init__(self, core_cfg: CoreConfig, cfg_folder: str):
         self.config = core_cfg
         self.config_folder = cfg_folder
@@ -129,36 +131,30 @@ class AllnetServlet:
             self.logger.initialized = True
 
     def startup(self) -> None:
-        self.logger.info(f"Ready on port {self.config.allnet.port if self.config.allnet.standalone else self.config.server.port}")
+        self.logger.info(
+            f"Ready on port {self.config.allnet.port if self.config.allnet.standalone else self.config.server.port}"
+        )
         if not TitleServlet.title_registry:
             TitleServlet(self.config, self.config_folder)
 
     async def handle_poweron(self, request: Request):
         request_ip = Utils.get_ip_addr(request)
-        pragma_header = request.headers.get('Pragma', "")
-        useragent_header = request.headers.get('User-Agent', "")
+
+        pragma_header = request.headers.get("Pragma", "")
         is_dfi = pragma_header == "DFI"
-        is_lite = useragent_header[5:] == "Windows/Lite"
-        lite_id = useragent_header[:4]
+
+        if request.headers.get("content-type") != "application/x-www-form-urlencoded":
+            self.logger.warning(
+                "Rejected ALL.Net auth request with unknown content type %r from IP %s",
+                request.headers.get("content-type"), request_ip
+            )
+            return PlainTextResponse("", status_code=HTTP_422_UNPROCESSABLE_ENTITY)
+
         data = await request.body()
 
-        if not self.config.allnet.allnet_lite_keys and is_lite:
-            self.logger.error("!!!LITE KEYS NOT SET!!!")
-            raise AllnetRequestException()
-        elif is_lite:
-            for gameids, key in self.config.allnet.allnet_lite_keys.items():
-                if gameids == lite_id:
-                    litekey = key
-
-        if is_lite and "litekey" not in locals():
-            self.logger.error("!!!UNIQUE LITE KEY NOT FOUND!!!")
-            raise AllnetRequestException()
-        
         try:
             if is_dfi:
                 req_urlencode = self.from_dfi(data)
-            elif is_lite:
-                req_urlencode = self.dec_lite(litekey, data[:16], data)
             else:
                 req_urlencode = data.decode("utf-8")
 
@@ -166,30 +162,57 @@ class AllnetServlet:
             if req_dict is None:
                 raise AllnetRequestException()
 
-            if is_lite:
-                req = AllnetPowerOnRequestLite(req_dict[0])
-            else:
-                req = AllnetPowerOnRequest(req_dict[0])
+            req = AllnetPowerOnRequest(req_dict[0])
             # Validate the request. Currently we only validate the fields we plan on using
 
-            if not req.game_id or not req.ver or not req.serial or not req.token and is_lite:
+            if (
+                not req.game_id
+                or not req.ver
+                or not req.serial
+                or not req.ip
+                or not req.firm_ver
+                or not req.boot_ver
+            ):
                 raise AllnetRequestException(
                     f"Bad auth request params from {request_ip} - {vars(req)}"
                 )
-            elif not is_lite:
-                if not req.game_id or not req.ver or not req.serial or not req.ip or not req.firm_ver or not req.boot_ver:
-                    raise AllnetRequestException( 
-                        f"Bad auth request params from {request_ip} - {vars(req)}"
-                    )
 
         except AllnetRequestException as e:
             if e.message != "":
                 self.logger.error(e)
-            return PlainTextResponse()
+            return PlainTextResponse("", status_code=HTTP_400_BAD_REQUEST)
 
-        if is_lite:
-            resp = AllnetPowerOnResponseLite(req.token)
-        elif req.format_ver == 3:
+        if (user_agent_header := request.headers.get("user-agent")) not in {
+            # AMAuthd, ALLNetProc
+            "ALL.Net_PC_Win2/ver1.0",
+            # amdaemon
+            "Windows/ver.3.0",
+            "Windows/ver.5.0",
+            "Windows/ver.6.0",
+        }:
+            if user_agent_header == "AquaTrans/1.0":
+                self.logger.warning(
+                    "Rejected ALL.Net auth request from AquaTrans from IP %s",
+                    request_ip
+                )
+
+                machine = await self.data.arcade.get_machine(req.serial)
+
+                if machine is not None:
+                    self.logger.warning(
+                        "Deleting keychip %s (ID exposed to AquaTrans)",
+                        req.serial,
+                    )
+
+                    await self.data.arcade.delete_machine(req.serial)
+            else:
+                self.logger.warning(
+                    "Rejected ALL.Net auth request with unknown user agent %r from IP %s",
+                    user_agent_header, request_ip
+                )
+            return PlainTextResponse("", status_code=HTTP_403_FORBIDDEN)
+
+        if req.format_ver == 3:
             resp = AllnetPowerOnResponse3(req.token)
         elif req.format_ver == 2:
             resp = AllnetPowerOnResponse2()
@@ -198,57 +221,104 @@ class AllnetServlet:
 
         self.logger.debug(f"Allnet request: {vars(req)}")
 
-        machine = await self.data.arcade.get_machine(req.serial)        
+        machine = await self.data.arcade.get_machine(req.serial)
         if machine is None and not self.config.server.allow_unregistered_serials:
             msg = f"Unrecognised serial {req.serial} attempted allnet auth from {request_ip}."
             await self.data.base.log_event(
-                "allnet", "ALLNET_AUTH_UNKNOWN_SERIAL", logging.WARN, msg, {"serial": req.serial}, None, None, None, request_ip, req.game_id, req.ver
+                "allnet",
+                "ALLNET_AUTH_UNKNOWN_SERIAL",
+                logging.WARN,
+                msg,
+                {"serial": req.serial},
+                None,
+                None,
+                None,
+                request_ip,
+                req.game_id,
+                req.ver,
             )
             self.logger.warning(msg)
 
-            if is_lite:
-                resp.result = ALLNET_STAT.bad_machine.value
-            else:
-                resp.stat = ALLNET_STAT.bad_machine.value
+            resp.stat = ALLNET_STAT.bad_machine.value
             resp_dict = {k: v for k, v in vars(resp).items() if v is not None}
-            return PlainTextResponse(urllib.parse.unquote(urllib.parse.urlencode(resp_dict)) + "\n")
+            return PlainTextResponse(
+                urllib.parse.unquote(urllib.parse.urlencode(resp_dict)) + "\n"
+            )
 
-        if machine is not None and not is_lite:
+        if machine is not None:
             arcade = await self.data.arcade.get_arcade(machine["arcade"])
             if self.config.server.check_arcade_ip:
                 if arcade["ip"] and arcade["ip"] is not None and arcade["ip"] != req.ip:
                     msg = f"{req.serial} attempted allnet auth from bad IP {req.ip} (expected {arcade['ip']})."
                     await self.data.base.log_event(
-                        "allnet", "ALLNET_AUTH_BAD_IP", logging.ERROR, msg, {}, None, arcade['id'], machine['id'], request_ip, req.game_id, req.ver
+                        "allnet",
+                        "ALLNET_AUTH_BAD_IP",
+                        logging.ERROR,
+                        msg,
+                        {},
+                        None,
+                        arcade["id"],
+                        machine["id"],
+                        request_ip,
+                        req.game_id,
+                        req.ver,
                     )
                     self.logger.warning(msg)
 
                     resp.stat = ALLNET_STAT.bad_shop.value
                     resp_dict = {k: v for k, v in vars(resp).items() if v is not None}
-                    return PlainTextResponse(urllib.parse.unquote(urllib.parse.urlencode(resp_dict)) + "\n")
-                
-                elif (not arcade["ip"] or arcade["ip"] is None) and self.config.server.strict_ip_checking:
+                    return PlainTextResponse(
+                        urllib.parse.unquote(urllib.parse.urlencode(resp_dict)) + "\n"
+                    )
+
+                elif (
+                    not arcade["ip"] or arcade["ip"] is None
+                ) and self.config.server.strict_ip_checking:
                     msg = f"{req.serial} attempted allnet auth from bad IP {req.ip}, but arcade {arcade['id']} has no IP set! (strict checking enabled)."
                     await self.data.base.log_event(
-                        "allnet", "ALLNET_AUTH_NO_SHOP_IP", logging.ERROR, msg, {}, None, arcade['id'], machine['id'], request_ip, req.game_id, req.ver
+                        "allnet",
+                        "ALLNET_AUTH_NO_SHOP_IP",
+                        logging.ERROR,
+                        msg,
+                        {},
+                        None,
+                        arcade["id"],
+                        machine["id"],
+                        request_ip,
+                        req.game_id,
+                        req.ver,
                     )
                     self.logger.warning(msg)
 
                     resp.stat = ALLNET_STAT.bad_shop.value
                     resp_dict = {k: v for k, v in vars(resp).items() if v is not None}
-                    return PlainTextResponse(urllib.parse.unquote(urllib.parse.urlencode(resp_dict)) + "\n")
+                    return PlainTextResponse(
+                        urllib.parse.unquote(urllib.parse.urlencode(resp_dict)) + "\n"
+                    )
 
-            if machine['game'] and machine['game'] != req.game_id:
+            if machine["game"] and machine["game"] != req.game_id:
                 msg = f"{req.serial} attempted allnet auth with bad game ID {req.game_id} (expected {machine['game']})."
                 await self.data.base.log_event(
-                    "allnet", "ALLNET_AUTH_BAD_GAME", logging.ERROR, msg, {}, None, arcade['id'], machine['id'], request_ip, req.game_id, req.ver
+                    "allnet",
+                    "ALLNET_AUTH_BAD_GAME",
+                    logging.ERROR,
+                    msg,
+                    {},
+                    None,
+                    arcade["id"],
+                    machine["id"],
+                    request_ip,
+                    req.game_id,
+                    req.ver,
                 )
                 self.logger.warning(msg)
 
                 resp.stat = ALLNET_STAT.bad_game.value
                 resp_dict = {k: v for k, v in vars(resp).items() if v is not None}
-                return PlainTextResponse(urllib.parse.unquote(urllib.parse.urlencode(resp_dict)) + "\n")
-            
+                return PlainTextResponse(
+                    urllib.parse.unquote(urllib.parse.urlencode(resp_dict)) + "\n"
+                )
+
             country = (
                 arcade["country"] if machine["country"] is None else machine["country"]
             )
@@ -276,10 +346,14 @@ class AllnetServlet:
                 else AllnetCountryCode.JAPAN.value
             )
             resp.region_name2 = arcade["city"] if arcade["city"] is not None else ""
-            resp.client_timezone = ( # lmao
-                arcade["timezone"] if arcade["timezone"] is not None else "+0900" if req.format_ver == 3 else "+09:00"
+            resp.client_timezone = (  # lmao
+                arcade["timezone"]
+                if arcade["timezone"] is not None
+                else "+0900"
+                if req.format_ver == 3
+                else "+09:00"
             )
-        
+
         else:
             arcade = None
 
@@ -287,66 +361,88 @@ class AllnetServlet:
             if not self.config.server.is_develop:
                 msg = f"Unrecognised game {req.game_id} attempted allnet auth from {request_ip}."
                 await self.data.base.log_event(
-                    "allnet", "ALLNET_AUTH_UNKNOWN_GAME", logging.WARN, msg, {}, None, arcade['id'] if arcade else None, machine['id'] if machine else None, request_ip, req.game_id, req.ver
+                    "allnet",
+                    "ALLNET_AUTH_UNKNOWN_GAME",
+                    logging.WARN,
+                    msg,
+                    {},
+                    None,
+                    arcade["id"] if arcade else None,
+                    machine["id"] if machine else None,
+                    request_ip,
+                    req.game_id,
+                    req.ver,
                 )
                 self.logger.warning(msg)
 
-                if is_lite:
-                    resp.result = ALLNET_STAT.bad_game.value
-                else:
-                    resp.stat = ALLNET_STAT.bad_game.value
+                resp.stat = ALLNET_STAT.bad_game.value
                 resp_dict = {k: v for k, v in vars(resp).items() if v is not None}
-                return PlainTextResponse(urllib.parse.unquote(urllib.parse.urlencode(resp_dict)) + "\n")
+                return PlainTextResponse(
+                    urllib.parse.unquote(urllib.parse.urlencode(resp_dict)) + "\n"
+                )
 
             else:
                 self.logger.info(
                     f"Allowed unknown game {req.game_id} v{req.ver} to authenticate from {request_ip} due to 'is_develop' being enabled. S/N: {req.serial}"
                 )
-                if is_lite:
-                    resp.uri1 = f"http://{self.config.server.hostname}:{self.config.server.port}/{req.game_id}/{req.ver.replace('.', '')}/"
-                    resp.uri2 = f"{self.config.server.hostname}:{self.config.server.port}"
-                else:
-                    resp.uri = f"http://{self.config.server.hostname}:{self.config.server.port}/{req.game_id}/{req.ver.replace('.', '')}/"
-                    resp.host = f"{self.config.server.hostname}:{self.config.server.port}"
-                
+                resp.uri = f"http://{self.config.server.hostname}:{self.config.server.port}/{req.game_id}/{req.ver.replace('.', '')}/"
+                resp.host = f"{self.config.server.hostname}:{self.config.server.port}"
+
                 resp_dict = {k: v for k, v in vars(resp).items() if v is not None}
                 resp_str = urllib.parse.unquote(urllib.parse.urlencode(resp_dict))
-                
+
                 self.logger.debug(f"Allnet response: {resp_str}")
                 return PlainTextResponse(resp_str + "\n")
 
-        
         int_ver = req.ver.replace(".", "")
         try:
-            if is_lite:
-                resp.uri1, resp.uri2 = TitleServlet.title_registry[req.game_id].get_allnet_info(req.game_id, int(int_ver), req.serial)
-            else:
-                resp.uri, resp.host = TitleServlet.title_registry[req.game_id].get_allnet_info(req.game_id, int(int_ver), req.serial)
+            resp.uri, resp.host = TitleServlet.title_registry[
+                req.game_id
+            ].get_allnet_info(req.game_id, int(int_ver), req.serial)
         except Exception as e:
             self.logger.error(f"Error running get_allnet_info for {req.game_id} - {e}")
-            if is_lite:
-                resp.result = ALLNET_STAT.bad_game.value
-            else:
-                resp.stat = ALLNET_STAT.bad_game.value
+            resp.stat = ALLNET_STAT.bad_game.value
             resp_dict = {k: v for k, v in vars(resp).items() if v is not None}
-            return PlainTextResponse(urllib.parse.unquote(urllib.parse.urlencode(resp_dict)) + "\n")
+            return PlainTextResponse(
+                urllib.parse.unquote(urllib.parse.urlencode(resp_dict)) + "\n"
+            )
 
         if machine and arcade:
             msg = f"{req.serial} authenticated from {request_ip}: {req.game_id} v{req.ver}"
             await self.data.base.log_event(
-                "allnet", "ALLNET_AUTH_SUCCESS", logging.INFO, msg, {}, None, arcade['id'], machine['id'], request_ip, req.game_id, req.ver
-                )
+                "allnet",
+                "ALLNET_AUTH_SUCCESS",
+                logging.INFO,
+                msg,
+                {},
+                None,
+                arcade["id"],
+                machine["id"],
+                request_ip,
+                req.game_id,
+                req.ver,
+            )
         else:
             msg = f"Allow unregistered serial {req.serial} to authenticate from {request_ip}: {req.game_id} v{req.ver}"
             await self.data.base.log_event(
-                "allnet", "ALLNET_AUTH_SUCCESS_UNREG", logging.INFO, msg, {"serial": req.serial}, None, None, None, request_ip, req.game_id, req.ver
-                )
-        
+                "allnet",
+                "ALLNET_AUTH_SUCCESS_UNREG",
+                logging.INFO,
+                msg,
+                {"serial": req.serial},
+                None,
+                None,
+                None,
+                request_ip,
+                req.game_id,
+                req.ver,
+            )
+
         self.logger.info(msg)
 
         resp_dict = {k: v for k, v in vars(resp).items() if v is not None}
         resp_str = urllib.parse.unquote(urllib.parse.urlencode(resp_dict)) + "\n"
-        self.logger.debug(f"Allnet response: {resp_dict}")        
+        self.logger.debug(f"Allnet response: {resp_dict}")
 
         if is_dfi:
             return PlainTextResponse(
@@ -355,38 +451,18 @@ class AllnetServlet:
                     "Pragma": "DFI",
                 },
             )
-        elif is_lite:
-            iv = bytes([random.randint(2, 255) for _ in range(16)])
-            return PlainTextResponse(content=self.enc_lite(litekey, iv, resp_str)) 
 
-        return PlainTextResponse(resp_str.encode(req.encode))
+        return PlainTextResponse(resp_str)
 
     async def handle_dlorder(self, request: Request):
         request_ip = Utils.get_ip_addr(request)
-        pragma_header = request.headers.get('Pragma', "")
-        useragent_header = request.headers.get('User-Agent', "")
+        pragma_header = request.headers.get("Pragma", "")
         is_dfi = pragma_header == "DFI"
-        is_lite = useragent_header[5:] == "Windows/Lite"
-        lite_id = useragent_header[:4]
         data = await request.body()
-        
-        if not self.config.allnet.allnet_lite_keys and is_lite:
-            self.logger.error("!!!LITE KEYS NOT SET!!!")
-            raise AllnetRequestException()
-        elif is_lite:
-            for gameids, key in self.config.allnet.allnet_lite_keys.items():
-                if gameids == lite_id:
-                    litekey = key
-
-        if is_lite and "litekey" not in locals():
-            self.logger.error("!!!UNIQUE LITE KEY NOT FOUND!!!")
-            raise AllnetRequestException()
 
         try:
             if is_dfi:
                 req_urlencode = self.from_dfi(data)
-            elif is_lite:
-                req_urlencode = self.dec_lite(litekey, data[:16], data)
             else:
                 req_urlencode = data.decode()
 
@@ -394,10 +470,7 @@ class AllnetServlet:
             if req_dict is None:
                 raise AllnetRequestException()
 
-            if is_lite:
-                req = AllnetDownloadOrderRequestLite(req_dict[0])
-            else:
-                req = AllnetDownloadOrderRequest(req_dict[0])
+            req = AllnetDownloadOrderRequest(req_dict[0])
             # Validate the request. Currently we only validate the fields we plan on using
 
             if not req.game_id or not req.ver or not req.serial:
@@ -413,57 +486,57 @@ class AllnetServlet:
         self.logger.info(
             f"DownloadOrder from {request_ip} -> {req.game_id} v{req.ver} serial {req.serial}"
         )
-
-        if is_lite:
-            resp = AllnetDownloadOrderResponseLite()
-        else:
-            resp = AllnetDownloadOrderResponse(serial=req.serial)
+        resp = AllnetDownloadOrderResponse(serial=req.serial)
 
         if (
             not self.config.allnet.allow_online_updates
             or not self.config.allnet.update_cfg_folder
         ):
-            resp = urllib.parse.unquote(urllib.parse.urlencode(vars(resp))) + "\n"
-            if is_dfi:
-                return PlainTextResponse(
-                    self.to_dfi(resp) + b"\r\n", headers={ "Pragma": "DFI" }
-                )
-            elif is_lite:
-                iv = bytes([random.randint(2, 255) for _ in range(16)])
-                return PlainTextResponse(content=self.enc_lite(litekey, iv, resp)) 
-            return PlainTextResponse(resp)
+            return PlainTextResponse(
+                urllib.parse.unquote(urllib.parse.urlencode(vars(resp))) + "\n"
+            )
 
         else:
             machine = await self.data.arcade.get_machine(req.serial)
-            if not machine or not machine['ota_channel'] or not machine['is_cab']:
-                resp = urllib.parse.unquote(urllib.parse.urlencode(vars(resp))) + "\n"
-                if is_dfi:
-                    return PlainTextResponse(
-                        self.to_dfi(resp) + b"\r\n", headers={ "Pragma": "DFI" }
-                    )
-                elif is_lite:
-                    iv = bytes([random.randint(2, 255) for _ in range(16)])
-                    return PlainTextResponse(content=self.enc_lite(litekey, iv, resp)) 
-                return PlainTextResponse(resp)
-            
-            update = await self.data.arcade.get_ota_update(req.game_id, req.ver, machine['ota_channel'])
-            if update:
-                if update['app_ini'] and path.exists(f"{self.config.allnet.update_cfg_folder}/{update['app_ini']}"):
-                    resp.uri = f"http://{self.config.server.hostname}:{self.config.server.port}/dl/ini/{update['app_ini']}"
+            if (
+                not machine
+                or not machine["ota_enable"]
+                or not machine["is_cab"]
+                or machine["is_blacklisted"]
+            ):
+                return PlainTextResponse(
+                    urllib.parse.unquote(urllib.parse.urlencode(vars(resp))) + "\n"
+                )
 
-                if update['opt_ini'] and path.exists(f"{self.config.allnet.update_cfg_folder}/{update['opt_ini']}"):
-                    resp.uri += f"|http://{self.config.server.hostname}:{self.config.server.port}/dl/ini/{update['opt_ini']}"
+            if path.exists(
+                f"{self.config.allnet.update_cfg_folder}/{req.game_id}-{req.ver.replace('.', '')}-app.ini"
+            ):
+                resp.uri = f"http://{self.config.server.hostname}:{self.config.server.port}/dl/ini/{req.game_id}-{req.ver.replace('.', '')}-app.ini"
+
+            if path.exists(
+                f"{self.config.allnet.update_cfg_folder}/{req.game_id}-{req.ver.replace('.', '')}-opt.ini"
+            ):
+                resp.uri += f"|http://{self.config.server.hostname}:{self.config.server.port}/dl/ini/{req.game_id}-{req.ver.replace('.', '')}-opt.ini"
 
             if resp.uri:
                 self.logger.info(f"Sending download uri {resp.uri}")
                 await self.data.base.log_event(
-                    "allnet", "DLORDER_REQ_SUCCESS", logging.INFO, f"Send download URI to {req.serial} for {req.game_id} v{req.ver} from {Utils.get_ip_addr(request)}", {"uri": resp.uri}, None,
-                    machine['arcade'], machine['id'], request_ip, req.game_id, req.ver
+                    "allnet",
+                    "DLORDER_REQ_SUCCESS",
+                    logging.INFO,
+                    f"Send download URI to {req.serial} for {req.game_id} v{req.ver} from {Utils.get_ip_addr(request)}",
+                    {"uri": resp.uri},
+                    None,
+                    machine["arcade"],
+                    machine["id"],
+                    request_ip,
+                    req.game_id,
+                    req.ver,
                 )
             # Maybe add a log event for checkin but no url sent?
 
             res_str = urllib.parse.unquote(urllib.parse.urlencode(vars(resp))) + "\n"
-            
+
             if is_dfi:
                 return PlainTextResponse(
                     content=self.to_dfi(res_str) + b"\r\n",
@@ -471,30 +544,40 @@ class AllnetServlet:
                         "Pragma": "DFI",
                     },
                 )
-            elif is_lite:
-                iv = bytes([random.randint(2, 255) for _ in range(16)])
-                return PlainTextResponse(content=self.enc_lite(litekey, iv, res_str)) 
 
             return PlainTextResponse(res_str)
 
     async def handle_dlorder_ini(self, request: Request) -> bytes:
-        req_file = request.path_params.get("file", "").replace("%0A", "").replace("\n", "")
+        req_file = (
+            request.path_params.get("file", "").replace("%0A", "").replace("\n", "")
+        )
         request_ip = Utils.get_ip_addr(request)
 
         if not req_file:
             return PlainTextResponse(status_code=404)
 
         if path.exists(f"{self.config.allnet.update_cfg_folder}/{req_file}"):
-            self.logger.info(f"Request for DL INI file {req_file} from {request_ip} successful")
-            await self.data.base.log_event(
-                "allnet", "DLORDER_INI_SENT", logging.INFO, f"{request_ip} successfully recieved {req_file}", {"file": req_file}, ip=request_ip
+            self.logger.info(
+                f"Request for DL INI file {req_file} from {request_ip} successful"
             )
-            
-            return PlainTextResponse(open(
-                f"{self.config.allnet.update_cfg_folder}/{req_file}", "r", encoding="utf-8"
-            ).read())
+            await self.data.base.log_event(
+                "allnet",
+                "DLORDER_INI_SENT",
+                logging.INFO,
+                f"{request_ip} successfully recieved {req_file}",
+                {"file": req_file},
+                ip=request_ip,
+            )
 
-        self.logger.warning(f"DL INI File {req_file} not found")
+            return PlainTextResponse(
+                open(
+                    f"{self.config.allnet.update_cfg_folder}/{req_file}",
+                    "r",
+                    encoding="utf-8",
+                ).read()
+            )
+
+        self.logger.info(f"DL INI File {req_file} not found")
         return PlainTextResponse()
 
     async def handle_dlorder_report(self, request: Request) -> bytes:
@@ -505,34 +588,64 @@ class AllnetServlet:
         except Exception as e:
             self.logger.warning(f"Failed to parse DL Report: {e}")
             return PlainTextResponse("NG")
-        
+
         dl_data_type = DLIMG_TYPE.app
         dl_data = req_dict.get("appimage", {})
-        
+
         if dl_data is None or not dl_data:
             dl_data_type = DLIMG_TYPE.opt
             dl_data = req_dict.get("optimage", {})
-        
+
         if dl_data is None or not dl_data:
-            self.logger.warning(f"Failed to parse DL Report: Invalid format - contains neither appimage nor optimage")
+            self.logger.warning(
+                f"Failed to parse DL Report: Invalid format - contains neither appimage nor optimage"
+            )
             return PlainTextResponse("NG")
 
         rep = DLReport(dl_data, dl_data_type)
 
         if not rep.validate():
-            self.logger.warning(f"Failed to parse DL Report: Invalid format - {rep.err}")
+            self.logger.warning(
+                f"Failed to parse DL Report: Invalid format - {rep.err}"
+            )
             return PlainTextResponse("NG")
-        
-        msg = f"{rep.serial} @ {client_ip} reported {rep.rep_type.name} download state {rep.rf_state.name} for {rep.gd} v{rep.dav}:"\
-              f" {rep.tdsc}/{rep.tsc} segments downloaded for working files {rep.wfl} with {rep.dfl if rep.dfl else 'none'} complete."
-        
+
+        msg = (
+            f"{rep.serial} @ {client_ip} reported {rep.rep_type.name} download state {rep.rf_state.name} for {rep.gd} v{rep.dav}:"
+            f" {rep.tdsc}/{rep.tsc} segments downloaded for working files {rep.wfl} with {rep.dfl if rep.dfl else 'none'} complete."
+        )
+
         machine = await self.data.arcade.get_machine(rep.serial)
         if machine:
-            await self.data.base.log_event("allnet", "DL_REPORT", logging.INFO, msg, dl_data, None, machine['arcade'], machine['id'], client_ip, rep.gd, rep.dav)
-        
+            await self.data.base.log_event(
+                "allnet",
+                "DL_REPORT",
+                logging.INFO,
+                msg,
+                dl_data,
+                None,
+                machine["arcade"],
+                machine["id"],
+                client_ip,
+                rep.gd,
+                rep.dav,
+            )
+
         else:
             msg = "Unknown serial " + msg
-            await self.data.base.log_event("allnet", "DL_REPORT_UNREG", logging.INFO, msg, dl_data, None, None, None, client_ip, rep.gd, rep.dav)
+            await self.data.base.log_event(
+                "allnet",
+                "DL_REPORT_UNREG",
+                logging.INFO,
+                msg,
+                dl_data,
+                None,
+                None,
+                None,
+                client_ip,
+                rep.gd,
+                rep.dav,
+            )
         self.logger.info(msg)
 
         return PlainTextResponse("OK")
@@ -540,7 +653,7 @@ class AllnetServlet:
     async def handle_loaderstaterecorder(self, request: Request) -> bytes:
         req_data = await request.body()
         sections = req_data.decode("utf-8").split("\r\n")
-        
+
         req_dict = dict(urllib.parse.parse_qsl(sections[0]))
 
         serial: Union[str, None] = req_dict.get("serial", None)
@@ -549,27 +662,52 @@ class AllnetServlet:
         dl_state: Union[str, None] = req_dict.get("dld_st", None)
         ip = Utils.get_ip_addr(request)
 
-        if serial is None or num_files_dld is None or num_files_to_dl is None or dl_state is None:
+        if (
+            serial is None
+            or num_files_dld is None
+            or num_files_to_dl is None
+            or dl_state is None
+        ):
             return PlainTextResponse("NG")
 
         msg = f"LoaderStateRecorder Request from {ip} {serial}: {num_files_dld}/{num_files_to_dl} Files download (State: {dl_state})"
         machine = await self.data.arcade.get_machine(serial)
         if machine:
-            await self.data.base.log_event("allnet", "LSR_REPORT", logging.INFO, msg, req_dict, None, machine['arcade'], machine['id'], ip)
-        
+            await self.data.base.log_event(
+                "allnet",
+                "LSR_REPORT",
+                logging.INFO,
+                msg,
+                req_dict,
+                None,
+                machine["arcade"],
+                machine["id"],
+                ip,
+            )
+
         else:
             msg = "Unregistered " + msg
-            await self.data.base.log_event("allnet", "LSR_REPORT_UNREG", logging.INFO, msg, req_dict, None, None, None, ip)
-        
+            await self.data.base.log_event(
+                "allnet",
+                "LSR_REPORT_UNREG",
+                logging.INFO,
+                msg,
+                req_dict,
+                None,
+                None,
+                None,
+                ip,
+            )
+
         self.logger.info(msg)
         return PlainTextResponse("OK")
-    
+
     async def handle_alive(self, request: Request) -> bytes:
         return PlainTextResponse("OK")
 
     async def handle_naomitest(self, request: Request) -> bytes:
         # This could be spam-able, removing
-        #self.logger.info(f"Ping from {Utils.get_ip_addr(request)}")
+        # self.logger.info(f"Ping from {Utils.get_ip_addr(request)}")
         return PlainTextResponse("naomi ok")
 
     def allnet_req_to_dict(self, data: str) -> Optional[List[Dict[str, Any]]]:
@@ -594,20 +732,10 @@ class AllnetServlet:
         return unzipped.decode("utf-8")
 
     def to_dfi(self, data: str) -> bytes:
-        unzipped = data.encode('utf-8')
+        unzipped = data.encode("utf-8")
         zipped = zlib.compress(unzipped)
         return base64.b64encode(zipped)
 
-    def dec_lite(self, key, iv, data):
-        cipher = AES.new(bytes(key), AES.MODE_CBC, iv)
-        decrypted = cipher.decrypt(data)
-        return decrypted[16:].decode("utf-8")
-
-    def enc_lite(self, key, iv, data):
-        unencrypted = pad(bytes([0] * 16) + data.encode('utf-8'), 16)
-        cipher = AES.new(bytes(key), AES.MODE_CBC, iv)
-        encrypted = cipher.encrypt(unencrypted)
-        return encrypted
 
 class BillingServlet:
     def __init__(self, core_cfg: CoreConfig, cfg_folder: str) -> None:
@@ -638,9 +766,11 @@ class BillingServlet:
                 level=core_cfg.billing.loglevel, logger=self.logger, fmt=log_fmt_str
             )
             self.logger.initialized = True
-    
+
     def startup(self) -> None:
-        self.logger.info(f"Ready on port {self.config.billing.port if self.config.billing.standalone else self.config.server.port}")
+        self.logger.info(
+            f"Ready on port {self.config.billing.port if self.config.billing.standalone else self.config.server.port}"
+        )
 
     def billing_req_to_dict(self, data: bytes):
         """
@@ -651,45 +781,59 @@ class BillingServlet:
 
             ret = []
             for x in sections:
-                section = dict(urllib.parse.parse_qsl(x))
-                
-                # length of a message tracelog, smallest section we'd expect
-                if len(section) < 9:
-                    self.logger.debug(f"Truncated section: {x} -> {section}")
-                    continue
-                
-                ret.append(section)
+                ret.append(dict(urllib.parse.parse_qsl(x)))
             return ret
 
         except Exception as e:
             self.logger.error(f"billing_req_to_dict: {e} while parsing {data}")
             return None
-    
+
     async def handle_billing_request(self, request: Request):
         req_raw = await request.body()
-        
-        if request.headers.get('Content-Type', '') == "application/octet-stream":
+
+        if request.headers.get("Content-Type", "") == "application/octet-stream":
             req_unzip = zlib.decompressobj(-zlib.MAX_WBITS).decompress(req_raw)
         else:
             req_unzip = req_raw
-        
+
         req_dict = self.billing_req_to_dict(req_unzip)
         request_ip = Utils.get_ip_addr(request)
-        
+
         if req_dict is None:
             self.logger.error(f"Failed to parse request {req_raw}")
             return PlainTextResponse()
 
-        self.logger.debug(f"Request {req_unzip} -> {req_dict}")
+        self.logger.debug(f"request {req_dict}")
 
         rsa = RSA.import_key(open(self.config.billing.signing_key, "rb").read())
         signer = PKCS1_v1_5.new(rsa)
         digest = SHA.new()
+        traces: List[TraceData] = []
         try:
             req = BillingInfo(req_dict[0])
         except KeyError as e:
-            self.logger.error(f"Initial section failed to parse - {req_dict[0]} - {e}")
-            return PlainTextResponse("result=5&linelimit=&message=field is missing or formatting is incorrect\r\n")
+            self.logger.error(f"Billing request failed to parse: {e}")
+            return PlainTextResponse(
+                "result=5&linelimit=&message=field is missing or formatting is incorrect\r\n"
+            )
+
+        for x in range(1, len(req_dict)):
+            if not req_dict[x]:
+                continue
+
+            try:
+                tmp = TraceData(req_dict[x])
+                if tmp.trace_type == TraceDataType.CHARGE:
+                    tmp = TraceDataCharge(req_dict[x])
+                elif tmp.trace_type == TraceDataType.EVENT:
+                    tmp = TraceDataEvent(req_dict[x])
+                elif tmp.trace_type == TraceDataType.CREDIT:
+                    tmp = TraceDataCredit(req_dict[x])
+
+                traces.append(tmp)
+
+            except KeyError as e:
+                self.logger.warn(f"Tracelog failed to parse: {e}")
 
         kc_serial_bytes = req.keychipid.encode()
 
@@ -697,130 +841,78 @@ class BillingServlet:
         if machine is None and not self.config.server.allow_unregistered_serials:
             msg = f"Unrecognised serial {req.keychipid} attempted billing checkin from {request_ip} for {req.gameid} v{req.gamever}."
             await self.data.base.log_event(
-                "allnet", "BILLING_CHECKIN_NG_SERIAL", logging.WARN, msg, ip=request_ip, game=req.gameid, version=str(req.gamever)
+                "allnet",
+                "BILLING_CHECKIN_NG_SERIAL",
+                logging.WARN,
+                msg,
+                ip=request_ip,
+                game=req.gameid,
+                version=req.gamever,
             )
             self.logger.warning(msg)
 
-            return PlainTextResponse(f"result=1&requestno={req.requestno}&message=Keychip Serial bad\r\n")
-        
+            return PlainTextResponse(
+                f"result=1&requestno={req.requestno}&message=Keychip Serial bad\r\n"
+            )
+
         log_details = {
             "playcount": req.playcnt,
             "billing_type": req.billingtype.name,
             "nearfull": req.nearfull,
             "playlimit": req.playlimit,
-            "messages": []
         }
-        playhist = "000000/0:000000/0:000000/0"
-        
+
         if machine is not None:
-            if self.config.allnet.save_billing:
-                lastcredit = await self.data.arcade.billing_get_last_playcount(machine['id'], req.gameid)
-                if lastcredit is not None:
-                    last_playct = lastcredit['playct']
-                else:
-                    last_playct = 0
-                
-                # Technically if a cab resets it's playcount and then does more plays then the previous
-                # playcount before a billing checkin occours, we will lose plays equal to the current playcount.
-                if req.playcnt < last_playct:
-                    await self.data.arcade.billing_add_playcount(machine['id'], req.gameid, req.playcnt)
-                elif req.playcnt == last_playct:
-                    pass # No plays since last checkin, skip update
-                else:
-                    await self.data.arcade.billing_add_playcount(machine['id'], req.gameid, req.playcnt - last_playct)
-
-                plays = await self.data.arcade.billing_get_playcount_3mo(machine['id'], req.gameid)
-                if plays:
-                    playhist = ":".join(
-                        f"{p['year']:04d}{p['month']:02d}/{p['playct']}" 
-                        for p in reversed(plays)
-                    )
-            
-            for x in range(1, len(req_dict)):
-                if not req_dict[x]:
-                    continue
-                
-                try:
-                    tmp = TraceData(req_dict[x])
-                    if tmp.trace_type == TraceDataType.CHARGE:
-                        tmp = TraceDataCharge(req_dict[x])
-                        if self.config.allnet.save_billing:
-                            await self.data.arcade.billing_add_charge(
-                                machine['id'],
-                                tmp.game_id,
-                                float(tmp.game_version),
-                                tmp.play_count,
-                                tmp.play_limit,
-                                tmp.product_code,
-                                tmp.product_count,
-                                tmp.func_type,
-                                tmp.player_number
-                            )
-
-                        self.logger.info(
-                            f"Charge Trace from {req.keychipid}: {tmp.game_id} v{tmp.game_version} - player {tmp.player_number} got {tmp.product_count} of {tmp.product_code} func {tmp.func_type}"
-                        )
-
-                    elif tmp.trace_type == TraceDataType.EVENT:
-                        tmp = TraceDataEvent(req_dict[x])
-                        log_details['messages'].append(tmp.message)
-                        self.logger.info(f"Event Trace from {req.keychipid}: {tmp.message}")
-
-                    elif tmp.trace_type == TraceDataType.CREDIT:
-                        tmp = TraceDataCredit(req_dict[x])
-                        if self.config.allnet.save_billing:
-                            await self.data.arcade.billing_set_credit(
-                                machine['id'],
-                                req.gameid,
-                                tmp.chute_type.value,
-                                tmp.service_type.value,
-                                tmp.operation_type.value,
-                                tmp.coin_rate0,
-                                tmp.coin_rate1,
-                                tmp.bonus_addition,
-                                tmp.credit_rate,
-                                tmp.credit0,
-                                tmp.credit1,
-                                tmp.credit2,
-                                tmp.credit3,
-                                tmp.credit4,
-                                tmp.credit5,
-                                tmp.credit6,
-                                tmp.credit7
-                            )
-
-                        self.logger.info(
-                            f"Credit Trace from {req.keychipid}: {tmp.operation_type} mode, {tmp.credit_rate} coins per credit, breakdown: {tmp.credit0} | {tmp.credit1} | {tmp.credit2} | {tmp.credit3} | {tmp.credit4} | {tmp.credit5} | {tmp.credit6} | {tmp.credit7} | "
-                        )
-                
-                except KeyError as e:
-                    self.logger.warning(f"Tracelog failed to parse - {req_dict[x]} - {e}")
-
-            await self.data.base.log_event("billing", "BILLING_CHECKIN_OK", logging.INFO, "", log_details, None, machine['arcade'], machine['id'], request_ip, req.gameid, str(req.gamever))
-            
-            self.logger.info(
-                f"Billing checkin from {request_ip}: game {req.gameid} ver {req.gamever} keychip {req.keychipid} playcount "
-                f"{req.playcnt} billing_type {req.billingtype.name} nearfull {req.nearfull} playlimit {req.playlimit}"
+            await self.data.base.log_event(
+                "billing",
+                "BILLING_CHECKIN_OK",
+                logging.INFO,
+                "",
+                log_details,
+                None,
+                machine["arcade"],
+                machine["id"],
+                request_ip,
+                req.gameid,
+                req.gamever,
             )
 
+            self.logger.info(
+                f"Unregistered Billing checkin from {request_ip}: game {req.gameid} ver {req.gamever} keychip {req.keychipid} playcount "
+                f"{req.playcnt} billing_type {req.billingtype.name} nearfull {req.nearfull} playlimit {req.playlimit}"
+            )
         else:
-            log_details['serial'] = req.keychipid
-            await self.data.base.log_event("billing", "BILLING_CHECKIN_OK_UNREG", logging.INFO, "", log_details, None, None, None, request_ip, req.gameid, str(req.gamever))
-        
+            log_details["serial"] = req.keychipid
+            await self.data.base.log_event(
+                "billing",
+                "BILLING_CHECKIN_OK_UNREG",
+                logging.INFO,
+                "",
+                log_details,
+                None,
+                None,
+                None,
+                request_ip,
+                req.gameid,
+                req.gamever,
+            )
+
             self.logger.info(
                 f"Unregistered Billing checkin from {request_ip}: game {req.gameid} ver {req.gamever} keychip {req.keychipid} playcount "
                 f"{req.playcnt} billing_type {req.billingtype.name} nearfull {req.nearfull} playlimit {req.playlimit}"
             )
 
         if req.traceleft > 0:
-            self.logger.info(f"Requesting 20 more of {req.traceleft} unsent tracelogs")
-            return PlainTextResponse("result=6&waittime=0&linelimit=20\r\n")
-    
-        playlimit = req.playlimit
-        while req.playcnt >= playlimit - req.nearfull:
-            playlimit += 1024
+            self.logger.warn(f"{req.traceleft} unsent tracelogs")
+        kc_playlimit = req.playlimit
+        kc_nearfull = req.nearfull
 
-        nearfull = req.nearfull | (req.billingtype.value << 16)
+        while req.playcnt > req.playlimit:
+            kc_playlimit += 1024
+            kc_nearfull += 1024
+
+        playlimit = kc_playlimit
+        nearfull = kc_nearfull + (req.billingtype.value * 0x00010000)
 
         digest.update(playlimit.to_bytes(4, "little") + kc_serial_bytes)
         playlimit_sig = signer.sign(digest).hex()
@@ -829,13 +921,26 @@ class BillingServlet:
         digest.update(nearfull.to_bytes(4, "little") + kc_serial_bytes)
         nearfull_sig = signer.sign(digest).hex()
 
-        resp = BillingResponse(playlimit, playlimit_sig, nearfull, nearfull_sig, req.requestno, req.protocolver, playhist)
+        # TODO: playhistory
+
+        resp = BillingResponse(
+            playlimit,
+            playlimit_sig,
+            nearfull,
+            nearfull_sig,
+            req.requestno,
+            req.protocolver,
+        )
 
         resp_str = urllib.parse.unquote(urllib.parse.urlencode(vars(resp))) + "\r\n"
 
-        self.logger.debug(f"Response {vars(resp)} -> {resp_str}")
-        
+        self.logger.debug(f"response {vars(resp)}")
+        if req.traceleft > 0:
+            self.logger.info(f"Requesting 20 more of {req.traceleft} unsent tracelogs")
+            return PlainTextResponse("result=6&waittime=0&linelimit=20\r\n")
+
         return PlainTextResponse(resp_str)
+
 
 class AllnetPowerOnRequest:
     def __init__(self, req: Dict) -> None:
@@ -852,6 +957,7 @@ class AllnetPowerOnRequest:
         self.format_ver = float(req.get("format_ver", "1.00"))
         self.token: str = req.get("token", "0")
 
+
 class AllnetPowerOnResponse:
     def __init__(self) -> None:
         self.stat = 1
@@ -864,7 +970,7 @@ class AllnetPowerOnResponse:
         self.region_name0 = "W"
         self.region_name1 = ""
         self.region_name2 = ""
-        self.region_name3 = ""        
+        self.region_name3 = ""
         self.setting = "1"
         self.year = datetime.now().year
         self.month = datetime.now().month
@@ -873,14 +979,6 @@ class AllnetPowerOnResponse:
         self.minute = datetime.now().minute
         self.second = datetime.now().second
 
-class AllnetPowerOnRequestLite:
-    def __init__(self, req: Dict) -> None:
-        if req is None:
-            raise AllnetRequestException("Request processing failed")
-        self.game_id: str = req.get("title_id", None)
-        self.ver: str = req.get("title_ver", None)
-        self.serial: str = req.get("client_id", None)
-        self.token: str = req.get("token", None)
 
 class AllnetPowerOnResponse3(AllnetPowerOnResponse):
     def __init__(self, token) -> None:
@@ -904,6 +1002,7 @@ class AllnetPowerOnResponse3(AllnetPowerOnResponse):
         self.minute = None
         self.second = None
 
+
 class AllnetPowerOnResponse2(AllnetPowerOnResponse):
     def __init__(self) -> None:
         super().__init__()
@@ -913,29 +1012,6 @@ class AllnetPowerOnResponse2(AllnetPowerOnResponse):
         self.timezone = "+09:00"
         self.res_class = "PowerOnResponseV2"
 
-class AllnetPowerOnResponseLite:
-    def __init__(self, token) -> None:
-        # Custom Allnet Lite response
-        self.result = 1
-        self.place_id = "0123"
-        self.uri1 = ""
-        self.uri2 = ""
-        self.name = "ARTEMiS"
-        self.nickname = "ARTEMiS"
-        self.setting = "1"
-        self.region0 = "1"
-        self.region_name0 = "W"
-        self.region_name1 = ""
-        self.region_name2 = ""
-        self.region_name3 = ""
-        self.country = "CHN"
-        self.location_type = "1"
-        self.utc_time = datetime.now(tz=pytz.timezone("UTC")).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        )
-        self.client_timezone = "+0800"
-        self.res_ver = "3"
-        self.token = token
 
 class AllnetDownloadOrderRequest:
     def __init__(self, req: Dict) -> None:
@@ -944,56 +1020,37 @@ class AllnetDownloadOrderRequest:
         self.serial = req.get("serial", "")
         self.encode = req.get("encode", "")
 
-class AllnetDownloadOrderRequestLite:
-    def __init__(self, req: Dict) -> None:
-        self.game_id = req.get("title_id", "")
-        self.ver = req.get("title_ver", "")
-        self.serial = req.get("client_id", "")
 
 class AllnetDownloadOrderResponse:
-    def __init__(self, stat: int = 1, serial: str = "", uri: str = "null") -> None:
+    def __init__(self, stat: int = 1, serial: str = "", uri: str = "") -> None:
         self.stat = stat
         self.serial = serial
         self.uri = uri
 
-class AllnetDownloadOrderResponseLite:
-    def __init__(self, result: int = 1, uri: str = "null") -> None:
-        self.result = result
-        self.uri = uri
 
 class TraceDataType(Enum):
     CHARGE = 0
     EVENT = 1
     CREDIT = 2
 
+
 class BillingType(Enum):
     A = 1
     B = 0
 
-class TraceDataCreditChuteType(Enum):
-    COMMON = 0
-    INDIVIDUAL = 1
-
-class TraceDataCreditOperationType(Enum):
-    COIN = 0
-    FREEPLAY = 1
 
 class float5:
-    def __init__(self, n: str = "0"):
+    def __init__(self, n: str = "0") -> None:
         nf = float(n)
         if nf > 999.9 or nf < 0:
-            raise ValueError('float5 must be between 0.000 and 999.9 inclusive')
-        self.val = nf
-    
-    def __float__(self) -> float:
-        return self.val
+            raise ValueError("float5 must be between 0.000 and 999.9 inclusive")
 
-    def __str__(self) -> str:
-        return f"%.{2 - int(math.log10(self.val))+1}f" % self.val
+        return nf
 
     @classmethod
     def to_str(cls, f: float):
-        return f"%.{2 - int(math.log10(f))+1}f" % f
+        return f"%.{2 - int(math.log10(f)) + 1}f" % f
+
 
 class BillingInfo:
     def __init__(self, data: Dict) -> None:
@@ -1001,13 +1058,13 @@ class BillingInfo:
             self.keychipid = str(data.get("keychipid", None))
             self.functype = int(data.get("functype", None))
             self.gameid = str(data.get("gameid", None))
-            self.gamever = float5(data.get("gamever", None))
+            self.gamever = float(data.get("gamever", None))
             self.boardid = str(data.get("boardid", None))
             self.tenpoip = str(data.get("tenpoip", None))
-            self.libalibver = float5(data.get("libalibver", None))
+            self.libalibver = float(data.get("libalibver", None))
             self.datamax = int(data.get("datamax", None))
             self.billingtype = BillingType(int(data.get("billingtype", None)))
-            self.protocolver = float5(data.get("protocolver", None))
+            self.protocolver = float(data.get("protocolver", None))
             self.operatingfix = bool(data.get("operatingfix", None))
             self.traceleft = int(data.get("traceleft", None))
             self.requestno = int(data.get("requestno", None))
@@ -1022,6 +1079,7 @@ class BillingInfo:
         except Exception as e:
             raise KeyError(e)
 
+
 class TraceData:
     def __init__(self, data: Dict) -> None:
         try:
@@ -1030,26 +1088,27 @@ class TraceData:
             self.seq_number = int(data.get("sn", None))
             self.trace_type = TraceDataType(int(data.get("tt", None)))
             self.date_sync_flg = bool(data.get("ds", None))
-            
+
             dt = data.get("dt", None)
             if dt is None:
                 raise KeyError("dt not present")
-            if dt == "20000000000000": # Not sure what causes it to send like this...
+            if dt == "20000000000000":  # Not sure what causes it to send like this...
                 self.date = datetime(2000, 1, 1, 0, 0, 0, 0)
             else:
                 self.date = datetime.strptime(data.get("dt", None), BILLING_DT_FORMAT)
-            
+
             self.keychip = str(data.get("kn", None))
-            self.lib_ver = float5(data.get("alib", 0))
+            self.lib_ver = float(data.get("alib", 0))
         except Exception as e:
             raise KeyError(e)
+
 
 class TraceDataCharge(TraceData):
     def __init__(self, data: Dict) -> None:
         super().__init__(data)
         try:
-            self.game_id = str(data.get("gi", None)) # these seem optional...?
-            self.game_version = float5(data.get("gv", 0))
+            self.game_id = str(data.get("gi", None))  # these seem optional...?
+            self.game_version = float(data.get("gv", 0))
             self.board_serial = str(data.get("bn", None))
             self.shop_ip = str(data.get("ti", None))
             self.play_count = int(data.get("pc", None))
@@ -1061,6 +1120,7 @@ class TraceDataCharge(TraceData):
         except Exception as e:
             raise KeyError(e)
 
+
 class TraceDataEvent(TraceData):
     def __init__(self, data: Dict) -> None:
         super().__init__(data)
@@ -1069,13 +1129,14 @@ class TraceDataEvent(TraceData):
         except Exception as e:
             raise KeyError(e)
 
+
 class TraceDataCredit(TraceData):
     def __init__(self, data: Dict) -> None:
         super().__init__(data)
         try:
-            self.chute_type = TraceDataCreditChuteType(int(data.get("cct", None)))
-            self.service_type = TraceDataCreditChuteType(int(data.get("cst", None)))
-            self.operation_type = TraceDataCreditOperationType(int(data.get("cop", None)))
+            self.chute_type = int(data.get("cct", None))
+            self.service_type = int(data.get("cst", None))
+            self.operation_type = int(data.get("cop", None))
             self.coin_rate0 = int(data.get("cr0", None))
             self.coin_rate1 = int(data.get("cr1", None))
             self.bonus_addition = int(data.get("cba", None))
@@ -1091,6 +1152,7 @@ class TraceDataCredit(TraceData):
         except Exception as e:
             raise KeyError(e)
 
+
 class BillingResponse:
     def __init__(
         self,
@@ -1099,7 +1161,7 @@ class BillingResponse:
         nearfull: str = "",
         nearfull_sig: str = "",
         request_num: int = 1,
-        protocol_ver: float5 = float5("1.000"),
+        protocol_ver: float = 1.000,
         playhistory: str = "000000/0:000000/0:000000/0",
     ) -> None:
         self.result = 0
@@ -1113,14 +1175,16 @@ class BillingResponse:
         self.nearfull = nearfull
         self.nearfullsig = nearfull_sig
         self.linelimit = 100
-        self.protocolver = str(protocol_ver)
+        self.protocolver = float5.to_str(protocol_ver)
         # playhistory -> YYYYMM/C:...
         # YYYY -> 4 digit year, MM -> 2 digit month, C -> Playcount during that period
+
 
 class AllnetRequestException(Exception):
     def __init__(self, message="") -> None:
         self.message = message
         super().__init__(self.message)
+
 
 class DLReport:
     def __init__(self, data: Dict, report_type: DLIMG_TYPE) -> None:
@@ -1136,54 +1200,57 @@ class DLReport:
         self.rf_state = DLI_STATUS.from_int(data.get("rf_state"))
         self.gd = data.get("gd")
         self.dav = data.get("dav")
-        self.wdav = data.get("wdav") # app only
+        self.wdav = data.get("wdav")  # app only
         self.dov = data.get("dov")
-        self.wdov = data.get("wdov") # app only
+        self.wdov = data.get("wdov")  # app only
         self.rep_type = report_type
         self.err = ""
-    
+
     def validate(self) -> bool:
-        if  self.serial is None:
+        if self.serial is None:
             self.err = "serial not provided"
             return False
-        
+
         if self.tsc is None:
             self.err = "tsc not provided"
             return False
-        
+
         if self.tdsc is None:
             self.err = "tdsc not provided"
             return False
-        
+
         if self.as_ is None:
             self.err = "as not provided"
             return False
-        
+
         if self.rf_state is None:
             self.err = "rf_state not provided"
             return False
-        
+
         if self.gd is None:
             self.err = "gd not provided"
             return False
-        
+
         if self.dav is None:
             self.err = "dav not provided"
             return False
-        
+
         if self.dov is None:
             self.err = "dov not provided"
             return False
-        
+
         if (self.wdav is None or self.wdov is None) and self.rep_type == DLIMG_TYPE.app:
             self.err = "wdav or wdov not provided in app image"
             return False
-        
-        if (self.wdav is not None or self.wdov is not None) and self.rep_type == DLIMG_TYPE.opt:
+
+        if (
+            self.wdav is not None or self.wdov is not None
+        ) and self.rep_type == DLIMG_TYPE.opt:
             self.err = "wdav or wdov provided in opt image"
             return False
-        
+
         return True
+
 
 cfg_dir = environ.get("ARTEMIS_CFG_DIR", "config")
 cfg: CoreConfig = CoreConfig()
@@ -1194,28 +1261,28 @@ if not path.exists(cfg.server.log_dir):
     mkdir(cfg.server.log_dir)
 
 if not access(cfg.server.log_dir, W_OK):
-    print(
-        f"Log directory {cfg.server.log_dir} NOT writable, please check permissions"
-    )
+    print(f"Log directory {cfg.server.log_dir} NOT writable, please check permissions")
     exit(1)
 
 billing = BillingServlet(cfg, cfg_dir)
 app_billing = Starlette(
-    cfg.server.is_develop, 
-    [        
+    cfg.server.is_develop,
+    [
         Route("/request", billing.handle_billing_request, methods=["POST"]),
         Route("/request/", billing.handle_billing_request, methods=["POST"]),
     ],
-    on_startup=[billing.startup]
+    on_startup=[billing.startup],
 )
 
 allnet = AllnetServlet(cfg, cfg_dir)
 route_lst = [
     Route("/sys/servlet/PowerOn", allnet.handle_poweron, methods=["GET", "POST"]),
-    Route("/net/initialize", allnet.handle_poweron, methods=["GET", "POST"]),
     Route("/sys/servlet/DownloadOrder", allnet.handle_dlorder, methods=["GET", "POST"]),
-    Route("/net/delivery/instruction", allnet.handle_dlorder, methods=["GET", "POST"]),
-    Route("/sys/servlet/LoaderStateRecorder", allnet.handle_loaderstaterecorder, methods=["GET", "POST"]),
+    Route(
+        "/sys/servlet/LoaderStateRecorder",
+        allnet.handle_loaderstaterecorder,
+        methods=["GET", "POST"],
+    ),
     Route("/sys/servlet/Alive", allnet.handle_alive, methods=["GET", "POST"]),
     Route("/naomitest.html", allnet.handle_naomitest),
 ]
@@ -1226,8 +1293,4 @@ if cfg.allnet.allow_online_updates:
         Route("/dl/ini/{file:str}", allnet.handle_dlorder_ini),
     ]
 
-app_allnet = Starlette(
-    cfg.server.is_develop, 
-    route_lst,
-    on_startup=[allnet.startup]
-)
+app_allnet = Starlette(cfg.server.is_develop, route_lst, on_startup=[allnet.startup])

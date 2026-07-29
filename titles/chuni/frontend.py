@@ -128,7 +128,7 @@ class ChuniFrontend(FE_Base):
 
             resp = Response(
                 template.render(
-                    title=f"{self.artemis_config.server.name} | {self.nav_name}",
+                    title=f"{self.core_config.server.name} | {self.nav_name}",
                     game_list=self.environment.globals["game_list"],
                     sesh=vars(usr_sesh),
                     user_id=usr_sesh.user_id,
@@ -206,7 +206,7 @@ class ChuniFrontend(FE_Base):
                 ]
             return Response(
                 template.render(
-                    title=f"{self.artemis_config.server.name} | {self.nav_name}",
+                    title=f"{self.core_config.server.name} | {self.nav_name}",
                     game_list=self.environment.globals["game_list"],
                     sesh=vars(usr_sesh),
                     profile=profile,
@@ -239,7 +239,7 @@ class ChuniFrontend(FE_Base):
             if playlog_count < index * 20:
                 return Response(
                     template.render(
-                        title=f"{self.artemis_config.server.name} | {self.nav_name}",
+                        title=f"{self.core_config.server.name} | {self.nav_name}",
                         game_list=self.environment.globals["game_list"],
                         sesh=vars(usr_sesh),
                         playlog_count=0,
@@ -270,7 +270,7 @@ class ChuniFrontend(FE_Base):
                 )
             return Response(
                 template.render(
-                    title=f"{self.artemis_config.server.name} | {self.nav_name}",
+                    title=f"{self.core_config.server.name} | {self.nav_name}",
                     game_list=self.environment.globals["game_list"],
                     sesh=vars(usr_sesh),
                     user_id=usr_sesh.user_id,

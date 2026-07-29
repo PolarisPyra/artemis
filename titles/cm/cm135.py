@@ -8,8 +8,8 @@ from titles.cm.config import CardMakerConfig
 
 
 class CardMaker135(CardMakerBase):
-    def __init__(self, artemis_cfg: CoreConfig, game_cfg: CardMakerConfig) -> None:
-        super().__init__(artemis_cfg, game_cfg)
+    def __init__(self, core_cfg: CoreConfig, game_cfg: CardMakerConfig) -> None:
+        super().__init__(core_cfg, game_cfg)
         self.version = CardMakerConstants.VER_CARD_MAKER_135
 
     async def handle_get_game_setting_api_request(self, data: Dict) -> Dict:

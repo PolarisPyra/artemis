@@ -10,8 +10,8 @@ class IDZHandlerLoadTeamRankingA(IDZHandlerBase):
     rsp_codes = [0x00B1] * 4
     name = "load_team_ranking_a"
 
-    def __init__(self, artemis_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
-        super().__init__(artemis_cfg, game_cfg, version)
+    def __init__(self, core_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
+        super().__init__(core_cfg, game_cfg, version)
         self.size = 0x0BA0
 
     def handle(self, data: bytes) -> bytearray:
@@ -23,8 +23,8 @@ class IDZHandlerLoadTeamRankingB(IDZHandlerBase):
     rsp_codes = [0x00A8] * 4
     name = "load_team_ranking_b"
 
-    def __init__(self, artemis_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
-        super().__init__(artemis_cfg, game_cfg, version)
+    def __init__(self, core_cfg: CoreConfig, game_cfg: IDZConfig, version: int) -> None:
+        super().__init__(core_cfg, game_cfg, version)
         self.size = 0x0BA0
 
     def handle(self, data: bytes) -> bytearray:
