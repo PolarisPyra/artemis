@@ -260,7 +260,7 @@ class ArtemisServices:
                 "dataid": refid,
                 "ecflag": "1",
                 "expired": "0",
-                "newflag": "0",
+                "newflag": "0" if bound is not None else "1",
                 "refid": refid,
             }
         }
@@ -287,8 +287,6 @@ class ArtemisServices:
             )
         await self.data.konami.put_profile(refid, profile)
         await self.data.konami.put_card(cardid, refid)
-        extid = self.data.konami._stable_id(f"extid:{info.game_code}:{refid}") % 100000000
-        await self.data.konami.put_extid(refid, info.game_code, extid)
         response.content = {"@attr": {"dataid": refid, "refid": refid}}
 
     async def card_authpass(
