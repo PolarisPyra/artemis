@@ -654,7 +654,10 @@ def test_core_discovery_chain_survives_encrypted_kbin_transport():
     async def request(module, method):
         request_data = {
             "call": {
-                "@attr": {"model": "M39:J:D:A:2026041500"},
+                "@attr": {
+                    "model": "M39:J:D:A:2026041500",
+                    "srcid": "PCB123456",
+                },
                 module: {"@attr": {"method": method}},
             }
         }
@@ -735,6 +738,7 @@ def test_core_discovery_chain_survives_encrypted_kbin_transport():
         result[1]["response"][module]["@attr"]["status"] == "0"
         for module, result in results.items()
     )
+    assert results["services"][1]["response"]["@attr"]["dstid"] == "PCB123456"
     service_items = results["services"][1]["response"]["services"]["item"]
     assert any(item["@attr"]["name"] == "local2" for item in service_items)
     assert any(item["@attr"]["name"] == "lobby2" for item in service_items)

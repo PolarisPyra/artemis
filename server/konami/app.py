@@ -190,11 +190,17 @@ class KonamiServlet:
                 attrs.update(node.pop("@attr", {}))
                 node["@attr"] = attrs
                 response_nodes.append(node)
-            response_data = {"response": {result.root_name or module: response_nodes}}
+            response_data = {
+                "response": {
+                    "@attr": _response_attributes(call),
+                    result.root_name or module: response_nodes,
+                }
+            }
         else:
             response_attrs.update(response_content.pop("@attr", {}))
             response_data = {
                 "response": {
+                    "@attr": _response_attributes(call),
                     result.root_name or module: {
                         "@attr": response_attrs,
                         **response_content,
@@ -306,3 +312,10 @@ def _has_port(host: str) -> bool:
     if host.startswith("["):
         return "]:" in host
     return host.count(":") == 1
+
+
+def _response_attributes(call: dict) -> dict[str, str]:
+    """Return the EA3 response envelope attributes expected by the cabinet."""
+    request_attrs = call.get("@attr", {})
+    srcid = request_attrs.get("srcid")
+    return {"dstid": str(srcid)} if srcid is not None else {}
