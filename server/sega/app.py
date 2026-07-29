@@ -13,9 +13,7 @@ from server.sega import ArtemisConfig, TitleServlet, MuchaServlet
 from server.sega.allnet import AllnetServlet, BillingServlet
 from server.sega.chimedb import ChimeServlet
 from server.sega.frontend import FrontendServlet
-from server.konami import KonamiServlet
-from server.konami.services import ArtemisServices
-from server.konami.titles.popn import PopnRoutes
+from server.konami.app import build_konami_servlet
 
 
 async def dummy_rt(request: Request):
@@ -61,9 +59,7 @@ title = TitleServlet(cfg, cfg_dir)  # Load title routes before assembling the ap
 mucha = MuchaServlet(cfg, cfg_dir)
 konami = None
 if cfg.konami.enable and not cfg.konami.standalone:
-    popn = PopnRoutes(cfg)
-    services = ArtemisServices(cfg, popn.game_codes)
-    konami = KonamiServlet((services.register, popn.register))
+    konami = build_konami_servlet(cfg)
 
 route_lst: List[Route] = [
     # Mucha

@@ -160,6 +160,11 @@ def decode(data: bytes) -> tuple[dict, str]:
     node_end = node_start + node_length
     data_cursor = node_end + 4
     data_start = data_cursor
+    # Scalar 8/16-bit values use the shared byte/word lanes implemented by
+    # AVS' K-bin reader.  They do not consume a fresh aligned scalar stream
+    # for every node.
+    byte_cursor = data_start
+    word_cursor = data_start
     node_cursor = node_start
     root: dict = {}
     current = root
@@ -200,7 +205,7 @@ def decode(data: bytes) -> tuple[dict, str]:
         if token == 1:
             continue
         if type_name == "str":
-            value, data_cursor = _read_stream(data, data_cursor)
+            value, data_cursor = _read_stream(data, data_cursor, data_start)
             current["@content"] = value.rstrip(b"\0").decode(encoding, errors="replace")
         elif type_name == "bin":
             current["@content"], data_cursor = _read_stream(
@@ -212,9 +217,36 @@ def decode(data: bytes) -> tuple[dict, str]:
                 if type_name in NUMBER_TYPES
                 else (GROUP_TYPES[type_name][1], GROUP_TYPES[type_name][2])
             )
-            current["@content"], data_cursor = _read_value(
-                data, data_cursor, fmt, width, is_array, data_start
-            )
+            if is_array:
+                current["@content"], data_cursor = _read_value(
+                    data, data_cursor, fmt, width, True, data_start
+                )
+            else:
+                value_size = struct.calcsize(">" + fmt) * width
+                if value_size == 1:
+                    if (byte_cursor - data_start) % 4 == 0:
+                        byte_cursor = data_cursor
+                    raw = data[byte_cursor : byte_cursor + width * struct.calcsize(">" + fmt)]
+                    current["@content"] = [
+                        struct.unpack_from(">" + fmt, raw, index)[0]
+                        for index in range(0, len(raw), struct.calcsize(">" + fmt))
+                    ]
+                    byte_cursor += width * struct.calcsize(">" + fmt)
+                elif value_size == 2:
+                    if (word_cursor - data_start) % 4 == 0:
+                        word_cursor = data_cursor
+                    raw = data[word_cursor : word_cursor + width * struct.calcsize(">" + fmt)]
+                    current["@content"] = [
+                        struct.unpack_from(">" + fmt, raw, index)[0]
+                        for index in range(0, len(raw), struct.calcsize(">" + fmt))
+                    ]
+                    word_cursor += width * struct.calcsize(">" + fmt)
+                else:
+                    current["@content"], data_cursor = _read_value(
+                        data, data_cursor, fmt, width, False, data_start
+                    )
+                trailing = max(data_cursor, byte_cursor, word_cursor)
+                data_cursor = data_start + _align(trailing - data_start)
             if is_array:
                 current["@attr"]["__count"] = len(current["@content"]) // width
     return root, encoding
@@ -225,11 +257,50 @@ def encode(data: dict, encoding: str = "shift_jis", compressed: bool = True) -> 
     # typed nodes.  This writer covers the node and scalar forms used by Pop'n.
     nodes = bytearray()
     values = bytearray()
+    byte_cursor = 0
+    word_cursor = 0
 
     def stream(raw: bytes) -> None:
         values.extend(struct.pack(">I", len(raw)))
         values.extend(raw)
         values.extend(b"\0" * (_align(len(values)) - len(values)))
+
+    def number_data(fmt: str, width: int, content: list, is_array: bool) -> None:
+        nonlocal byte_cursor, word_cursor
+        raw = b"".join(struct.pack(">" + fmt, value) for value in content)
+        if is_array:
+            values.extend(struct.pack(">I", len(raw)))
+            values.extend(raw)
+            values.extend(b"\0" * (_align(len(values)) - len(values)))
+            return
+        value_size = struct.calcsize(">" + fmt) * width
+        if value_size == 1:
+            if byte_cursor % 4 == 0:
+                byte_cursor = len(values)
+                values.extend(b"\0" * 4)
+            for value in content:
+                packed = struct.pack(">" + fmt, value)
+                end = byte_cursor + len(packed)
+                if end > len(values):
+                    values.extend(b"\0" * (end - len(values)))
+                values[byte_cursor:end] = packed
+                byte_cursor = end
+        elif value_size == 2:
+            if word_cursor % 4 == 0:
+                word_cursor = len(values)
+                values.extend(b"\0" * 4)
+            for value in content:
+                packed = struct.pack(">" + fmt, value)
+                end = word_cursor + len(packed)
+                if end > len(values):
+                    values.extend(b"\0" * (end - len(values)))
+                values[word_cursor:end] = packed
+                word_cursor = end
+        else:
+            values.extend(raw)
+            values.extend(b"\0" * (_align(len(values)) - len(values)))
+        if value_size > 2:
+            values.extend(b"\0" * (_align(len(values)) - len(values)))
 
     def write_node(name: str, node: dict) -> None:
         attrs = node.get("@attr", {})
@@ -256,11 +327,7 @@ def encode(data: dict, encoding: str = "shift_jis", compressed: bool = True) -> 
             )
             content = node.get("@content", [])
             content = content if isinstance(content, list) else [content]
-            raw = b"".join(struct.pack(">" + fmt, value) for value in content)
-            if count is not None:
-                values.extend(struct.pack(">I", len(raw)))
-            values.extend(raw)
-            values.extend(b"\0" * (_align(len(values)) - len(values)))
+            number_data(fmt, _width, content, count is not None)
         for key, value in sorted(attrs.items()):
             if key.startswith("__"):
                 continue
@@ -277,6 +344,8 @@ def encode(data: dict, encoding: str = "shift_jis", compressed: bool = True) -> 
     root_name = next(iter(data))
     write_node(root_name, data[root_name])
     nodes.extend((TYPES["endSection"] | 0x40,))
+    values.extend(b"\0" * (max(len(values), byte_cursor, word_cursor) - len(values)))
+    values.extend(b"\0" * (_align(len(values)) - len(values)))
     header = bytearray(
         (
             SIGNATURE,

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from server.sega.data import Data
 from server.konami.protocol import EamuseInfo, EamuseResponse
+from server.sega.data import Data
 
 from .helpers import attr, child, item, scalar
 from .repository import PopnRepository

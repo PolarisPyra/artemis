@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-
 WINDOW_SIZE = 0x1000
 WINDOW_MASK = WINDOW_SIZE - 1
 

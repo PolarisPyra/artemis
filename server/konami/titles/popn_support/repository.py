@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from copy import deepcopy
 
 from server.sega.data import Data
@@ -17,18 +18,33 @@ class PopnRepository:
 
     async def profile(self, refid: str) -> dict:
         profile = await self.data.konami.get_profile(refid)
+        should_save = False
         if profile is None:
+            profile = await self.data.konami.get_document(refid, self.game_code, "profile")
+            should_save = profile is not None
+        if profile is None and self.game_code != self.profile_code:
             profile = await self.data.konami.get_document(
                 refid, self.profile_code, "profile"
             )
-            if profile is not None:
-                await self.data.konami.put_profile(refid, profile)
-        return profile or {
-            "collection": "profile",
-            "name": "ゲスト",
-            "friendId": "000000000000",
-            "dataVersion": 2,
-        }
+            should_save = profile is not None
+        if profile is None:
+            return {
+                "collection": "profile",
+                "name": "ゲスト",
+                "friendId": self._friend_id(refid),
+                "dataVersion": 2,
+            }
+        if not profile.get("friendId"):
+            profile["friendId"] = self._friend_id(refid)
+            should_save = True
+        if should_save:
+            await self.data.konami.put_profile(refid, profile)
+        return profile
+
+    @staticmethod
+    def _friend_id(refid: str) -> str:
+        value = int(hashlib.sha256(f"friend:{refid}".encode()).hexdigest()[:12], 16)
+        return f"{value % 1_000_000_000_000:012d}"
 
     async def save_profile(self, refid: str, profile: dict) -> None:
         await self.data.konami.put_profile(refid, profile)
@@ -54,7 +70,12 @@ class PopnRepository:
         )
 
     async def scores(self, refid: str, version: str, force_version: bool = False) -> dict:
-        versions = [version] if force_version else [f"v{i}" for i in range(19, 28)]
+        sharing_enabled = self.data.config.konami.enable_score_sharing
+        versions = (
+            [version]
+            if force_version or not sharing_enabled
+            else [f"v{i}" for i in range(19, 28)]
+        )
         merged = {"collection": "scores", "version": version, "scores": {}}
         for selected_version in versions:
             document = await self.data.konami.get_scores(refid, selected_version)
@@ -117,9 +138,15 @@ class PopnRepository:
         rivalid = str(rivalid)
         if not refid or not rivalid:
             return False
-        rival_profile = await self.data.konami.get_document(
-            rivalid, self.game_code, "profile"
-        )
+        rival_profile = await self.data.konami.get_profile(rivalid)
+        if rival_profile is None:
+            rival_profile = await self.data.konami.get_document(
+                rivalid, self.game_code, "profile"
+            )
+        if rival_profile is None and self.game_code != self.profile_code:
+            rival_profile = await self.data.konami.get_document(
+                rivalid, self.profile_code, "profile"
+            )
         if rival_profile is None:
             return False
         rivals = await self.rivals(refid)

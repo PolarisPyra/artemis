@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from collections import OrderedDict
 import re
+from collections import OrderedDict
 from xml.etree import ElementTree
-from xml.sax.saxutils import escape as escape_xml, quoteattr
+from xml.sax.saxutils import escape as escape_xml
+from xml.sax.saxutils import quoteattr
 
 
 def _add(parent: dict, name: str, value: object) -> None:
@@ -66,8 +67,8 @@ def _decode_typed_content(value: dict) -> None:
         try:
             for item in content.split():
                 if type_name in ("float", "double", "f", "d") or type_name.endswith(
-                    "f"
-                ) or type_name.endswith("d"):
+                    ("f", "d")
+                ):
                     converted.append(float(item))
                 elif type_name == "bool" or type_name.endswith("b"):
                     converted.append(1 if item.lower() in ("1", "true") else 0)
@@ -79,7 +80,7 @@ def _decode_typed_content(value: dict) -> None:
 
 
 def detect_xml_encoding(raw: bytes) -> str:
-    declaration = re.match(rb"\s*<\?xml[^>]+encoding=['\"]([^'\"]+)", raw[:256], re.I)
+    declaration = re.match(rb"\s*<\?xml[^>]+encoding=['\"]([^'\"]+)", raw[:256], re.IGNORECASE)
     if declaration is None:
         return "utf-8"
     value = declaration.group(1).decode("ascii", errors="ignore").lower()

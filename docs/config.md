@@ -58,7 +58,7 @@
   e-amusement service discovery advertises the public URL instead of port `5730`.
 - `enable_force_unlock`: Unlocks Pop'n songs in returned profiles. Default `True` (`popn_force_unlock` is accepted as a legacy alias)
 - `enable_score_sharing`: Merges Pop'n scores across stored versions when reading. Default `True`
-- `ping_ip`: Reachable address used in the e-amusement keepalive URL. Default `127.0.0.1`
+- `ping_ip`: Reachable address used in the e-amusement keepalive URL. Default `127.0.0.1`; for remote cabinets, Artemis automatically falls back to the advertised server host when this remains loopback.
 - `matching_port`: Port reported for facility matching. Default `5700`
 - `enable_paseli`: Enables PASELI in `pcbtracker.alive`. Default `True`
 - `maintenance_mode`: Adds system maintenance messages to `message.get`. Default `False`

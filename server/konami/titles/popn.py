@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
-from server.sega.config import ArtemisConfig
-from server.sega.data import Data
 from server.konami.protocol import EamuseInfo, EamuseResponse
 from server.konami.router import EamuseRouter
+from server.sega.config import ArtemisConfig
+from server.sega.data import Data
 
-from .repository import PopnRepository
-from .hello import PopnHelloHandler
-from .versions import SPECS, PopnVersionHandler
+from .popn_support.hello import PopnHelloHandler
+from .popn_support.helpers import item
+from .popn_support.repository import PopnRepository
+from .popn_support.versions import SPECS, PopnVersionHandler
 
 
 class PopnRoutes:
@@ -21,6 +22,31 @@ class PopnRoutes:
     """
 
     game_codes = ("K39", "L39", "M39", "JMP")
+
+    @staticmethod
+    def service_modules(game_code: str, model: str = "") -> tuple[str, ...]:
+        """Return the title modules advertised by ``services.get``.
+
+        Asphyxia's Pop'n plugin adds these modules dynamically during service
+        discovery.  The native adapter has no external plugin loader, so it
+        must expose the equivalent list itself.
+        """
+        if game_code == "JMP":
+            return ("game",)
+        return (
+            "game",
+            "info",
+            "info22",
+            "info23",
+            "info24",
+            "player",
+            "playerdata",
+            "player22",
+            "player23",
+            "player24",
+            "lobby24",
+            "loctest24",
+        )
 
     def __init__(self, cfg: ArtemisConfig) -> None:
         self.cfg = cfg
@@ -152,6 +178,7 @@ class PopnRoutes:
                 "write_course": "write",
                 "read_score": "read_score",
                 "shop": "buy",
+                "shop_buy": "buy",
                 "read_option": "read",
                 "tsumtsum": "success",
             }
@@ -159,14 +186,14 @@ class PopnRoutes:
                 handler = (
                     self._modern("v21", handler_name)
                     if handler_name != "success"
-                    else self.unhandled
+                    else self.player_event
                 )
                 router.add(code, "player", method, handler)
-            router.fallback(code, self.unhandled)
+            router.add(code, "game", "e", self.game_event)
+            router.add(code, "game", "s", self.game_event)
 
         for method in ("common", "shop", "new", "load", "load_m", "save", "save_m"):
             router.add("JMP", "game", method, self._hello(method))
-        router.fallback("JMP", self.unhandled)
         for game_code in self.game_codes:
             router.webui(game_code, self.webui_event)
 
@@ -227,5 +254,12 @@ class PopnRoutes:
             return "v25"
         return "v24"
 
-    async def unhandled(self, info: EamuseInfo, data: dict, response: EamuseResponse):
-        response.status = 0
+    async def player_event(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ):
+        response.content = {"result": item("s32", 0)}
+
+    async def game_event(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ):
+        response.content = {"result": item("s32", 0)}

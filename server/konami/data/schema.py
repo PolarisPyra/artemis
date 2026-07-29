@@ -8,9 +8,17 @@ yet been moved to the normalized tables.
 
 import hashlib
 import time
-from typing import Optional
 
-from sqlalchemy import Column, Integer, MetaData, String, Table, Text, UniqueConstraint, func
+from sqlalchemy import (
+    Column,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.dialects.mysql import BIGINT as MySQLBigInteger
 from sqlalchemy.types import JSON
 
@@ -335,7 +343,7 @@ class KonamiData(BaseData):
 
     async def _userid(
         self, refid_value: str, game: str = GAME, version: int = 0, create: bool = True
-    ) -> Optional[int]:
+    ) -> int | None:
         result = await self.execute(
             refid.select().where(
                 (refid.c.game == game)
@@ -375,7 +383,7 @@ class KonamiData(BaseData):
         )
         return userid
 
-    async def get_profile(self, refid_value: str) -> Optional[dict]:
+    async def get_profile(self, refid_value: str) -> dict | None:
         result = await self.execute(
             profile.select().where(profile.c.refid == refid_value)
         )
@@ -404,9 +412,21 @@ class KonamiData(BaseData):
         statement = insert(extid).values(**values)
         await self.execute(statement.on_duplicate_key_update(userid=userid))
 
+    async def get_extid(self, refid_value: str, game: str) -> int | None:
+        userid = await self._userid(refid_value, create=False)
+        if userid is None:
+            return None
+        result = await self.execute(
+            extid.select().where(
+                (extid.c.game == game) & (extid.c.userid == userid)
+            )
+        )
+        row = result.fetchone() if result is not None else None
+        return int(row["extid"]) if row is not None else None
+
     async def get_achievement_document(
         self, refid_value: str, game: str, version: str
-    ) -> Optional[dict]:
+    ) -> dict | None:
         result = await self.execute(
             achievement.select().where(
                 (achievement.c.refid == refid_value)

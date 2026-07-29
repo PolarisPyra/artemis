@@ -6,9 +6,9 @@ profile, params, scores, and achievements collections used by Pop'n.
 
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass
 from datetime import date
-import random
 from typing import Any
 
 from server.konami.protocol import EamuseInfo, EamuseResponse
@@ -16,7 +16,6 @@ from server.konami.protocol import EamuseInfo, EamuseResponse
 from .defaults import DEFAULT_FIELDS
 from .helpers import array, attr, child, content, item, scalar
 from .repository import PopnRepository
-
 
 CLEAR_TO_MEDAL = {
     100: 1,
@@ -351,7 +350,7 @@ class PopnVersionHandler:
             if self.spec.version == "v24":
                 params = await self.repo.params(refid, self.spec.version)
                 params.setdefault("params", {})["mission_date"] = (
-                    f"{date.today().year}-{date.today().month - 1}-{date.today().day}"
+                    f"{date.today().year}-{date.today().month - 1}-{date.today().day}"  # noqa: DTZ011
                 )
                 await self.repo.save_params(refid, self.spec.version, params)
         profile = await self.repo.profile(refid)
@@ -980,7 +979,7 @@ class PopnVersionHandler:
                 )
             if self.spec.version == "v24":
                 mission_date = (
-                    f"{date.today().year}-{date.today().month - 1}-{date.today().day}"
+                    f"{date.today().year}-{date.today().month - 1}-{date.today().day}"  # noqa: DTZ011
                 )
                 params = await self.repo.params(refid, self.spec.version)
                 saved_date = params.setdefault("params", {}).setdefault(

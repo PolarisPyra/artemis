@@ -3,23 +3,33 @@
 from __future__ import annotations
 
 import hashlib
+import ipaddress
+import logging
 import time
+from collections.abc import Callable, Iterable
+from urllib.parse import urlsplit
 
 from server.sega.config import ArtemisConfig
 from server.sega.data import Data
+
 from .protocol import EamuseInfo, EamuseResponse
 from .router import EamuseRouter
+
+logger = logging.getLogger("konami")
 
 
 class ArtemisServices:
     """Register the protocol-level services provided by Artemis."""
 
-    def __init__(self, cfg: ArtemisConfig, game_codes: tuple[str, ...] = ()) -> None:
+    def __init__(
+        self,
+        cfg: ArtemisConfig,
+        game_codes: tuple[str, ...] = (),
+        module_provider: Callable[[str, str], Iterable[str]] | None = None,
+    ) -> None:
         self.data = Data(cfg)
         self.game_codes = game_codes
-        self.profile_code = (
-            "M39" if "M39" in game_codes else game_codes[0] if game_codes else ""
-        )
+        self.module_provider = module_provider
 
     def register(self, router: EamuseRouter) -> None:
         for game_code in self.game_codes:
@@ -40,9 +50,18 @@ class ArtemisServices:
             router.add(game_code, "info", "common", self.info_common)
             router.add(game_code, "loc", "test_log", self.success)
             router.add(game_code, "pcbtracker", "alive", self.pcbtracker_alive)
+            router.add(game_code, "pcbtracker", "keepalive", self.pcbtracker_alive)
             router.add(game_code, "eacoin", "checkout", self.success)
             router.add(game_code, "eacoin", "checkin", self.eacoin_checkin)
             router.add(game_code, "eacoin", "consume", self.eacoin_consume)
+            router.add(game_code, "eacoin", "getpricelist", self.eacoin_pricelist)
+            router.add(game_code, "eacoin", "getlog", self.success)
+            router.add(game_code, "eacoin", "opcheckin", self.eacoin_checkin)
+            router.add(game_code, "eacoin", "opcheckout", self.success)
+            router.add(game_code, "eacoin", "opchpass", self.success)
+            router.add(game_code, "pkglist", "nr_entry", self.package_list)
+            for sidmgr_method in ("branch", "close", "create", "open", "touch"):
+                router.add(game_code, "sidmgr", sidmgr_method, self.success)
             router.add(game_code, "posevent", "income", self.posevent_income)
             router.add(
                 game_code,
@@ -69,41 +88,46 @@ class ArtemisServices:
             router.add(game_code, "cardmng", "getkeepspan", self.card_getkeepspan)
             router.add(game_code, "cardmng", "authpass", self.card_authpass)
             router.add(game_code, "cardmng", "bindmodel", self.card_bindmodel)
-            router.fallback(game_code, self.success)
 
     async def services_get(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ):
-        host = info.host or "localhost"
+        host = info.host or self.data.config.konami.hostname or "localhost"
         if not info.proxy and ":" not in host:
             host = f"{host}:{self.data.config.konami.port}"
+        keepalive_host = self._keepalive_host(info, host)
+        modules = [
+            "cardmng",
+            "facility",
+            "message",
+            "numbering",
+            "package",
+            "pcbevent",
+            "pcbtracker",
+            "pkglist",
+            "posevent",
+            "userdata",
+            "userid",
+            "eacoin",
+            "local",
+            "local2",
+            "local3",
+            "lobby",
+            "lobby2",
+            "dlstatus",
+            "netlog",
+            "sidmgr",
+            "globby",
+        ]
+        if self.module_provider is not None:
+            modules.extend(self.module_provider(info.game_code, info.model))
+        # Preserve declaration order while avoiding duplicate service entries.
+        modules = list(dict.fromkeys(modules))
         response.content = {
             "@attr": {"expire": "10800", "method": "get", "mode": "operation"},
             "item": [
                 {"@attr": {"name": name, "url": f"{info.protocol}://{host}"}}
-                for name in (
-                    "cardmng",
-                    "facility",
-                    "message",
-                    "numbering",
-                    "package",
-                    "pcbevent",
-                    "pcbtracker",
-                    "pkglist",
-                    "posevent",
-                    "userdata",
-                    "userid",
-                    "eacoin",
-                    "local",
-                    "local2",
-                    "local3",
-                    "lobby",
-                    "lobby2",
-                    "dlstatus",
-                    "netlog",
-                    "sidmgr",
-                    "globby",
-                )
+                for name in modules
             ],
         }
         response.content["item"][:0] = [
@@ -111,10 +135,45 @@ class ArtemisServices:
             {
                 "@attr": {
                     "name": "keepalive",
-                    "url": f"{info.protocol}://{host}/keepalive?pa={self.data.config.konami.ping_ip}&ia={self.data.config.konami.ping_ip}&ga={self.data.config.konami.ping_ip}&ma={self.data.config.konami.ping_ip}&t1=2&t2=10",
+                    "url": f"http://{keepalive_host}/core/keepalive?pa={keepalive_host}&ia={keepalive_host}&ga={keepalive_host}&ma={keepalive_host}&t1=2&t2=10",
                 }
             },
         ]
+        logger.info(
+            "services advertise game=%s url=%s modules=%s",
+            info.game_code,
+            f"{info.protocol}://{host}",
+            len(modules) + 2,
+        )
+
+    def _keepalive_host(self, info: EamuseInfo, advertised_host: str) -> str:
+        """Choose a keepalive endpoint reachable from the cabinet.
+
+        The historical default is loopback, which is correct for a local
+        cabinet but makes a remote client stop after ``services.get``: it
+        contacts its own loopback interface instead of Artemis.  Preserve an
+        explicitly configured non-loopback target and local behavior.
+        """
+        configured = str(self.data.config.konami.ping_ip or "127.0.0.1")
+        try:
+            configured_ip = ipaddress.ip_address(configured)
+        except ValueError:
+            return configured
+        if not configured_ip.is_loopback or not info.client_ip:
+            return configured
+        try:
+            client_ip = ipaddress.ip_address(info.client_ip)
+        except ValueError:
+            return configured
+        if client_ip.is_loopback:
+            return configured
+        advertised = advertised_host or info.host or self.data.config.konami.hostname
+        if not advertised:
+            return configured
+        if not info.proxy:
+            return advertised
+        host = urlsplit(f"//{advertised}").hostname
+        return host or configured
 
     async def facility_get(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
@@ -177,7 +236,7 @@ class ArtemisServices:
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ):
         """Report that no package updates are available."""
-        response.content = {"@attr": {"expire": "600"}}
+        response.content = {"@attr": {"expire": "1200"}}
 
     async def tax_get_phase(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
@@ -235,6 +294,14 @@ class ArtemisServices:
             "balance": {"@attr": {"__type": "s32"}, "@content": [88410]},
         }
 
+    async def eacoin_pricelist(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ):
+        response.content = {
+            "@attr": {"expire": "1200"},
+            "item": [],
+        }
+
     async def success(self, info: EamuseInfo, data: dict, response: EamuseResponse):
         response.status = 0
 
@@ -262,17 +329,14 @@ class ArtemisServices:
     ):
         cardid = data.get("@attr", {}).get("cardid", "")
         refid = self._refid(cardid)
-        profile = await self.data.konami.get_profile(refid)
-        if profile is None:
-            profile = await self.data.konami.get_document(refid, self.profile_code, "profile")
-            if profile is not None:
-                await self.data.konami.put_profile(refid, profile)
+        profile = await self._card_profile(refid, info.game_code)
         if profile is None or profile.get("pin", "unset") == "unset":
             response.status = 112
             return
+        bound = await self.data.konami.get_extid(refid, info.game_code)
         response.content = {
             "@attr": {
-                "binded": "1",
+                "binded": "1" if bound is not None else "0",
                 "dataid": refid,
                 "ecflag": "1",
                 "expired": "0",
@@ -286,14 +350,12 @@ class ArtemisServices:
     ):
         cardid = data.get("@attr", {}).get("cardid", "")
         refid = self._refid(cardid)
-        profile = await self.data.konami.get_profile(refid)
-        if profile is None:
-            profile = await self.data.konami.get_document(refid, self.profile_code, "profile")
+        profile = await self._card_profile(refid, info.game_code)
         if profile is None:
             profile = {
                 "collection": "profile",
                 "name": "ゲスト",
-                "friendId": "000000000000",
+                "friendId": _friend_id(refid),
                 "dataVersion": 2,
                 "pin": data.get("@attr", {}).get("passwd", "unset"),
             }
@@ -305,8 +367,8 @@ class ArtemisServices:
             )
         await self.data.konami.put_profile(refid, profile)
         await self.data.konami.put_card(cardid, refid)
-        extid = self.data.konami._stable_id(f"extid:{self.profile_code}:{refid}") % 100000000
-        await self.data.konami.put_extid(refid, self.profile_code, extid)
+        extid = self.data.konami._stable_id(f"extid:{info.game_code}:{refid}") % 100000000
+        await self.data.konami.put_extid(refid, info.game_code, extid)
         response.content = {"@attr": {"dataid": refid, "refid": refid}}
 
     async def card_authpass(
@@ -325,7 +387,28 @@ class ArtemisServices:
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ):
         refid = data.get("@attr", {}).get("refid", "")
+        if refid:
+            profile = await self._card_profile(refid, info.game_code)
+            if profile is not None:
+                extid = self.data.konami._stable_id(
+                    f"extid:{info.game_code}:{refid}"
+                ) % 100000000
+                await self.data.konami.put_extid(refid, info.game_code, extid)
         response.content = {"@attr": {"dataid": refid}}
+
+    async def _card_profile(self, refid: str, game_code: str) -> dict | None:
+        """Read and migrate a card profile across Pop'n version namespaces."""
+        profile = await self.data.konami.get_profile(refid)
+        if profile is not None:
+            return profile
+        for namespace in dict.fromkeys((game_code, "M39")):
+            profile = await self.data.konami.get_document(
+                refid, namespace, "profile"
+            )
+            if profile is not None:
+                await self.data.konami.put_profile(refid, profile)
+                return profile
+        return None
 
     async def card_getdatalist(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
@@ -364,3 +447,8 @@ def _ip4(value: str) -> int:
         return result
     except (TypeError, ValueError):
         return 0
+
+
+def _friend_id(refid: str) -> str:
+    value = int(hashlib.sha256(f"friend:{refid}".encode()).hexdigest()[:12], 16)
+    return f"{value % 1_000_000_000_000:012d}"
