@@ -185,7 +185,7 @@ class ArtemisServices:
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ):
         response.content = {
-            "@attr": {"expire": "86400"},
+            "@attr": {"expire": "600"},
             "location": {
                 "id": _item("str", "ea"),
                 "country": _item("str", "JP"),
@@ -227,6 +227,7 @@ class ArtemisServices:
                     "konamiid": _item("str", "ARTEMIS"),
                     "eagate": _item("str", "ARTEMIS"),
                 },
+                "eapass": {"valid": _item("u16", 365)},
             },
         }
 
