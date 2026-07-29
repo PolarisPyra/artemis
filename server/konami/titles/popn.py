@@ -2443,7 +2443,7 @@ class PopnRoutes:
                     "read_score",
                     "logout",
                 ):
-                    router.add(code, "player", method, self._modern("v24", method))
+                    router.add(code, "player", method, self._modern_player("v24", method))
                 for method in ("end", "tsumtsum", "read_option"):
                     router.add(code, "player", method, self.legacy_event)
                 for method in ("boot", "error", "dlstatus", "write"):
@@ -2503,6 +2503,18 @@ class PopnRoutes:
                 self._usaneko_version(info.model) if version == "v24" else version
             )
             await getattr(self._handlers[selected], name)(info, data, response)
+
+        return handler
+
+    def _modern_player(self, version: str, name: str):
+        """Serve the native M39 ``player`` alias with its legacy base node."""
+        modern = self._modern(version, name)
+
+        async def handler(info: EamuseInfo, data: dict, response: EamuseResponse):
+            await modern(info, data, response)
+            account = response.content.get("account")
+            if isinstance(account, dict):
+                response.content.setdefault("base", account)
 
         return handler
 
