@@ -83,6 +83,25 @@ class PopnHiCheers(PopnJamFizz):
                 if not any(child.name == name for child in config.children):
                     config.children.insert(disp_setting + offset, XMLNode(name, field_type, 0))
 
+            # The M39 psmap reads config properties in this order.  The
+            # inherited UniLab response has disp_setting before the ms_*
+            # fields, which makes Hi Cheers consume the following value under
+            # the wrong property name.
+            config_order = (
+                "mode", "chara", "music", "sheet", "category", "sub_category",
+                "chara_category", "ms_banner_disp", "ms_down_info", "ms_side_info",
+                "ms_raise_type", "ms_rnd_type", "banner_sort", "disp_setting",
+                "h_vol", "hiscore_disp", "lane_type", "brightness", "key_beam",
+                "lane_line", "course_id", "course_folder",
+            )
+            ordered = []
+            for name in config_order:
+                child = next((child for child in config.children if child.name == name), None)
+                if child is not None:
+                    ordered.append(child)
+            ordered.extend(child for child in config.children if child.name not in config_order)
+            config.children = ordered
+
         option = next((child for child in root.children if child.name == "option"), None)
         if option is not None:
             guide_se = next(
