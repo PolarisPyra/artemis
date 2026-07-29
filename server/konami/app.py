@@ -167,7 +167,7 @@ class KonamiServlet:
             result.status = 1
             result.content = {}
         self.logger.info(
-            "%s %s %s path=%s model=%s client=%s route=%s status=%s",
+            "%s %s %s path=%s model=%s client=%s route=%s status=%s compress=%s encrypt=%s",
             module,
             method,
             "kbin" if kencoded else "xml",
@@ -176,6 +176,8 @@ class KonamiServlet:
             info.client_ip or "-",
             "matched" if matched else "unmatched",
             result.status,
+            compressed,
+            encrypted,
         )
         if not result.content:
             result.content = {}

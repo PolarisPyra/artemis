@@ -5,7 +5,6 @@ from __future__ import annotations
 import hashlib
 import ipaddress
 import logging
-import time
 from collections.abc import Callable, Iterable
 from urllib.parse import urlsplit
 
@@ -198,7 +197,7 @@ class ArtemisServices:
         }
 
     async def message_get(self, info: EamuseInfo, data: dict, response: EamuseResponse):
-        response.content = {"@attr": {"expire": "300"}}
+        response.content = {"@attr": {"expire": "600"}}
         if self.data.config.konami.maintenance_mode:
             response.content["item"] = [
                 {"@attr": {"start": "0", "end": "86400", "name": "sys.mainte"}},
@@ -209,7 +208,7 @@ class ArtemisServices:
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ):
         """Report that no package updates are available."""
-        response.content = {"@attr": {"expire": "1200"}}
+        response.content = {"@attr": {"expire": "600"}}
 
     async def pcbtracker_alive(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
@@ -217,10 +216,7 @@ class ArtemisServices:
         response.content = {
             "@attr": {
                 "ecenable": "1" if self.data.config.konami.enable_paseli else "0",
-                "eclimit": "0",
-                "expire": "1200",
-                "limit": "0",
-                "time": str(int(time.time())),
+                "expire": "600",
             }
         }
 
