@@ -136,7 +136,7 @@ class ArtemisServices:
                 for name in modules
             ],
         }
-        response.content["item"][:0] = [
+        response.content["item"].extend([
             {"@attr": {"name": "ntp", "url": "ntp://pool.ntp.org/"}},
             {
                 "@attr": {
@@ -144,7 +144,7 @@ class ArtemisServices:
                     "url": f"{info.protocol}://{keepalive_host}/core/keepalive?pa={keepalive_host}&ia={keepalive_host}&ga={keepalive_host}&ma={keepalive_host}&t1=2&t2=10",
                 }
             },
-        ]
+        ])
         logger.info(
             "services advertise game=%s url=%s modules=%s",
             info.game_code,

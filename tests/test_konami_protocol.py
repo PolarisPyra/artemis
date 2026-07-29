@@ -538,6 +538,9 @@ def test_services_response_includes_popn_modules():
     names = {item["@attr"]["name"] for item in response.content["item"]}
     assert {"keepalive", "local2", "lobby2"} <= names
     assert "player24" not in names
+    assert response.content["item"][0]["@attr"]["name"] == "cardmng"
+    assert response.content["item"][-2]["@attr"]["name"] == "ntp"
+    assert response.content["item"][-1]["@attr"]["name"] == "keepalive"
     keepalive = next(
         item for item in response.content["item"] if item["@attr"]["name"] == "keepalive"
     )
