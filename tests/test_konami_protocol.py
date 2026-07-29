@@ -129,9 +129,9 @@ def test_popn_m39_runtime_route_aliases_are_registered():
     router = EamuseRouter()
     routes.register(router)
     assert {
-        "game.active", "player24.buy", "player24.read_score",
+        "player24.buy", "player24.read_score",
         "player.read", "player.new", "player.write",
-        "info24.common", "pcb24.boot", "lobby24.getList",
+        "info24.common", "lobby24.getList",
         "info.common", "pcb.boot", "loctest24.log",
     } <= set(
         router._routes["M39"]
@@ -164,26 +164,29 @@ def test_popn_m39_player_boot_payload_round_trip_shape():
         async def params(self, refid, version):
             return {"params": {}}
 
-    handler = PopnVersionHandler(Repo(), SPECS["v21"])
+        async def achievements(self, refid, version, default):
+            return default
+
+    handler = PopnVersionHandler(Repo(), SPECS["v27"])
     info = EamuseInfo(
         game_code="M39", module="player", method="new", model="M39:J:D:A:2026041500"
     )
     response = EamuseResponse(root_name="player")
     asyncio.run(handler.new(info, {"@attr": {"ref_id": "REFID", "name": "PLAYER"}}, response))
     assert response.status == 0
-    assert response.content["base"]["name"]["@attr"]["__type"] == "str"
-    assert response.content["hiscore"]["@attr"]["__type"] == "bin"
+    assert response.content["account"]["name"]["@attr"]["__type"] == "str"
+    assert response.content["music"] == []
 
 
-def test_popn_old_versions_use_the_popn_title_module():
+def test_popn_only_exposes_hi_cheers():
     from server.konami.router import EamuseRouter
     from server.konami.titles.popn import PopnRoutes
 
     routes = PopnRoutes.__new__(PopnRoutes)
     router = EamuseRouter()
     routes.register(router)
-    assert {"G15", "H16", "I17", "J39"} <= set(PopnRoutes.game_codes)
-    assert {"game.get", "playerdata.get", "playerdata.set"} <= set(router._routes["J39"])
+    assert PopnRoutes.game_codes == ("M39",)
+    assert {"player.read", "player.write", "player24.read"} <= set(router._routes["M39"])
 
 
 def test_services_response_includes_popn_modules():

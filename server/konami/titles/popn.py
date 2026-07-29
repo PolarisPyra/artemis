@@ -81,255 +81,6 @@ def walk_set(node: dict, path: str, value: Any) -> None:
 
 
 DEFAULT_FIELDS = {
-    "v20": [
-        ("mode", "u8", "base", 0, False),
-        ("button", "s8", "base", 0, False),
-        ("last_play_flag", "s8", "base", -1, False),
-        ("medal_and_friend", "u8", "base", 0, False),
-        ("category", "s8", "base", -1, False),
-        ("sub_category", "s8", "base", -1, False),
-        ("chara", "s16", "base", -1, False),
-        ("chara_category", "s8", "base", -1, False),
-        ("collabo", "u8", "base", 255, False),
-        ("sheet", "u8", "base", 0, False),
-        ("tutorial", "s8", "base", 0, False),
-        ("music_open_pt", "s32", "base", 0, False),
-        ("option", "s32", "base", 0, False),
-        ("music", "s16", "base", -1, False),
-        ("ep", "u16", "base", 0, False),
-        ("sp_color_flg", "s32", "base", [0, 0], True),
-        ("read_news", "s32", "base", 0, False),
-        ("consecutive_days_coupon", "s16", "base", 0, False),
-        ("title", "u8", "player_card", [0, 1], True),
-        ("frame", "u8", "player_card", 0, False),
-        ("base", "u8", "player_card", 0, False),
-        ("seal", "u8", "player_card", [0, 0], True),
-        ("get_title", "s32", "player_card", [0, 0, 0, 0], True),
-        ("get_frame", "s32", "player_card", 0, False),
-        ("get_base", "s32", "player_card", 0, False),
-        ("get_seal", "s32", "player_card", [0, 0], True),
-        ("get_title_ex", "s32", "player_card_ex", 0, False),
-        ("get_frame_ex", "s32", "player_card_ex", 0, False),
-        ("get_base_ex", "s32", "player_card_ex", 0, False),
-        ("get_seal_ex", "s32", "player_card_ex", 0, False),
-        ("sp", "s32", "sp_data", 0, False),
-        ("reflec", "s8", "reflec_data", [0, 0], True),
-        ("genre", "s8", "navigate", 0, False),
-        ("image", "s8", "navigate", 0, False),
-        ("level", "s8", "navigate", 0, False),
-        ("ojama", "s8", "navigate", 0, False),
-        ("limit_num", "s16", "navigate", 0, False),
-        ("button__1", "s8", "navigate", 0, False),
-        ("life", "s8", "navigate", 0, False),
-        ("progress", "s16", "navigate", 0, False),
-    ],
-    "v21": [
-        ("mode", "u8", "base", 0, False),
-        ("button", "s8", "base", 0, False),
-        ("last_play_flag", "s8", "base", -1, False),
-        ("medal_and_friend", "u8", "base", 0, False),
-        ("category", "s8", "base", -1, False),
-        ("sub_category", "s8", "base", -1, False),
-        ("chara", "s16", "base", -1, False),
-        ("chara_category", "s8", "base", -1, False),
-        ("sheet", "u8", "base", 0, False),
-        ("tutorial", "s8", "base", 0, False),
-        ("music_open_pt", "s8", "base", 0, False),
-        ("option", "s32", "base", 0, False),
-        ("music", "s16", "base", -1, False),
-        ("ep", "u16", "base", 0, False),
-        ("sp_color_flg", "s32", "base", [0, 0], True),
-        ("read_news", "s32", "base", 0, False),
-        ("consecutive_days_coupon", "s16", "base", 0, False),
-        ("gitadora_point", "u16", "base", [2000, 2000, 2000], True),
-        ("gitadora_select", "u8", "base", 2, False),
-        ("sp", "s32", "sp_data", 0, False),
-        ("point", "u16", "zoo", [0, 0, 0, 0, 0], True),
-        ("music_list__2", "s32", "zoo", [0, 0], True),
-        ("today_play_flag", "s8", "zoo", [0, 0, 0, 0], True),
-        ("hair", "u8", "avatar", 0, False),
-        ("face", "u8", "avatar", 0, False),
-        ("body", "u8", "avatar", 0, False),
-        ("effect", "u8", "avatar", 0, False),
-        ("object", "u8", "avatar", 0, False),
-        ("comment", "u8", "avatar", [0, 0], True),
-        ("get_hair", "s32", "avatar", [0, 0], True),
-        ("get_face", "s32", "avatar", [0, 0], True),
-        ("get_body", "s32", "avatar", [0, 0], True),
-        ("get_effect", "s32", "avatar", [0, 0], True),
-        ("get_object", "s32", "avatar", [0, 0], True),
-        ("get_comment_over", "s32", "avatar", [0, 0, 0], True),
-        ("get_comment_under", "s32", "avatar", [0, 0, 0], True),
-        ("get_hair__1", "s32", "avatar_add", [0, 0], True),
-        ("get_face__1", "s32", "avatar_add", [0, 0], True),
-        ("get_body__1", "s32", "avatar_add", [0, 0], True),
-        ("get_effect__1", "s32", "avatar_add", [0, 0], True),
-        ("get_object__1", "s32", "avatar_add", [0, 0], True),
-        ("get_comment_over__1", "s32", "avatar_add", [0, 0], True),
-        ("get_comment_under__1", "s32", "avatar_add", [0, 0], True),
-        ("new_face", "s32", "avatar_add", [0, 0], True),
-        ("new_body", "s32", "avatar_add", [0, 0], True),
-        ("new_effect", "s32", "avatar_add", [0, 0], True),
-        ("new_object", "s32", "avatar_add", [0, 0], True),
-        ("new_comment_over", "s32", "avatar_add", [0, 0], True),
-        ("new_comment_under", "s32", "avatar_add", [0, 0], True),
-    ],
-    "v22": [
-        ("tutorial", "s8", "account", 0, False),
-        ("read_news", "s16", "account", 0, False),
-        ("hispeed", "s16", "option", 0, False),
-        ("popkun", "u8", "option", 0, False),
-        ("hidden", "bool", "option", 0, False),
-        ("hidden_rate", "s16", "option", 0, False),
-        ("sudden", "bool", "option", 0, False),
-        ("sudden_rate", "s16", "option", 0, False),
-        ("randmir", "s8", "option", 0, False),
-        ("gauge_type", "s8", "option", 0, False),
-        ("ojama_0", "u8", "option", 0, False),
-        ("ojama_1", "u8", "option", 0, False),
-        ("forever_0", "bool", "option", 0, False),
-        ("forever_1", "bool", "option", 0, False),
-        ("full_setting", "bool", "option", 0, False),
-        ("ep", "u16", "info", 0, False),
-        ("ap", "u16", "info", 0, False),
-        ("effect", "u16", "customize", 0, False),
-        ("hukidashi", "u16", "customize", 0, False),
-        ("font", "u16", "customize", 0, False),
-        ("comment_1", "u16", "customize", 0, False),
-        ("comment_2", "u16", "customize", 0, False),
-        ("mode", "u8", "config", 0, False),
-        ("chara", "s16", "config", -1, False),
-        ("music", "s16", "config", -1, False),
-        ("sheet", "u8", "config", 0, False),
-        ("category", "s8", "config", 1, False),
-        ("sub_category", "s8", "config", -1, False),
-        ("chara_category", "s8", "config", -1, False),
-        ("story_id", "s16", "config", -1, False),
-        ("course_id", "s16", "config", -1, False),
-        ("course_folder", "s8", "config", -1, False),
-        ("story_folder", "s8", "config", -1, False),
-        ("ms_banner_disp", "s8", "config", 0, False),
-        ("ms_down_info", "s8", "config", 0, False),
-        ("ms_side_info", "s8", "config", 0, False),
-        ("ms_raise_type", "s8", "config", 0, False),
-        ("ms_rnd_type", "s8", "config", 0, False),
-    ],
-    "v23": [
-        ("tutorial", "s8", "account", 0, False),
-        ("area_id", "s16", "account", 0, False),
-        ("lumina", "s16", "account", 300, False),
-        ("read_news", "s16", "account", 0, False),
-        ("welcom_pack", "bool", "account", 1, False),
-        ("medal_set", "s16", "account", [0, 0, 0, 0], True),
-        (
-            "nice",
-            "s16",
-            "account",
-            [
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-            ],
-            True,
-        ),
-        (
-            "favorite_chara",
-            "s16",
-            "account",
-            [
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-            ],
-            True,
-        ),
-        ("special_area", "s16", "account", [0, 0, 0, 0, 0, 0, 0, 0], True),
-        ("chocolate_charalist", "s16", "account", [-1, -1, -1, -1, -1], True),
-        ("teacher_setting", "s16", "account", [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], True),
-        ("hispeed", "s16", "option", 0, False),
-        ("popkun", "u8", "option", 0, False),
-        ("hidden", "bool", "option", 0, False),
-        ("hidden_rate", "s16", "option", 0, False),
-        ("sudden", "bool", "option", 0, False),
-        ("sudden_rate", "s16", "option", 0, False),
-        ("randmir", "s8", "option", 0, False),
-        ("gauge_type", "s8", "option", 0, False),
-        ("ojama_0", "u8", "option", 0, False),
-        ("ojama_1", "u8", "option", 0, False),
-        ("forever_0", "bool", "option", 0, False),
-        ("forever_1", "bool", "option", 0, False),
-        ("full_setting", "bool", "option", 0, False),
-        ("judge", "u8", "option", 0, False),
-        ("ep", "u16", "info", 0, False),
-        ("effect_left", "u16", "customize", 0, False),
-        ("effect_center", "u16", "customize", 0, False),
-        ("effect_right", "u16", "customize", 0, False),
-        ("hukidashi", "u16", "customize", 0, False),
-        ("comment_1", "u16", "customize", 0, False),
-        ("comment_2", "u16", "customize", 0, False),
-        ("mode", "u8", "config", 0, False),
-        ("chara", "s16", "config", -1, False),
-        ("music", "s16", "config", -1, False),
-        ("sheet", "u8", "config", 0, False),
-        ("category", "s8", "config", -1, False),
-        ("sub_category", "s8", "config", -1, False),
-        ("chara_category", "s8", "config", -1, False),
-        ("course_id", "s16", "config", 0, False),
-        ("course_folder", "s8", "config", 0, False),
-        ("ms_banner_disp", "s8", "config", 0, False),
-        ("ms_down_info", "s8", "config", 0, False),
-        ("ms_side_info", "s8", "config", 0, False),
-        ("ms_raise_type", "s8", "config", 0, False),
-        ("ms_rnd_type", "s8", "config", 0, False),
-        ("enemy_medal", "s16", "event", 0, False),
-        ("hp", "s16", "event", 0, False),
-        ("stamp_id", "s16", "stamp", 0, False),
-        ("cnt", "s16", "stamp", 0, False),
-    ],
     "v24": [
         ("play_id", "s32", "account", 0, False),
         ("start_type", "s8", "account", 0, False),
@@ -696,61 +447,10 @@ class VersionSpec:
 
 
 SPECS = {
-    "v19": VersionSpec("v19", 1047),
-    "v20": VersionSpec("v20", 1150),
-    "v21": VersionSpec("v21", 1350),
-    "v22": VersionSpec("v22", 1422),
-    "v23": VersionSpec("v23", 1550),
-    "v24": VersionSpec("v24", 1704),
-    "v25": VersionSpec("v25", 1877),
-    "v26": VersionSpec("v26", 2019),
     "v27": VersionSpec("v27", 2188),
 }
 
-EXTRA_V26 = {
-    "card_again_count",
-    "sp_riddles_id",
-    "point",
-    "step",
-    "quest_point",
-    "step_nos",
-    "quest_point_nos",
-}
-EXTRA_V27 = {"lift", "lift_rate", "team_id", "select_battery_id", "today_first_play"}
 PHASES = {
-    "v24": [
-        (0, 11),
-        (1, 2),
-        (2, 2),
-        (3, 4),
-        (4, 1),
-        (5, 0),
-        (6, 1),
-        (7, 1),
-        (8, 2),
-        (9, 2),
-        (10, 15),
-        (11, 1),
-        (12, 2),
-        (13, 1),
-    ],
-    "v25": [
-        (0, 23),
-        (1, 4),
-        (10, 30),
-        (14, 39),
-        (15, 2),
-        (16, 3),
-        (17, 8),
-        (18, 1),
-        (19, 1),
-        (20, 13),
-        (21, 20),
-        (22, 2),
-        (23, 1),
-        (24, 1),
-    ],
-    "v26": [(0, 30), (25, 62), (26, 3), (27, 2), (28, 2), (29, 5), (30, 6)],
     "v27": [
         (0, 6),
         (1, 6),
@@ -1014,179 +714,6 @@ class PopnVersionHandler:
             "name": item("str", profile.get("name", "ゲスト")),
         }
 
-    async def town(
-        self, info: EamuseInfo, data: dict, response: EamuseResponse
-    ) -> None:
-        refid = field(data, "ref_id", "")
-        if not refid:
-            response.status = 1
-            return
-        achievement_docs = await self.repo.documents("achievements", "v19")
-        candidates = [candidate for candidate, _ in achievement_docs]
-        if refid not in candidates:
-            candidates.insert(0, refid)
-        requested_friend = field(data, "gpm_id", None)
-        if requested_friend is not None:
-            for candidate, profile in await self.repo.documents("profile"):
-                if str(profile.get("friendId", "")) == str(requested_friend):
-                    if candidate in candidates:
-                        candidates.remove(candidate)
-                    candidates.insert(0, candidate)
-                    break
-        if scalar(field(data, "is_random", 0), 0) == 1 and candidates:
-            candidates.insert(0, random.choice(candidates))
-            candidates = list(dict.fromkeys(candidates))
-        candidates = candidates[:10]
-        response.content = {
-            "residence": {"@attr": {"id": "0"}},
-            "map": [
-                item(
-                    "bin",
-                    await self._format_town_map(candidate),
-                    residence=str(index),
-                )
-                for index, candidate in enumerate(candidates)
-            ],
-        }
-
-    async def _format_town_map(self, refid: str) -> bytes:
-        profile = await self.repo.profile(refid)
-        params = await self.repo.params(refid, "v19")
-        achievements = await self.repo.achievements(
-            refid,
-            "v19",
-            {
-                "building": [[0] * 8 for _ in range(8)],
-                "base": [0] * 4,
-            },
-        )
-        town = bytearray(180)
-        chara = scalar(params.get("params", {}).get("chara", 0), 0)
-        town[0:2] = chara.to_bytes(2, "little", signed=False)
-        building = achievements.get("building", [[0] * 8 for _ in range(8)])
-        for row in range(min(8, len(building))):
-            values = building[row] if isinstance(building[row], list) else []
-            for column in range(min(8, len(values))):
-                town[42 + row * 8 + column] = scalar(values[column], 0) & 0xFF
-        friend_id = str(profile.get("friendId", ""))[:12].encode("ascii", "replace")
-        town[106 : 106 + len(friend_id)] = friend_id
-        name = str(profile.get("name", "ゲスト")).encode("shift_jis", "replace")[:12]
-        town[119 : 119 + len(name)] = name
-        for index, value in enumerate(achievements.get("base", [0] * 4)[:4]):
-            town[173 + index] = scalar(value, 0) & 0xFF
-        scores = (await self.repo.scores(refid, "v19")).get("scores", {})
-        play_count: dict[int, int] = {}
-        for key, score in scores.items():
-            try:
-                music, sheet = (int(value) for value in key.split(":", 1))
-            except (TypeError, ValueError):
-                continue
-            if music <= self.spec.max_music and sheet not in (0, 7, 8):
-                play_count[music] = play_count.get(music, 0) + int(score.get("cnt", 0))
-        for index, music in enumerate(
-            sorted(play_count, key=play_count.get, reverse=True)[:20]
-        ):
-            town[2 + index * 2 : 4 + index * 2] = int(music).to_bytes(2, "little")
-        return bytes(town)
-
-    async def _write_tunestreet(self, data: dict, response: EamuseResponse) -> None:
-        refid = field(data, "ref_id", "")
-        if not refid:
-            response.status = 1
-            return
-        params = await self.repo.params(refid, "v19")
-        saved = params.setdefault("params", {})
-        for name in (
-            "tp",
-            "play_mode",
-            "chara_num",
-            "option",
-            "last_play_flag",
-            "medal_and_friend",
-            "music_num",
-            "sheet_num",
-            "category_num",
-            "skin_sd_bgm",
-            "skin_sd_se",
-            "skin_tex_cmn",
-            "skin_tex_note",
-        ):
-            value = field(data, name, None)
-            if value is not None:
-                saved[name] = scalar(value, 0)
-        await self.repo.save_params(refid, "v19", params)
-        scores = await self.repo.scores(refid, "v19", force_version=True)
-        for music_node in elements(data, "music"):
-            music = scalar(field(music_node, "music_num", 0), 0)
-            sheet = scalar(field(music_node, "sheet_num", 0), 0)
-            score = scalar(field(music_node, "score", 0), 0)
-            packed = scalar(field(music_node, "data", 0), 0)
-            if music > self.spec.max_music or sheet in (4, 5):
-                continue
-            play_mode = saved.get("play_mode", 0)
-            if play_mode == 4:
-                if sheet in (2, 6, 7):
-                    continue
-                sheet = {0: 1, 1: 2, 3: 3}.get(sheet, sheet)
-            else:
-                sheet = {0: 4, 1: 5, 2: 9, 3: 6, 6: 7, 7: 8}.get(sheet, sheet)
-            shift = {9: 4, 4: 0, 5: 2, 6: 6, 1: 0, 2: 2, 3: 6, 7: 9, 8: 8}.get(sheet, 0)
-            mask = 0x1 if sheet in (7, 8) else 0x3
-            flags = (packed >> shift) & mask
-            clear_type = {0: 100, 1: 500, 2: 800, 3: 1100}.get(flags, 100)
-            self._merge_score(scores, music, sheet, score, clear_type)
-        await self.repo.save_scores(refid, "v19", scores)
-        town = child(data, "town", {})
-        if isinstance(town, dict):
-            achievements = await self.repo.achievements(
-                refid,
-                "v19",
-                {
-                    "collection": "achievements",
-                    "version": "v19",
-                    "apply": [""] * 6,
-                    "bought_flg": [0] * 3,
-                    "build_flg": [0] * 8,
-                    "chara_flg": [0] * 19,
-                    "event_flg": [0] * 4,
-                    "base": [0] * 4,
-                    "building": [[0] * 8 for _ in range(8)],
-                    "play_type": 0,
-                },
-            )
-            town_attrs = town.get("@attr", {})
-            for index in range(6):
-                achievements.setdefault("apply", [""] * 6)[index] = town_attrs.get(
-                    f"apply_gpmid_{index}", ""
-                )
-            for key, count in (
-                ("bought_flg", 3),
-                ("build_flg", 8),
-                ("chara_flg", 19),
-                ("event_flg", 4),
-                ("base", 4),
-            ):
-                raw = town_attrs.get(key)
-                if raw is not None:
-                    achievements[key] = [scalar(x, 0) for x in str(raw).split(",")][
-                        :count
-                    ]
-                    achievements[key] += [0] * (count - len(achievements[key]))
-            for index in range(8):
-                raw = town_attrs.get(f"building_{index}")
-                if raw is not None:
-                    values = [scalar(x, 0) for x in str(raw).split(",")][:8]
-                    achievements.setdefault("building", [[0] * 8 for _ in range(8)])[
-                        index
-                    ] = values + [0] * (8 - len(values))
-            achievements["play_type"] = scalar(town_attrs.get("play_type", 0), 0)
-            await self.repo.save_achievements(refid, "v19", achievements)
-        profile = await self.repo.profile(refid)
-        response.content = {
-            "pref": item("s8", -1),
-            "name": item("str", profile.get("name", "ゲスト")),
-        }
-
     async def write_music(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ) -> None:
@@ -1364,12 +891,6 @@ class PopnVersionHandler:
         response.content = {"friend": friends}
 
     def _modern_phases(self) -> list[tuple[int, int]]:
-        if self.spec.version == "v24":
-            return list(PHASES["v24"])
-        if self.spec.version == "v25":
-            return list(dict.fromkeys(PHASES["v24"] + PHASES["v25"]))
-        if self.spec.version == "v26":
-            return list(dict.fromkeys(PHASES["v24"] + PHASES["v25"] + PHASES["v26"]))
         return list(PHASES["v27"])
 
     async def _profile(
@@ -1699,135 +1220,10 @@ class PopnVersionHandler:
                 event.setdefault("team", [])
                 event.setdefault("battery", [])
 
-    async def _tunestreet_blobs(
-        self, refid: str, profile: dict, params_document: dict
-    ) -> tuple[bytes, bytes, bytes]:
-        params = params_document.get("params", {})
-        achievements = await self.repo.achievements(
-            refid,
-            "v19",
-            {
-                "apply": [""] * 6,
-                "building": [[0] * 8 for _ in range(8)],
-                "base": [0] * 4,
-            },
-        )
-        binary = bytearray(2892)
-        name = str(profile.get("name", "ゲスト")).encode("shift_jis", "replace")[:12]
-        binary[: len(name)] = name
-        friend = str(profile.get("friendId", "000000000000")).encode(
-            "ascii", "replace"
-        )[:12]
-        binary[17 : 17 + len(friend)] = friend
-        for offset, key, width in (
-            (38, "skin_tex_note", 1),
-            (39, "skin_tex_cmn", 1),
-            (40, "skin_sd_bgm", 1),
-            (41, "skin_sd_se", 1),
-            (44, "option", 4),
-            (60, "chara", 2),
-            (62, "music", 2),
-            (64, "sheet", 1),
-            (65, "category", 1),
-        ):
-            value = scalar(params.get(key, 0), 0)
-            binary[offset : offset + width] = value.to_bytes(
-                width, "little", signed=False
-            )
-        mode = scalar(params.get("play_mode", 0), 0)
-        binary[13] = {2: 1, 3: 1, 4: 5, 5: 2, 6: 4}.get(mode, 0)
-        binary[14] = {0: 1, 2: 1, 4: 255, 5: 255, 6: 255}.get(mode, 0)
-        binary[15] = scalar(params.get("last_play_flag", 0), 0) & 0xFF
-        binary[16] = scalar(params.get("medal_and_friend", 0), 0) & 0xFF
-        scores = (await self.repo.scores(refid, "v19")).get("scores", {})
-        hiscore = bytearray(((self.spec.max_music * 7 * 17) + 7) // 8)
-        play_count: dict[int, int] = {}
-        slots = {9: 0, 4: 1, 5: 2, 6: 3, 1: 4, 2: 5, 3: 6}
-        shifts = {9: 4, 4: 0, 5: 2, 6: 6, 1: 0, 2: 2, 3: 6, 7: 9, 8: 8}
-        played = {
-            9: 0x2000,
-            4: 0x0800,
-            5: 0x1000,
-            6: 0x4000,
-            1: 0x0800,
-            2: 0x1000,
-            3: 0x4000,
-            7: 0,
-            8: 0,
-        }
-        flag_values = {
-            100: 0,
-            200: 0,
-            300: 0,
-            400: 1,
-            500: 1,
-            600: 1,
-            700: 1,
-            800: 2,
-            900: 2,
-            1000: 2,
-            1100: 3,
-        }
-        for key, sartemis_data in scores.items():
-            try:
-                music, sheet = (int(value) for value in key.split(":", 1))
-            except (TypeError, ValueError):
-                continue
-            if music > self.spec.max_music or sheet == 0:
-                continue
-            flags = flag_values.get(int(sartemis_data.get("clear_type", 100)), 0)
-            packed = (flags << shifts.get(sheet, 0)) | played.get(sheet, 0)
-            pos = 108 + music * 2
-            if pos + 1 < len(binary):
-                binary[pos] |= packed & 0xFF
-                binary[pos + 1] |= packed >> 8
-            slot = slots.get(sheet)
-            if slot is None:
-                continue
-            bit = (music * 7 + slot) * 17
-            pos = bit // 8
-            packed_score = int(sartemis_data.get("score", 0)) << (bit % 8)
-            if pos + 2 < len(hiscore):
-                hiscore[pos] |= packed_score & 0xFF
-                hiscore[pos + 1] |= packed_score >> 8
-                hiscore[pos + 2] |= packed_score >> 16
-            play_count[music] = play_count.get(music, 0) + int(sartemis_data.get("cnt", 0))
-        for index, music in enumerate(
-            sorted(play_count, key=play_count.get, reverse=True)[:20]
-        ):
-            binary[68 + index * 2 : 70 + index * 2] = int(music).to_bytes(2, "little")
-        town = bytearray(272)
-        town[0:4] = scalar(params.get("tp", 100), 100).to_bytes(
-            4, "little", signed=False
-        )
-        for key, offset, count in (
-            ("bought_flg", 4, 3),
-            ("build_flg", 16, 8),
-            ("chara_flg", 48, 19),
-            ("event_flg", 124, 4),
-        ):
-            for index, value in enumerate(achievements.get(key, [])[:count]):
-                town[offset + index * 4 : offset + index * 4 + 4] = scalar(
-                    value, 0
-                ).to_bytes(4, "little", signed=False)
-        town[140] = scalar(achievements.get("play_type", 0), 0) & 0xFF
-        for index, value in enumerate(achievements.get("apply", [])[:6]):
-            encoded = str(value).encode("shift_jis", "replace")[:12]
-            town[141 + index * 13 : 141 + index * 13 + len(encoded)] = encoded
-        return bytes(binary), bytes(hiscore), bytes(town)
-
     @staticmethod
     def _apply_defaults(player: dict, version: str, params: dict) -> None:
-        fields = (
-            DEFAULT_FIELDS.get("v24", [])
-            if version in ("v24", "v25", "v26", "v27")
-            else DEFAULT_FIELDS.get(version, [])
-        )
+        fields = DEFAULT_FIELDS["v24"]
         for name, type_name, path, default, is_array in fields:
-            if version in ("v24", "v25") and name in EXTRA_V26 | EXTRA_V27:
-                continue
-            if version == "v26" and name in EXTRA_V27:
-                continue
             value = params.get(name, params.get(f"{path}.{name}", default))
             target = player
             for part in path.split("."):
@@ -2015,18 +1411,9 @@ class PopnVersionHandler:
         """
         params = await self.repo.params(refid, self.spec.version)
         values = params.setdefault("params", {})
-        field_source = (
-            "v24"
-            if self.spec.version in ("v24", "v25", "v26", "v27")
-            else self.spec.version
-        )
         allowed = {
-            name.split("__", 1)[0] for name, *_ in DEFAULT_FIELDS.get(field_source, [])
+            name.split("__", 1)[0] for name, *_ in DEFAULT_FIELDS["v24"]
         }
-        if self.spec.version in ("v24", "v25"):
-            allowed.difference_update(EXTRA_V26 | EXTRA_V27)
-        elif self.spec.version == "v26":
-            allowed.difference_update(EXTRA_V27)
 
         def collect(node: Any, path: str = "") -> None:
             if not isinstance(node, dict):
@@ -2281,9 +1668,8 @@ class PopnRoutes:
     in the corresponding Pop'n protocol revisions.
     """
 
-    # These are the Pop'n versions managed by bemaniutils.  JMP was an
-    # Artemis-only bootstrap protocol and is not part of the game contract.
-    game_codes = ("G15", "H16", "I17", "J39", "K39", "L39", "M39")
+    # Only the current Pop'n Hi Cheers cabinet is in scope.
+    game_codes = ("M39",)
 
     @staticmethod
     def service_modules(game_code: str, model: str = "") -> tuple[str, ...]:
@@ -2299,46 +1685,6 @@ class PopnRoutes:
         self.cfg = cfg
         self.data = Data(cfg)
         self._handlers = {
-            "v19": PopnVersionHandler(
-                PopnRepository(self.data, "K39"),
-                SPECS["v19"],
-                cfg.konami.popn_force_unlock,
-            ),
-            "v20": PopnVersionHandler(
-                PopnRepository(self.data, "L39"),
-                SPECS["v20"],
-                cfg.konami.popn_force_unlock,
-            ),
-            "v21": PopnVersionHandler(
-                PopnRepository(self.data, "M39"),
-                SPECS["v21"],
-                cfg.konami.popn_force_unlock,
-            ),
-            "v22": PopnVersionHandler(
-                PopnRepository(self.data, "M39"),
-                SPECS["v22"],
-                cfg.konami.popn_force_unlock,
-            ),
-            "v23": PopnVersionHandler(
-                PopnRepository(self.data, "M39"),
-                SPECS["v23"],
-                cfg.konami.popn_force_unlock,
-            ),
-            "v24": PopnVersionHandler(
-                PopnRepository(self.data, "M39"),
-                SPECS["v24"],
-                cfg.konami.popn_force_unlock,
-            ),
-            "v25": PopnVersionHandler(
-                PopnRepository(self.data, "M39"),
-                SPECS["v25"],
-                cfg.konami.popn_force_unlock,
-            ),
-            "v26": PopnVersionHandler(
-                PopnRepository(self.data, "M39"),
-                SPECS["v26"],
-                cfg.konami.popn_force_unlock,
-            ),
             "v27": PopnVersionHandler(
                 PopnRepository(self.data, "M39"),
                 SPECS["v27"],
@@ -2347,134 +1693,27 @@ class PopnRoutes:
         }
 
     def register(self, router: EamuseRouter) -> None:
-        for code in self.game_codes[4:]:
-            for module, method, handler_name in (
-                ("game", "get", "info"),
-                ("playerdata", "new", "new"),
-                ("playerdata", "conversion", "conversion"),
-                ("playerdata", "get", "read"),
-                ("playerdata", "set", "write"),
-                ("playerdata", "friend", "friend"),
-                ("playerdata", "town", "town"),
-                ("playerdata", "expire", "expire"),
-                ("playerdata", "logout", "logout"),
-            ):
-                router.add(code, module, method, self._classic(handler_name))
-            router.add(code, "game", "active", self.legacy_event)
-
-            if code == "M39":
-                router.add(code, "game", "taxphase", self.legacy_event)
-
-            for version_number, version in ((22, "v22"), (23, "v23"), (24, "v24")):
-                prefix = f"{version_number}"
-                methods = {
-                    22: (
-                        "new",
-                        "conversion",
-                        "read",
-                        "start",
-                        "logout",
-                        "write_course",
-                        "write_music",
-                        "write",
-                        "friend",
-                    ),
-                    23: (
-                        "new",
-                        "conversion",
-                        "read",
-                        "start",
-                        "logout",
-                        "buy",
-                        "read_score",
-                        "write_music",
-                        "write",
-                        "friend",
-                    ),
-                    24: (
-                        "new",
-                        "read",
-                        "start",
-                        "logout",
-                        "buy",
-                        "read_score",
-                        "update_ranking",
-                        "write_music",
-                        "write",
-                        "friend",
-                    ),
-                }[version_number]
-                for method in methods:
-                    handler_name = method
-                    router.add(
-                        code,
-                        f"player{prefix}",
-                        method,
-                        self._modern(version, handler_name),
-                    )
-                router.add(
-                    code, f"info{prefix}", "common", self._modern(version, "info")
-                )
-
-            if code == "M39":
-                # These are the concrete module names used by the current
-                # M39 client and by bemaniutils' Unilab traffic verifier.
-                for module, methods in (
-                    ("pcb22", ("boot", "error", "write")),
-                    ("pcb23", ("boot", "dlstatus", "error", "write")),
-                    ("pcb24", ("boot", "error", "write")),
-                ):
-                    for method in methods:
-                        router.add(code, module, method, self.legacy_event)
-                for module in ("lobby22", "lobby24"):
-                    router.add(code, module, "getList", self.legacy_event)
-                # Hi Cheers registers the unversioned aliases on the wire.
-                for method in (
-                    "new",
-                    "conversion",
-                    "read",
-                    "start",
-                    "write",
-                    "friend",
-                    "write_music",
-                    "write_course",
-                    "update_ranking",
-                    "buy",
-                    "read_score",
-                    "logout",
-                ):
-                    router.add(code, "player", method, self._modern_player("v24", method))
-                for method in ("end", "tsumtsum", "read_option"):
-                    router.add(code, "player", method, self.legacy_event)
-                for method in ("boot", "error", "dlstatus", "write"):
-                    router.add(code, "pcb", method, self.legacy_event)
-                router.add(code, "info", "common", self._modern("v24", "info"))
-                router.add(code, "loctest24", "log", self.legacy_event)
-
-            # Hi Cheers labels its common game-data call ``info23.common``
-            # even though the cabinet model is M39.
-            router.add(code, "info23", "common", self._modern("v21", "info"))
-        # bemaniutils registers Pop'n 15-18 under the same Pop'n factory.  The
-        # old wire formats are intentionally explicit here even though this
-        # adapter only provides the common acknowledgement surface for them.
-        for code in self.game_codes[:4]:
-            for module, method in (
-                ("game", "get"),
-                ("playerdata", "new"),
-                ("playerdata", "conversion"),
-                ("playerdata", "get"),
-                ("playerdata", "set"),
-                ("playerdata", "friend"),
-                ("playerdata", "town"),
-            ):
-                router.add(code, module, method, self.legacy_event)
-
-        for game_code in self.game_codes:
-            router.webui(game_code, self.webui_event)
+        code = "M39"
+        methods = (
+            "new", "read", "start", "write", "friend", "write_music",
+            "write_course", "update_ranking", "buy", "read_score", "logout",
+        )
+        for method in methods:
+            router.add(code, "player24", method, self._modern("v24", method))
+            router.add(code, "player", method, self._modern_player("v24", method))
+        for method in ("end", "tsumtsum", "read_option"):
+            router.add(code, "player", method, self.legacy_event)
+        for method in ("boot", "error", "dlstatus", "write"):
+            router.add(code, "pcb", method, self.legacy_event)
+        router.add(code, "info", "common", self._modern("v24", "info"))
+        router.add(code, "info24", "common", self._modern("v24", "info"))
+        router.add(code, "loctest24", "log", self.legacy_event)
+        router.add(code, "lobby24", "getList", self.legacy_event)
+        router.webui(code, self.webui_event)
 
     async def webui_event(self, name: str, data: dict) -> None:
         """Handle Pop'n profile, rival, and unlock WebUI events."""
-        repository = self._handlers["v21"].repo
+        repository = self._handlers["v27"].repo
         if name == "updatePnmPlayerInfo":
             await repository.update_profile_name(
                 str(data.get("refid", "")), str(data.get("name", ""))
@@ -2487,22 +1726,9 @@ class PopnRoutes:
             await repository.delete_rival(
                 str(data.get("refid", "")), str(data.get("rivalid", ""))
             )
-    def _classic(self, name: str):
-        async def handler(info: EamuseInfo, data: dict, response: EamuseResponse):
-            version = {"K39": "v19", "L39": "v20", "M39": "v21"}[info.game_code]
-            if name == "town":
-                await self._handlers[version].town(info, data, response)
-                return
-            await getattr(self._handlers[version], name)(info, data, response)
-
-        return handler
-
     def _modern(self, version: str, name: str):
         async def handler(info: EamuseInfo, data: dict, response: EamuseResponse):
-            selected = (
-                self._usaneko_version(info.model) if version == "v24" else version
-            )
-            await getattr(self._handlers[selected], name)(info, data, response)
+            await getattr(self._handlers["v27"], name)(info, data, response)
 
         return handler
 
@@ -2517,20 +1743,6 @@ class PopnRoutes:
                 response.content.setdefault("base", account)
 
         return handler
-
-    @staticmethod
-    def _usaneko_version(model: str) -> str:
-        try:
-            timestamp = int(model.rsplit(":", 1)[1])
-        except (IndexError, ValueError):
-            return "v24"
-        if timestamp >= 2022091300:
-            return "v27"
-        if timestamp >= 2021042600:
-            return "v26"
-        if timestamp >= 2018101700:
-            return "v25"
-        return "v24"
 
     async def legacy_event(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
