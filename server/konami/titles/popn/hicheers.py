@@ -212,6 +212,7 @@ DEFAULT_FIELDS = {
         ("effect_left", "u16", "customize", 0, False),
         ("effect_center", "u16", "customize", 0, False),
         ("effect_right", "u16", "customize", 0, False),
+        ("roof", "u16", "customize", 0, False),
         ("hukidashi", "u16", "customize", 0, False),
         ("comment_1", "u16", "customize", 0, False),
         ("comment_2", "u16", "customize", 0, False),
