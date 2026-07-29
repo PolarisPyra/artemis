@@ -212,7 +212,7 @@ def test_services_response_includes_popn_modules():
 
     asyncio.run(services.services_get(info, {}, response))
     names = {item["@attr"]["name"] for item in response.content["item"]}
-    assert {"keepalive", "local2", "lobby2"} <= names
+    assert {"keepalive", "local2", "local3", "lobby2"} <= names
     assert "player24" not in names
     assert response.content["item"][0]["@attr"]["name"] == "cardmng"
     assert response.content["item"][-2]["@attr"]["name"] == "ntp"
@@ -294,6 +294,7 @@ def test_core_service_routes_match_bemaniutils_core_surface():
         "lobby.get",
         "lobby.getlist",
         "local.get",
+        "local3.get",
         "message.get",
         "package.list",
         "pcbevent.put",

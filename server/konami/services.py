@@ -41,8 +41,9 @@ class ArtemisServices:
             # title-specific data remains in the Pop'n route set.
             for method in ("get", "getlist", "entry", "update", "delete"):
                 router.add(game_code, "lobby", method, self.success)
-            for method in ("get", "boot", "write"):
-                router.add(game_code, "local", method, self.success)
+            for module in ("local", "local3"):
+                for method in ("get", "boot", "write"):
+                    router.add(game_code, module, method, self.success)
             router.add(game_code, "pcbevent", "put", self.success)
             router.add(game_code, "dlstatus", "progress", self.success)
             router.add(game_code, "pcbtracker", "alive", self.pcbtracker_alive)
@@ -77,6 +78,7 @@ class ArtemisServices:
             "facility",
             "lobby",
             "local",
+            "local3",
             "message",
             "package",
             "pcbevent",
