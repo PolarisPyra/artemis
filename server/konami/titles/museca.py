@@ -20,7 +20,7 @@ class MusecaRoutes:
         self.data = Data(cfg)
 
     def service_modules(self, game_code: str, model: str = "") -> tuple[str, ...]:
-        return ("game_3", "eventlog")
+        return ()
 
     def register(self, router: EamuseRouter) -> None:
         routes = (

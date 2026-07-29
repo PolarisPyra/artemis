@@ -2452,22 +2452,7 @@ class PopnRoutes:
         discovery.  The native adapter has no external plugin loader, so it
         must expose the equivalent list itself.
         """
-        return (
-            "game",
-            "info",
-            "info22",
-            "info23",
-            "info24",
-            "player",
-            "playerdata",
-            "player22",
-            "player23",
-            "player24",
-            "lobby24",
-            "loctest24",
-            "local2",
-            "lobby2",
-        )
+        return ("local2", "lobby2")
 
     def __init__(self, cfg: ArtemisConfig) -> None:
         self.cfg = cfg

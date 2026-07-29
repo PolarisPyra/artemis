@@ -21,7 +21,7 @@ class SDVXRoutes:
 
     @classmethod
     def service_modules(cls, game_code: str, model: str = "") -> tuple[str, ...]:
-        return ("game", "eventlog", "ins", "package")
+        return ("local2",)
 
     def __init__(self, cfg: ArtemisConfig) -> None:
         self.data = Data(cfg)

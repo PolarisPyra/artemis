@@ -20,7 +20,7 @@ class JubeatRoutes:
 
     @classmethod
     def service_modules(cls, game_code: str, model: str = "") -> tuple[str, ...]:
-        return ("gametop", "gameend", "shopinfo", "lobby", "netlog", "logger")
+        return ("netlog", "slocal") if game_code == "L44" else ()
 
     def __init__(self, cfg: ArtemisConfig) -> None:
         self.data = Data(cfg)

@@ -32,14 +32,7 @@ class IIDXRoutes:
 
     @classmethod
     def service_modules(cls, game_code: str, model: str = "") -> tuple[str, ...]:
-        return (
-            "pc",
-            "shop",
-            "music",
-            "grade",
-            "ranking",
-            "gameSystem",
-        )
+        return ("local2",)
 
     def __init__(self, cfg: ArtemisConfig) -> None:
         self.data = Data(cfg)

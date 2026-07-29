@@ -107,26 +107,17 @@ class ArtemisServices:
         keepalive_host = self._keepalive_host(info, host)
         modules = [
             "cardmng",
+            "dlstatus",
+            "eacoin",
             "facility",
+            "lobby",
+            "local",
             "message",
-            "numbering",
             "package",
             "pcbevent",
             "pcbtracker",
             "pkglist",
             "posevent",
-            "userdata",
-            "userid",
-            "eacoin",
-            "local",
-            "local2",
-            "local3",
-            "lobby",
-            "lobby2",
-            "dlstatus",
-            "netlog",
-            "sidmgr",
-            "globby",
         ]
         if self.module_provider is not None:
             modules.extend(self.module_provider(info.game_code, info.model))

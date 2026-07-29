@@ -123,7 +123,7 @@ def test_unknown_title_calls_are_not_silently_acknowledged():
 
 def test_popn_modules_are_advertised_for_m39():
     modules = PopnRoutes.service_modules("M39", "M39:J:D:A:2026041500")
-    assert {"game", "info", "player", "playerdata", "player24", "local2", "lobby2"} <= set(modules)
+    assert modules == ("local2", "lobby2")
     assert "JMP" not in PopnRoutes.game_codes
 
 
@@ -212,14 +212,7 @@ def test_iidx_common_payload_has_versioned_boot_fields():
     asyncio.run(routes.pc_common(info, {}, response))
     assert response.content["limit"]["@attr"]["phase"] == "24"
     assert response.content["license"]["string"]["@attr"]["__type"] == "bin"
-    assert set(IIDXRoutes.service_modules("LDJ")) == {
-        "pc",
-        "shop",
-        "music",
-        "grade",
-        "ranking",
-        "gameSystem",
-    }
+    assert IIDXRoutes.service_modules("LDJ") == ("local2",)
 
     info.module = "IIDX29pc"
     response = EamuseResponse(root_name="pc")
@@ -296,14 +289,7 @@ def test_jubeat_route_surface_covers_supported_asphyxia_modules():
         "logger.report",
     } <= set(registered)
     assert JubeatRoutes.game_codes == ("H44", "I44", "J44", "K44", "L44")
-    assert set(JubeatRoutes.service_modules("L44")) == {
-        "gametop",
-        "gameend",
-        "shopinfo",
-        "lobby",
-        "netlog",
-        "logger",
-    }
+    assert JubeatRoutes.service_modules("L44") == ("netlog", "slocal")
 
 
 def test_ddr_route_surface_covers_supported_playerdata_modules():
@@ -320,11 +306,7 @@ def test_ddr_route_surface_covers_supported_playerdata_modules():
         "system.convcardnumber",
         "eventlog.write",
     } <= set(registered)
-    assert set(DDRRoutes.service_modules("HDX")) == {
-        "playerdata",
-        "system",
-        "eventlog",
-    }
+    assert DDRRoutes.service_modules("HDX") == ("local2",)
 
 
 def test_ddr_opaque_usergamedata_records_round_trip():
@@ -388,12 +370,7 @@ def test_sdvx_route_surface_covers_supported_game_modules():
         "package.list",
         "ins.netlog",
     } <= set(registered)
-    assert set(SDVXRoutes.service_modules("KFC")) == {
-        "game",
-        "eventlog",
-        "ins",
-        "package",
-    }
+    assert SDVXRoutes.service_modules("KFC") == ("local2",)
 
 
 def test_sdvx_profile_and_score_state_round_trip():
@@ -559,7 +536,8 @@ def test_services_response_includes_popn_modules():
 
     asyncio.run(services.services_get(info, {}, response))
     names = {item["@attr"]["name"] for item in response.content["item"]}
-    assert {"keepalive", "game", "player24", "local2", "lobby2"} <= names
+    assert {"keepalive", "local2", "lobby2"} <= names
+    assert "player24" not in names
     keepalive = next(
         item for item in response.content["item"] if item["@attr"]["name"] == "keepalive"
     )
@@ -1026,8 +1004,9 @@ def test_core_discovery_chain_survives_encrypted_kbin_transport():
         for module, result in results.items()
     )
     service_items = results["services"][1]["response"]["services"]["item"]
-    assert any(item["@attr"]["name"] == "player24" for item in service_items)
-    game_service = next(item for item in service_items if item["@attr"]["name"] == "game")
-    assert game_service["@attr"]["url"] == "https://public.example"
+    assert any(item["@attr"]["name"] == "local2" for item in service_items)
+    assert any(item["@attr"]["name"] == "lobby2" for item in service_items)
+    local_service = next(item for item in service_items if item["@attr"]["name"] == "local2")
+    assert local_service["@attr"]["url"] == "https://public.example"
     keepalive_service = next(item for item in service_items if item["@attr"]["name"] == "keepalive")
     assert keepalive_service["@attr"]["url"].startswith("http://192.0.2.10/core/keepalive?")
