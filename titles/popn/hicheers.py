@@ -91,13 +91,17 @@ class PopnHiCheers(PopnJamFizz):
         return XMLNode.void("player")
 
     async def handle_player_new(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player")
+        # Hi Cheers expects the newly-created profile payload immediately
+        # after name selection.  An empty status-only response is treated as
+        # a failed receiver operation and returns the cabinet to the title
+        # screen.
+        return await self.handle_player_read(request)
 
     async def handle_player_logout(self, request: XMLNode) -> XMLNode:
         return XMLNode.void("player")
 
     async def handle_player_conversion(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player")
+        return await self.handle_player_read(request)
 
     async def handle_player_write_music(self, request: XMLNode) -> XMLNode:
         return XMLNode.void("player")
