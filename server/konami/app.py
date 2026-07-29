@@ -293,7 +293,7 @@ def build_konami_app(cfg) -> Starlette:
 def build_konami_servlet(cfg) -> KonamiServlet:
     """Build the Pop'n-only Konami servlet."""
     from server.konami.services import ArtemisServices
-    from server.konami.titles.popn import PopnRoutes
+    from server.konami.titles.popn.hicheers import PopnRoutes
 
     popn = PopnRoutes(cfg)
     services = ArtemisServices(cfg, popn.game_codes, popn.service_modules)

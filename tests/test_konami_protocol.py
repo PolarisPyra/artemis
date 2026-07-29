@@ -5,7 +5,7 @@ from server.konami.encryption import KonmaiEncrypt
 from server.konami.kbin import decode as kbin_decode
 from server.konami.kbin import encode as kbin_encode
 from server.konami.lzkn import deflate, deflate_dummy, inflate
-from server.konami.titles.popn import PopnRepository, PopnRoutes
+from server.konami.titles.popn.hicheers import PopnRepository, PopnRoutes
 from server.konami.xml import data_to_xml, detect_xml_encoding, xml_to_data
 
 
@@ -146,7 +146,7 @@ def test_popn_m39_player_boot_payload_round_trip_shape():
     import asyncio
 
     from server.konami.protocol import EamuseInfo, EamuseResponse
-    from server.konami.titles.popn import SPECS, PopnVersionHandler
+    from server.konami.titles.popn.hicheers import SPECS, PopnVersionHandler
 
     class Repo:
         async def profile(self, refid):
@@ -180,7 +180,7 @@ def test_popn_m39_player_boot_payload_round_trip_shape():
 
 def test_popn_only_exposes_hi_cheers():
     from server.konami.router import EamuseRouter
-    from server.konami.titles.popn import PopnRoutes
+    from server.konami.titles.popn.hicheers import PopnRoutes
 
     routes = PopnRoutes.__new__(PopnRoutes)
     router = EamuseRouter()
