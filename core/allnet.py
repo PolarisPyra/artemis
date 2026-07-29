@@ -160,7 +160,7 @@ class AllnetServlet:
             elif is_lite:
                 req_urlencode = self.dec_lite(litekey, data[:16], data)
             else:
-                req_urlencode = data
+                req_urlencode = data.decode("utf-8")
 
             req_dict = self.allnet_req_to_dict(req_urlencode)
             if req_dict is None:
