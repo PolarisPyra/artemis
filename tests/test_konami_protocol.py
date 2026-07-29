@@ -130,12 +130,14 @@ def test_popn_m39_runtime_route_aliases_are_registered():
     routes.register(router)
     assert {
         "game.active", "player24.buy", "player24.read_score",
+        "player.read", "player.new", "player.write",
         "info24.common", "pcb24.boot", "lobby24.getList",
+        "info.common", "pcb.boot", "loctest24.log",
     } <= set(
         router._routes["M39"]
     )
     assert not {
-        "player.shop_buy", "player.read_option", "game.e", "game.s",
+        "player.shop_buy", "game.e", "game.s",
     } & set(router._routes["M39"])
     assert not hasattr(router, "_fallback")
 

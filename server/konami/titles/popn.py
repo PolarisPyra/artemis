@@ -2428,6 +2428,28 @@ class PopnRoutes:
                         router.add(code, module, method, self.legacy_event)
                 for module in ("lobby22", "lobby24"):
                     router.add(code, module, "getList", self.legacy_event)
+                # Hi Cheers registers the unversioned aliases on the wire.
+                for method in (
+                    "new",
+                    "conversion",
+                    "read",
+                    "start",
+                    "write",
+                    "friend",
+                    "write_music",
+                    "write_course",
+                    "update_ranking",
+                    "buy",
+                    "read_score",
+                    "logout",
+                ):
+                    router.add(code, "player", method, self._modern("v24", method))
+                for method in ("end", "tsumtsum", "read_option"):
+                    router.add(code, "player", method, self.legacy_event)
+                for method in ("boot", "error", "dlstatus", "write"):
+                    router.add(code, "pcb", method, self.legacy_event)
+                router.add(code, "info", "common", self._modern("v24", "info"))
+                router.add(code, "loctest24", "log", self.legacy_event)
 
             # Hi Cheers labels its common game-data call ``info23.common``
             # even though the cabinet model is M39.
