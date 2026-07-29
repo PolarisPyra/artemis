@@ -947,6 +947,31 @@ class PopnVersionHandler:
     async def new(self, info: EamuseInfo, data: dict, response: EamuseResponse) -> None:
         await self._profile(info, data, response, update_name=True)
 
+    async def conversion(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ) -> None:
+        await self._profile(info, data, response, update_name=True)
+
+    async def logout(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ) -> None:
+        response.content = {}
+
+    async def expire(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ) -> None:
+        response.content = {}
+
+    async def update_ranking(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ) -> None:
+        response.content = {}
+
+    async def write_course(
+        self, info: EamuseInfo, data: dict, response: EamuseResponse
+    ) -> None:
+        response.content = {}
+
     async def read(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ) -> None:
@@ -1223,7 +1248,7 @@ class PopnVersionHandler:
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ) -> None:
         await self.info(info, data, response)
-        response.content["play_id"] = item("s32", 1)
+        response.content["play_id"] = item("s32", 0)
 
     async def buy(self, info: EamuseInfo, data: dict, response: EamuseResponse) -> None:
         refid = field(data, "ref_id", "")
@@ -2323,27 +2348,43 @@ class PopnRoutes:
 
     def register(self, router: EamuseRouter) -> None:
         for code in self.game_codes[4:]:
-            legacy_version = {"K39": "v19", "L39": "v20", "M39": "v21"}[code]
             for module, method, handler_name in (
                 ("game", "get", "info"),
                 ("playerdata", "new", "new"),
-                ("playerdata", "conversion", "new"),
+                ("playerdata", "conversion", "conversion"),
                 ("playerdata", "get", "read"),
                 ("playerdata", "set", "write"),
                 ("playerdata", "friend", "friend"),
                 ("playerdata", "town", "town"),
+                ("playerdata", "expire", "expire"),
+                ("playerdata", "logout", "logout"),
             ):
                 router.add(code, module, method, self._classic(handler_name))
-            router.add(code, "game", "active", self.player_event)
+            router.add(code, "game", "active", self.legacy_event)
+
+            if code == "M39":
+                router.add(code, "game", "taxphase", self.legacy_event)
 
             for version_number, version in ((22, "v22"), (23, "v23"), (24, "v24")):
                 prefix = f"{version_number}"
                 methods = {
-                    22: ("new", "read", "write_music", "write", "friend"),
-                    23: (
+                    22: (
                         "new",
+                        "conversion",
                         "read",
                         "start",
+                        "logout",
+                        "write_course",
+                        "write_music",
+                        "write",
+                        "friend",
+                    ),
+                    23: (
+                        "new",
+                        "conversion",
+                        "read",
+                        "start",
+                        "logout",
                         "buy",
                         "read_score",
                         "write_music",
@@ -2354,8 +2395,10 @@ class PopnRoutes:
                         "new",
                         "read",
                         "start",
+                        "logout",
                         "buy",
                         "read_score",
+                        "update_ranking",
                         "write_music",
                         "write",
                         "friend",
@@ -2376,51 +2419,19 @@ class PopnRoutes:
             if code == "M39":
                 # These are the concrete module names used by the current
                 # M39 client and by bemaniutils' Unilab traffic verifier.
-                for method in ("boot", "error", "write"):
-                    router.add(code, "pcb24", method, self.player_event)
-                router.add(code, "lobby24", "getList", self.player_event)
+                for module, methods in (
+                    ("pcb22", ("boot", "error", "write")),
+                    ("pcb23", ("boot", "dlstatus", "error", "write")),
+                    ("pcb24", ("boot", "error", "write")),
+                ):
+                    for method in methods:
+                        router.add(code, module, method, self.legacy_event)
+                for module in ("lobby22", "lobby24"):
+                    router.add(code, module, "getList", self.legacy_event)
 
             # Hi Cheers labels its common game-data call ``info23.common``
             # even though the cabinet model is M39.
             router.add(code, "info23", "common", self._modern("v21", "info"))
-            # The concrete DLL module is named ``info``.  Its common payload
-            # is Pop'n game data; location data comes from facility.get.
-            router.add(code, "info", "common", self._modern(legacy_version, "info"))
-
-            # M39/Hi Cheers still exposes the original generic XRPC module
-            # names in addition to the versioned playerdata modules.  The
-            # DLL registers these methods as CXrpcPlayer* classes.  Reuse the
-            # established v21 persistence handlers so both naming schemes
-            # address the same profile and score documents.
-            generic = {
-                "new": "new",
-                "conversion": "new",
-                "read": "read",
-                "write": "write",
-                "start": "start",
-                "delete": "success",
-                "end": "success",
-                "logout": "success",
-                "read_friend": "friend",
-                "write_music": "write_music",
-                "update_ranking": "success",
-                "write_course": "write",
-                "read_score": "read_score",
-                "shop": "buy",
-                "shop_buy": "buy",
-                "read_option": "read",
-                "tsumtsum": "success",
-            }
-            for method, handler_name in generic.items():
-                handler = (
-                    self._modern("v21", handler_name)
-                    if handler_name != "success"
-                    else self.player_event
-                )
-                router.add(code, "player", method, handler)
-            router.add(code, "game", "e", self.game_event)
-            router.add(code, "game", "s", self.game_event)
-
         # bemaniutils registers Pop'n 15-18 under the same Pop'n factory.  The
         # old wire formats are intentionally explicit here even though this
         # adapter only provides the common acknowledgement surface for them.
@@ -2486,21 +2497,6 @@ class PopnRoutes:
         if timestamp >= 2018101700:
             return "v25"
         return "v24"
-
-    async def player_event(
-        self, info: EamuseInfo, data: dict, response: EamuseResponse
-    ):
-        response.content = {"result": item("s32", 0)}
-
-    async def success(
-        self, info: EamuseInfo, data: dict, response: EamuseResponse
-    ):
-        response.content = {}
-
-    async def game_event(
-        self, info: EamuseInfo, data: dict, response: EamuseResponse
-    ):
-        response.content = {"result": item("s32", 0)}
 
     async def legacy_event(
         self, info: EamuseInfo, data: dict, response: EamuseResponse

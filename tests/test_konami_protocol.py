@@ -5,12 +5,7 @@ from server.konami.encryption import KonmaiEncrypt
 from server.konami.kbin import decode as kbin_decode
 from server.konami.kbin import encode as kbin_encode
 from server.konami.lzkn import deflate, deflate_dummy, inflate
-from server.konami.titles.ddr import DDRRoutes
-from server.konami.titles.iidx import IIDXRoutes
-from server.konami.titles.jubeat import JubeatRoutes
-from server.konami.titles.museca import MusecaRoutes
 from server.konami.titles.popn import PopnRepository, PopnRoutes
-from server.konami.titles.sdvx import SDVXRoutes
 from server.konami.xml import data_to_xml, detect_xml_encoding, xml_to_data
 
 
@@ -134,11 +129,14 @@ def test_popn_m39_runtime_route_aliases_are_registered():
     router = EamuseRouter()
     routes.register(router)
     assert {
-        "player.shop_buy", "player.read_option", "game.e", "game.s",
-        "game.active", "pcb24.boot", "lobby24.getList",
+        "game.active", "player24.buy", "player24.read_score",
+        "info24.common", "pcb24.boot", "lobby24.getList",
     } <= set(
         router._routes["M39"]
     )
+    assert not {
+        "player.shop_buy", "player.read_option", "game.e", "game.s",
+    } & set(router._routes["M39"])
     assert not hasattr(router, "_fallback")
 
 
@@ -173,328 +171,6 @@ def test_popn_m39_player_boot_payload_round_trip_shape():
     assert response.status == 0
     assert response.content["base"]["name"]["@attr"]["__type"] == "str"
     assert response.content["hiscore"]["@attr"]["__type"] == "bin"
-
-
-def test_iidx_route_surface_covers_supported_asphyxia_modules():
-    from server.konami.router import EamuseRouter
-
-    routes = IIDXRoutes.__new__(IIDXRoutes)
-    router = EamuseRouter()
-    routes.register(router)
-    registered = router._routes["LDJ"]
-    assert {
-        "pc.common",
-        "pc.reg",
-        "pc.get",
-        "pc.getname",
-        "pc.save",
-        "shop.getname",
-        "music.reg",
-        "grade.raised",
-        "ranking.getranker",
-        "gameSystem.systemInfo",
-    } <= set(registered)
-    assert "pc.common" in router._routes["LDJ"]
-    assert any(name.startswith("IIDX21pc.") for name in router._routes["LDJ"])
-    assert IIDXRoutes.game_codes == ("JDJ", "JDZ", "KDZ", "LDJ")
-
-
-def test_iidx_common_payload_has_versioned_boot_fields():
-    import asyncio
-
-    from server.konami.protocol import EamuseInfo, EamuseResponse
-
-    routes = IIDXRoutes.__new__(IIDXRoutes)
-    response = EamuseResponse(root_name="pc")
-    info = EamuseInfo(
-        game_code="LDJ", module="IIDX22pc", method="common", model="LDJ:J:A:A:0"
-    )
-    asyncio.run(routes.pc_common(info, {}, response))
-    assert response.content["limit"]["@attr"]["phase"] == "24"
-    assert response.content["license"]["string"]["@attr"]["__type"] == "bin"
-    assert IIDXRoutes.service_modules("LDJ") == ("local2",)
-
-    info.module = "IIDX29pc"
-    response = EamuseResponse(root_name="pc")
-    asyncio.run(routes.pc_common(info, {}, response))
-    assert "lane_gacha" in response.content
-    assert response.content["world_tourism"]["@attr"]["open_list"] == "-1"
-
-
-def test_iidx_profile_save_and_music_rank_round_trip():
-    import asyncio
-    from types import SimpleNamespace
-
-    from server.konami.protocol import EamuseInfo, EamuseResponse
-
-    class Store:
-        def __init__(self):
-            self.profile = {"id": 1234, "idstr": "0000-1234", "name": "TEST"}
-            self.documents = {}
-
-        async def get_profile(self, refid):
-            return self.profile
-
-        async def put_profile(self, refid, value):
-            self.profile = value
-
-        async def get_document(self, refid, game, collection, version=""):
-            return self.documents.get((refid, game, collection, version))
-
-        async def put_document(self, refid, game, collection, value, version=""):
-            self.documents[(refid, game, collection, version)] = value
-
-    routes = IIDXRoutes.__new__(IIDXRoutes)
-    store = Store()
-    routes.data = SimpleNamespace(konami=store)
-    info = EamuseInfo(game_code="LDJ", module="pc", method="save", model="LDJ:J:A:A:0")
-    save = EamuseResponse(root_name="pc")
-    asyncio.run(routes.pc_save(info, {"@attr": {"rid": "CARD"}, "name": {"@content": ["NEW"]}}, save))
-    assert save.status == 0
-    assert store.profile["name"] == "NEW"
-
-    music = EamuseResponse(root_name="music")
-    asyncio.run(
-        routes.music_reg(
-            info,
-            {
-                "@attr": {"rid": "CARD"},
-                "m": {"@attr": {"mid": "42"}, "score": {"@content": [1234]}, "clear": {"@content": [5]}},
-            },
-            music,
-        )
-    )
-    rank = EamuseResponse(root_name="music")
-    asyncio.run(routes.music_getrank(info, {"@attr": {"rid": "CARD"}}, rank))
-    assert rank.content["m"][0]["@content"][:2] == [-1, 42]
-
-
-def test_jubeat_route_surface_covers_supported_asphyxia_modules():
-    from server.konami.router import EamuseRouter
-
-    routes = JubeatRoutes.__new__(JubeatRoutes)
-    router = EamuseRouter()
-    routes.register(router)
-    registered = router._routes["L44"]
-    assert {
-        "gametop.regist",
-        "gametop.get_info",
-        "gametop.get_pdata",
-        "gametop.get_mdata",
-        "gametop.get_meeting",
-        "gameend.regist",
-        "shopinfo.regist",
-        "lobby.entry",
-        "netlog.send",
-        "logger.report",
-    } <= set(registered)
-    assert JubeatRoutes.game_codes == ("H44", "I44", "J44", "K44", "L44")
-    assert JubeatRoutes.service_modules("L44") == ("netlog", "slocal")
-
-
-def test_ddr_route_surface_covers_supported_playerdata_modules():
-    from server.konami.router import EamuseRouter
-
-    routes = DDRRoutes.__new__(DDRRoutes)
-    router = EamuseRouter()
-    routes.register(router)
-    registered = router._routes["HDX"]
-    assert {
-        "playerdata.usergamedata_advanced",
-        "playerdata.usergamedata_recv",
-        "playerdata.usergamedata_send",
-        "system.convcardnumber",
-        "eventlog.write",
-    } <= set(registered)
-    assert DDRRoutes.service_modules("HDX") == ("local2",)
-
-
-def test_ddr_opaque_usergamedata_records_round_trip():
-    import asyncio
-    import base64
-    from types import SimpleNamespace
-
-    from server.konami.protocol import EamuseInfo, EamuseResponse
-
-    class Store:
-        def __init__(self):
-            self.profile = {"collection": "profile"}
-
-        async def get_profile(self, refid):
-            return self.profile
-
-        async def put_profile(self, refid, value):
-            self.profile = value
-
-    routes = DDRRoutes.__new__(DDRRoutes)
-    store = Store()
-    routes.data = SimpleNamespace(konami=store)
-    info = EamuseInfo(game_code="HDX", module="playerdata", method="usergamedata_send", model="HDX:J:A:A:0")
-    encoded = base64.b64encode(b"0,COMMON,a,b,").decode()
-    sent = EamuseResponse(root_name="playerdata")
-    asyncio.run(
-        routes.usergamedata_send(
-            info,
-            {"data": {"refid": {"@content": ["REFID"]}, "record": {"d": [{"@content": [encoded]}]}}},
-            sent,
-        )
-    )
-    received = EamuseResponse(root_name="playerdata")
-    asyncio.run(
-        routes.usergamedata_recv(
-            info,
-            {"data": {"refid": {"@content": ["REFID"]}, "recv_csv": {"@content": ["COMMON,0"]}}},
-            received,
-        )
-    )
-    assert received.content["player"]["record_num"]["@content"] == [1]
-    assert store.profile["usergamedata"]["COMMON"]["strdata"] == "a,b"
-
-
-def test_sdvx_route_surface_covers_supported_game_modules():
-    from server.konami.router import EamuseRouter
-
-    routes = SDVXRoutes.__new__(SDVXRoutes)
-    router = EamuseRouter()
-    routes.register(router)
-    registered = router._routes["KFC"]
-    assert {
-        "game.sv6_common",
-        "game.sv6_new",
-        "game.sv6_load",
-        "game.sv6_save",
-        "game.sv6_load_m",
-        "game.sv6_save_m",
-        "game.sv6_hiscore",
-        "eventlog.write",
-        "package.list",
-        "ins.netlog",
-    } <= set(registered)
-    assert SDVXRoutes.service_modules("KFC") == ("local2",)
-
-
-def test_sdvx_profile_and_score_state_round_trip():
-    import asyncio
-    from types import SimpleNamespace
-
-    from server.konami.protocol import EamuseInfo, EamuseResponse
-
-    class Store:
-        def __init__(self):
-            self.profile = {"sdvxId": 123, "name": "PLAYER"}
-            self.documents = {}
-
-        async def get_profile(self, refid):
-            return self.profile
-
-        async def put_profile(self, refid, value):
-            self.profile = value
-
-        async def get_document(self, refid, game, collection, version=""):
-            return self.documents.get((refid, game, collection, version))
-
-        async def put_document(self, refid, game, collection, value, version=""):
-            self.documents[(refid, game, collection, version)] = value
-
-    routes = SDVXRoutes.__new__(SDVXRoutes)
-    store = Store()
-    routes.data = SimpleNamespace(konami=store)
-    info = EamuseInfo(game_code="KFC", module="game", method="sv6_save", model="KFC:J:A:A:0")
-    saved = EamuseResponse(root_name="game")
-    asyncio.run(
-        routes.profile_save(
-            info,
-            {"@attr": {"refid": "REFID"}, "appeal_id": {"@content": [7]}},
-            saved,
-        )
-    )
-    assert saved.status == 0
-    assert store.profile["appeal"] == 7
-
-    score = EamuseResponse(root_name="game")
-    asyncio.run(
-        routes.score_save(
-            info,
-            {
-                "@attr": {"refid": "REFID"},
-                "track": [{
-                    "music_id": {"@content": [42]}, "music_type": {"@content": [2]},
-                    "score": {"@content": [987654]}, "clear_type": {"@content": [4]},
-                }],
-            },
-            score,
-        )
-    )
-    loaded = EamuseResponse(root_name="game")
-    asyncio.run(routes.score_load(info, {"@attr": {"refid": "REFID"}}, loaded))
-    assert loaded.content["music"]["info"][0]["param"]["@content"][:6] == [42, 2, 987654, 0, 4, 0]
-
-
-def test_sdvx_feature_state_round_trip():
-    import asyncio
-    from types import SimpleNamespace
-
-    from server.konami.protocol import EamuseInfo, EamuseResponse
-
-    class Store:
-        def __init__(self):
-            self.profiles = {"REFID": {"sdvxId": 123, "name": "PLAYER"}}
-            self.documents = {}
-
-        async def get_profile(self, refid):
-            return self.profiles.get(refid)
-
-        async def put_profile(self, refid, value):
-            self.profiles[refid] = value
-
-        async def get_document(self, refid, game, collection, version=""):
-            return self.documents.get((refid, game, collection, version))
-
-        async def put_document(self, refid, game, collection, value, version=""):
-            self.documents[(refid, game, collection, version)] = value
-
-        async def documents(self, game, collection, version="", refid=""):
-            if collection == "profile":
-                return [(key, value) for key, value in self.profiles.items() if not refid or key == refid]
-            return [
-                (key[0], value) for key, value in self.documents.items()
-                if key[1] == game and key[2] == collection and (not refid or key[0] == refid)
-            ]
-
-    routes = SDVXRoutes.__new__(SDVXRoutes)
-    store = Store()
-    routes.data = SimpleNamespace(konami=store)
-    info = EamuseInfo(game_code="KFC", module="game", method="sv6_save_c", model="KFC:J:A:A:0")
-    saved = EamuseResponse(root_name="game")
-    asyncio.run(routes.course_save(info, {
-        "@attr": {"refid": "REFID"},
-        "course": [{"course_id": {"@content": [77]}, "score": {"@content": [900000]}}],
-    }, saved))
-    assert saved.status == 0
-    assert store.documents[("REFID", "KFC", "courses", "")]["courses"]["77"]["score"] == 900000
-
-    mixed = EamuseResponse(root_name="game")
-    asyncio.run(routes.mix_save(info, {
-        "@attr": {"ref_id": "REFID"},
-        "automation": {"mix_name": {"@content": ["TEST MIX"]}, "mix_code": {"@content": ["MIX1"]}},
-    }, mixed))
-    assert mixed.content["automation"]["mix_code"]["@content"] == ["MIX1"]
-    loaded = EamuseResponse(root_name="game")
-    asyncio.run(routes.mix_load(info, {
-        "@attr": {"ref_id": "REFID"},
-        "automation": {"mix_code": {"@content": ["MIX1"]}},
-    }, loaded))
-    assert loaded.content["automation"]["mix_name"]["@content"] == ["TEST MIX"]
-
-
-def test_museca_title_route_surface_matches_bemaniutils():
-    from server.konami.router import EamuseRouter
-
-    routes = MusecaRoutes.__new__(MusecaRoutes)
-    router = EamuseRouter()
-    routes.register(router)
-    assert {"game_3.common", "game_3.hiscore", "game_3.new", "game_3.load_m", "game_3.play_e"} <= set(router._routes["PIX"])
-    assert routes.game_codes == ("PIX",)
 
 
 def test_popn_old_versions_use_the_popn_title_module():
@@ -604,7 +280,7 @@ def test_services_remote_client_does_not_receive_loopback_keepalive():
     assert "127.0.0.1" not in keepalive["@attr"]["url"]
 
 
-def test_core_service_routes_cover_ea3_boot_methods():
+def test_core_service_routes_match_bemaniutils_core_surface():
     from server.konami.router import EamuseRouter
     from server.konami.services import ArtemisServices
 
@@ -613,12 +289,34 @@ def test_core_service_routes_cover_ea3_boot_methods():
     services.game_codes = ("M39",)
     services.register(router)
     assert {
-        "pcbtracker.keepalive",
-        "eacoin.getpricelist",
+        "services.get",
+        "facility.get",
+        "message.get",
+        "package.list",
+        "pcbevent.put",
+        "dlstatus.progress",
+        "pcbtracker.alive",
+        "eacoin.checkout",
+        "eacoin.checkin",
+        "eacoin.consume",
+        "eacoin.getlog",
         "eacoin.opcheckin",
-        "pkglist.nr_entry",
-        "sidmgr.open",
+        "eacoin.opcheckout",
+        "eacoin.opchpass",
+        "cardmng.inquire",
+        "cardmng.getrefid",
+        "cardmng.getdatalist",
+        "cardmng.getkeepspan",
+        "cardmng.authpass",
+        "cardmng.bindmodel",
     } <= set(router._routes["M39"])
+    assert not {
+        "eventlog.write",
+        "tax.get_phase",
+        "pcb.boot",
+        "sidmgr.open",
+        "posevent.income",
+    } & set(router._routes["M39"])
 
 
 def test_popn_legacy_profile_migration_prefers_title_namespace():

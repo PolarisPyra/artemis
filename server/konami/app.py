@@ -283,53 +283,16 @@ def build_konami_app(cfg) -> Starlette:
 
 
 def build_konami_servlet(cfg) -> KonamiServlet:
-    """Build the shared Konami servlet used by every deployment mode."""
+    """Build the Pop'n-only Konami servlet."""
     from server.konami.services import ArtemisServices
-    from server.konami.titles.ddr import DDRRoutes
-    from server.konami.titles.iidx import IIDXRoutes
-    from server.konami.titles.jubeat import JubeatRoutes
-    from server.konami.titles.museca import MusecaRoutes
     from server.konami.titles.popn import PopnRoutes
-    from server.konami.titles.sdvx import SDVXRoutes
 
     popn = PopnRoutes(cfg)
-    ddr = DDRRoutes(cfg)
-    iidx = IIDXRoutes(cfg)
-    jubeat = JubeatRoutes(cfg)
-    museca = MusecaRoutes(cfg)
-    sdvx = SDVXRoutes(cfg)
-    game_codes = (
-        popn.game_codes
-        + ddr.game_codes
-        + iidx.game_codes
-        + jubeat.game_codes
-        + museca.game_codes
-        + sdvx.game_codes
-    )
-
-    def service_modules(game_code: str, model: str):
-        if game_code in ddr.game_codes:
-            return ddr.service_modules(game_code, model)
-        if game_code in iidx.game_codes:
-            return iidx.service_modules(game_code, model)
-        if game_code in jubeat.game_codes:
-            return jubeat.service_modules(game_code, model)
-        if game_code in sdvx.game_codes:
-            return sdvx.service_modules(game_code, model)
-        if game_code in museca.game_codes:
-            return museca.service_modules(game_code, model)
-        return popn.service_modules(game_code, model)
-
-    services = ArtemisServices(cfg, game_codes, service_modules)
+    services = ArtemisServices(cfg, popn.game_codes, popn.service_modules)
     return KonamiServlet(
         (
             services.register,
             popn.register,
-            ddr.register,
-            iidx.register,
-            jubeat.register,
-            sdvx.register,
-            museca.register,
         )
     )
 

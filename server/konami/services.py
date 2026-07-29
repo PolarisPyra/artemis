@@ -36,61 +36,17 @@ class ArtemisServices:
             router.add(game_code, "services", "get", self.services_get)
             router.add(game_code, "facility", "get", self.facility_get)
             router.add(game_code, "message", "get", self.message_get)
-            router.add(game_code, "eventlog", "write", self.success)
             router.add(game_code, "package", "list", self.package_list)
             router.add(game_code, "pcbevent", "put", self.success)
-            router.add(game_code, "tax", "get_phase", self.tax_get_phase)
             router.add(game_code, "dlstatus", "progress", self.success)
-            # EA3 boot/update calls used by newer Pop'n binaries.  These are
-            # deliberately explicit instead of relying on the title fallback:
-            # the client checks the response status before continuing boot.
-            router.add(game_code, "pcb", "boot", self.pcb_success)
-            router.add(game_code, "pcb", "dlstatus", self.pcb_success)
-            router.add(game_code, "pcb", "error", self.pcb_success)
-            router.add(game_code, "pcb", "write", self.pcb_success)
-            router.add(game_code, "info", "common", self.info_common)
-            router.add(game_code, "loc", "test_log", self.success)
             router.add(game_code, "pcbtracker", "alive", self.pcbtracker_alive)
-            router.add(game_code, "pcbtracker", "keepalive", self.pcbtracker_alive)
             router.add(game_code, "eacoin", "checkout", self.success)
             router.add(game_code, "eacoin", "checkin", self.eacoin_checkin)
             router.add(game_code, "eacoin", "consume", self.eacoin_consume)
-            router.add(game_code, "eacoin", "getpricelist", self.eacoin_pricelist)
             router.add(game_code, "eacoin", "getlog", self.success)
             router.add(game_code, "eacoin", "opcheckin", self.eacoin_checkin)
             router.add(game_code, "eacoin", "opcheckout", self.success)
             router.add(game_code, "eacoin", "opchpass", self.success)
-            router.add(game_code, "pkglist", "nr_entry", self.package_list)
-            for sidmgr_method in ("branch", "close", "create", "open", "touch"):
-                router.add(game_code, "sidmgr", sidmgr_method, self.success)
-            router.add(game_code, "posevent", "income", self.posevent_income)
-            router.add(
-                game_code,
-                "posevent",
-                "income.sales.sale",
-                self.posevent_sale,
-            )
-            router.add(game_code, "posevent", "outcome", self.success)
-            router.add(game_code, "lobby", "get", self.success)
-            router.add(game_code, "lobby", "getlist", self.success)
-            router.add(game_code, "lobby", "entry", self.success)
-            router.add(game_code, "lobby", "update", self.success)
-            router.add(game_code, "lobby", "delete", self.success)
-            router.add(game_code, "local2", "get", self.success)
-            router.add(game_code, "local2", "boot", self.success)
-            router.add(game_code, "local2", "write", self.success)
-            router.add(game_code, "lobby2", "get", self.success)
-            router.add(game_code, "lobby2", "getlist", self.success)
-            router.add(game_code, "lobby2", "entry", self.success)
-            router.add(game_code, "lobby2", "update", self.success)
-            router.add(game_code, "lobby2", "delete", self.success)
-            # Pop'n 24+ sends these through the local2/lobby2 aliases using
-            # the concrete module names registered by the M39 DLL.
-            router.add(game_code, "lobby24", "getlist", self.success)
-            router.add(game_code, "lobby24", "entry", self.success)
-            router.add(game_code, "lobby24", "update", self.success)
-            router.add(game_code, "lobby24", "delete", self.success)
-            router.add(game_code, "loctest24", "test_log", self.success)
             router.add(game_code, "cardmng", "inquire", self.card_inquire)
             router.add(game_code, "cardmng", "getrefid", self.card_getrefid)
             router.add(game_code, "cardmng", "getdatalist", self.card_getdatalist)
@@ -245,11 +201,6 @@ class ArtemisServices:
         """Report that no package updates are available."""
         response.content = {"@attr": {"expire": "1200"}}
 
-    async def tax_get_phase(
-        self, info: EamuseInfo, data: dict, response: EamuseResponse
-    ):
-        response.content = {"phase": _item("s32", 0)}
-
     async def pcbtracker_alive(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
     ):
@@ -262,23 +213,6 @@ class ArtemisServices:
                 "time": str(int(time.time())),
             }
         }
-
-    async def posevent_sale(
-        self, info: EamuseInfo, data: dict, response: EamuseResponse
-    ):
-        response.content = [
-            {"@attr": {"status": "0"}},
-            {"@attr": {"status": "0"}},
-            {"@attr": {"status": "0"}},
-        ]
-
-    async def posevent_income(
-        self, info: EamuseInfo, data: dict, response: EamuseResponse
-    ):
-        if "sales" in data:
-            await self.posevent_sale(info, data, response)
-        else:
-            await self.success(info, data, response)
 
     async def eacoin_checkin(
         self, info: EamuseInfo, data: dict, response: EamuseResponse
@@ -301,35 +235,8 @@ class ArtemisServices:
             "balance": {"@attr": {"__type": "s32"}, "@content": [88410]},
         }
 
-    async def eacoin_pricelist(
-        self, info: EamuseInfo, data: dict, response: EamuseResponse
-    ):
-        response.content = {
-            "@attr": {"expire": "1200"},
-            "item": [],
-        }
-
     async def success(self, info: EamuseInfo, data: dict, response: EamuseResponse):
         response.status = 0
-
-    async def pcb_success(
-        self, info: EamuseInfo, data: dict, response: EamuseResponse
-    ):
-        """Accept EA3 PCB lifecycle calls with a successful XRPC status."""
-        response.status = 0
-
-    async def info_common(
-        self, info: EamuseInfo, data: dict, response: EamuseResponse
-    ):
-        """Provide the common network-info call used during Pop'n boot."""
-        response.content = {
-            "@attr": {
-                "location_id": "ea",
-                "location_name": "ARTEMIS",
-                "country": "JP",
-                "region": "JP-13",
-            }
-        }
 
     async def card_inquire(
         self, info: EamuseInfo, data: dict, response: EamuseResponse

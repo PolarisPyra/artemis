@@ -31,6 +31,12 @@ def _table(name: str, *columns, **kwargs) -> Table:
     return Table(name, konami_metadata, *columns, mysql_charset="utf8mb4", **kwargs)
 
 
+def _row_value(row, key: str):
+    """Read a SQLAlchemy row across supported SQLAlchemy row interfaces."""
+    mapping = getattr(row, "_mapping", None)
+    return mapping[key] if mapping is not None else row[key]
+
+
 bigint = MySQLBigInteger(unsigned=True)
 
 session = _table(
@@ -353,7 +359,7 @@ class KonamiData(BaseData):
         )
         row = result.fetchone() if result is not None else None
         if row is not None:
-            return int(row["userid"])
+            return int(_row_value(row, "userid"))
         if not create:
             return None
 
@@ -388,7 +394,7 @@ class KonamiData(BaseData):
             profile.select().where(profile.c.refid == refid_value)
         )
         row = result.fetchone() if result is not None else None
-        return row["data"] if row is not None else None
+        return _row_value(row, "data") if row is not None else None
 
     async def put_profile(self, refid_value: str, data: dict) -> None:
         await self._userid(refid_value)
@@ -422,7 +428,7 @@ class KonamiData(BaseData):
             )
         )
         row = result.fetchone() if result is not None else None
-        return int(row["extid"]) if row is not None else None
+        return int(_row_value(row, "extid")) if row is not None else None
 
     async def get_achievement_document(
         self, refid_value: str, game: str, version: str
@@ -435,7 +441,7 @@ class KonamiData(BaseData):
             )
         )
         row = result.fetchone() if result is not None else None
-        return row["data"] if row is not None else None
+        return _row_value(row, "data") if row is not None else None
 
     async def put_achievement_document(
         self, refid_value: str, game: str, version: str, data: dict
@@ -463,7 +469,7 @@ class KonamiData(BaseData):
         )
         row = result.fetchone() if result is not None else None
         if row is not None:
-            return int(row["id"])
+            return int(_row_value(row, "id"))
 
         musicid = self._stable_id(f"music:{self.GAME}:{version}:{songid}:{chart}")
         await self.execute(
@@ -503,7 +509,7 @@ class KonamiData(BaseData):
                 song = mapping.fetchone() if mapping is not None else None
                 if song is None:
                     continue
-                scores[f'{song["songid"]}:{song["chart"]}'] = {
+                scores[f'{_row_value(song, "songid")}:{_row_value(song, "chart")}'] = {
                     "score": int(music_row["points"]),
                     "clear_type": int(
                         (music_row["data"] or {}).get(
@@ -597,9 +603,9 @@ class KonamiData(BaseData):
         if result is None:
             return []
         return [
-            str((row["data"] or {}).get("refid"))
+            str((_row_value(row, "data") or {}).get("refid"))
             for row in result.fetchall()
-            if (row["data"] or {}).get("refid")
+            if (_row_value(row, "data") or {}).get("refid")
         ]
 
     async def put_rivals(self, refid_value: str, rival_ids: list[str]) -> None:
@@ -638,7 +644,7 @@ class KonamiData(BaseData):
             )
         )
         row = result.fetchone() if result is not None else None
-        return row["document"] if row is not None else None
+        return _row_value(row, "document") if row is not None else None
 
     async def put_document(
         self,
@@ -671,7 +677,10 @@ class KonamiData(BaseData):
             result = await self.execute(profile.select().where(*conditions))
             if result is None:
                 return []
-            return [(row["refid"], row["data"]) for row in result.fetchall()]
+            return [
+                (_row_value(row, "refid"), _row_value(row, "data"))
+                for row in result.fetchall()
+            ]
 
         if collection == "achievements":
             conditions = [achievement.c.type == self.GAME]
@@ -682,7 +691,10 @@ class KonamiData(BaseData):
             result = await self.execute(achievement.select().where(*conditions))
             if result is None:
                 return []
-            return [(row["refid"], row["data"]) for row in result.fetchall()]
+            return [
+                (_row_value(row, "refid"), _row_value(row, "data"))
+                for row in result.fetchall()
+            ]
 
         conditions = [
             konami_document.c.game_code == game_code,
@@ -697,4 +709,7 @@ class KonamiData(BaseData):
         )
         if result is None:
             return []
-        return [(row["refid"], row["document"]) for row in result.fetchall()]
+        return [
+            (_row_value(row, "refid"), _row_value(row, "document"))
+            for row in result.fetchall()
+        ]
