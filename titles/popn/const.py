@@ -31,6 +31,8 @@ class PopnConstants:
     VER_PEACE = 24
     VER_KAIMEI = 25
     VER_UNILAB = 26
+    VER_JAM_FIZZ = 27
+    VER_HI_CHEERS = 28
 
     VERSION_NAMES = [
         "pop'n music",
@@ -60,6 +62,8 @@ class PopnConstants:
         "pop'n music peace",
         "pop'n music 解明リドルズ",
         "pop'n music UniLab",
+        "pop'n music Jam&Fizz",
+        "pop'n music High☆Cheers!!",
     ]
 
     @classmethod

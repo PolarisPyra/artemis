@@ -18,7 +18,7 @@ class PopnUsaneko(PopnBase):
         protocol: EAProtocol,
     ) -> None:
         super().__init__(core_config, game_config, protocol)
-        self.version = PopnConstants.VER_UNILAB
+        self.version = PopnConstants.VER_USANEKO
         self.extra_services = {"local2": "", "lobby2": ""}
     
     def get_phase_info(self) -> List[XMLNode]:

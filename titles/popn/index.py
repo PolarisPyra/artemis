@@ -10,6 +10,8 @@ from core.eamuse import BaseDispatcher
 from core.eaapi.node import XMLNode
 from .base import PopnBase
 from .unilab import PopnUnilab
+from .jamfizz import PopnJamFizz
+from .hicheers import PopnHiCheers
 from .kaimei import PopnKaimei
 from .peace import PopnPeace
 from .usaneko import PopnUsaneko
@@ -53,6 +55,8 @@ class PopnDispatch(BaseDispatcher):
             PopnPeace,
             PopnKaimei,
             PopnUnilab,
+            PopnJamFizz,
+            PopnHiCheers,
         ]
 
         self.logger = logging.getLogger("popn")
@@ -102,7 +106,11 @@ class PopnDispatch(BaseDispatcher):
             return PopnConstants.VER_PEACE
         elif proto.model.datecode > 2020092800 and proto.model.datecode <= 2022090500:
             return PopnConstants.VER_KAIMEI
-        elif proto.model.datecode > 2022090500:
+        elif proto.model.datecode > 2022090500 and proto.model.datecode < 2024010100:
             return PopnConstants.VER_UNILAB
+        elif proto.model.datecode >= 2024010100 and proto.model.datecode < 2025010100:
+            return PopnConstants.VER_JAM_FIZZ
+        elif proto.model.datecode >= 2025010100:
+            return PopnConstants.VER_HI_CHEERS
         else:
             return -2

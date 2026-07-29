@@ -18,4 +18,4 @@ class PopnPeace(PopnUsaneko):
         protocol: EAProtocol,
     ) -> None:
         super().__init__(core_config, game_config, protocol)
-        self.version = PopnConstants.VER_UNILAB
+        self.version = PopnConstants.VER_PEACE
