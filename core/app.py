@@ -61,7 +61,6 @@ route_lst: List[Route] = [
     Route("/mucha_front/updatacheck.do", mucha.handle_updatecheck, methods=["POST"]),
     Route("/mucha_front/downloadstate.do", mucha.handle_dlstate, methods=["POST"]),
     # General
-    Route("/", dummy_rt),
     Route("/robots.txt", FrontendServlet.robots)
 ]
 
@@ -104,6 +103,8 @@ if cfg.eamuse.enable:
         Route("//{model:str}/{module:str}/{method:str}", ea.handle_eareq_slash, methods=["POST"]),
         Route("/", ea.handle_eareq_query, methods=["POST"]),
     ]
+else:
+    route_lst.append(Route("/", dummy_rt))
 
 for code, game in title.title_registry.items():
     route_lst += game.get_routes()
