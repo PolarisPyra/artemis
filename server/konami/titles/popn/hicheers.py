@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import random
 from copy import deepcopy
 from dataclasses import dataclass
@@ -13,6 +14,9 @@ from server.konami.protocol import EamuseInfo, EamuseResponse
 from server.konami.router import EamuseRouter
 from server.sega.config import ArtemisConfig
 from server.sega.data import Data
+
+
+logger = logging.getLogger("konami")
 
 
 def attr(node: Any, name: str, default: Any = None) -> Any:
@@ -1155,6 +1159,18 @@ class PopnVersionHandler:
             self._apply_achievements(response.content, achievements)
             if not response.content.get("course_data"):
                 response.content["course_data"] = [self._default_course_data()]
+            if info.module == "player" and info.method in ("new", "read"):
+                course_data = response.content.get("course_data")
+                first_course = course_data[0] if isinstance(course_data, list) and course_data else {}
+                seal_0 = first_course.get("seal_0") if isinstance(first_course, dict) else None
+                logger.info(
+                    "[DEBUG-psmap] %s.%s profile course_data=%s seal_0=%s seal_0_type=%s",
+                    info.module,
+                    info.method,
+                    len(course_data) if isinstance(course_data, list) else type(course_data).__name__,
+                    "present" if seal_0 is not None else "missing",
+                    attr(seal_0, "__type") if seal_0 is not None else "-",
+                )
             if self.force_unlock:
                 response.content.setdefault("item", []).extend(
                     {
