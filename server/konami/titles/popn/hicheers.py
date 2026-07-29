@@ -183,6 +183,7 @@ DEFAULT_FIELDS = {
         ("category", "s8", "config", 0, False),
         ("sub_category", "s8", "config", 0, False),
         ("chara_category", "s8", "config", 0, False),
+        ("disp_setting", "s8", "config", 0, False),
         ("ms_banner_disp", "s8", "config", 0, False),
         ("ms_down_info", "s8", "config", 0, False),
         ("ms_side_info", "s8", "config", 0, False),
