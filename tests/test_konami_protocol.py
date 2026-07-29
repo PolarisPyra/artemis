@@ -291,11 +291,16 @@ def test_core_service_routes_match_bemaniutils_core_surface():
     assert {
         "services.get",
         "facility.get",
+        "lobby.get",
+        "lobby.getlist",
+        "local.get",
         "message.get",
         "package.list",
         "pcbevent.put",
         "dlstatus.progress",
         "pcbtracker.alive",
+        "pkglist.nr_entry",
+        "posevent.income",
         "eacoin.checkout",
         "eacoin.checkin",
         "eacoin.consume",
@@ -315,7 +320,6 @@ def test_core_service_routes_match_bemaniutils_core_surface():
         "tax.get_phase",
         "pcb.boot",
         "sidmgr.open",
-        "posevent.income",
     } & set(router._routes["M39"])
 
 

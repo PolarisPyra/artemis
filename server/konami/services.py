@@ -37,9 +37,19 @@ class ArtemisServices:
             router.add(game_code, "facility", "get", self.facility_get)
             router.add(game_code, "message", "get", self.message_get)
             router.add(game_code, "package", "list", self.package_list)
+            # These modules are part of bemaniutils' core service discovery
+            # surface.  The handlers intentionally acknowledge packets only;
+            # title-specific data remains in the Pop'n route set.
+            for method in ("get", "getlist", "entry", "update", "delete"):
+                router.add(game_code, "lobby", method, self.success)
+            for method in ("get", "boot", "write"):
+                router.add(game_code, "local", method, self.success)
             router.add(game_code, "pcbevent", "put", self.success)
             router.add(game_code, "dlstatus", "progress", self.success)
             router.add(game_code, "pcbtracker", "alive", self.pcbtracker_alive)
+            router.add(game_code, "pkglist", "nr_entry", self.success)
+            for method in ("income", "outcome", "income.sales.sale"):
+                router.add(game_code, "posevent", method, self.success)
             router.add(game_code, "eacoin", "checkout", self.success)
             router.add(game_code, "eacoin", "checkin", self.eacoin_checkin)
             router.add(game_code, "eacoin", "consume", self.eacoin_consume)
