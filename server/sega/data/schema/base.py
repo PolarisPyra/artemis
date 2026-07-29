@@ -65,6 +65,7 @@ class BaseData:
             try:
                 self.logger.debug(f"SQL Execute: {''.join(str(sql).splitlines())}")
                 res = await session.execute(text(sql), opts)
+                await session.commit()
 
             except SQLAlchemyError as e:
                 self.logger.error(f"SQLAlchemy error {e}")
@@ -77,6 +78,7 @@ class BaseData:
             except Exception:
                 try:
                     res = await session.execute(sql, opts)
+                    await session.commit()
 
                 except SQLAlchemyError as e:
                     self.logger.error(f"SQLAlchemy error {e}")
