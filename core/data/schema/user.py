@@ -1,4 +1,5 @@
 from typing import List, Optional
+import random
 
 import bcrypt
 from sqlalchemy import Column, Table, ForeignKey, UniqueConstraint
