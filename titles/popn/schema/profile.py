@@ -126,6 +126,14 @@ profile = Table(
     Column("event_p27_elem_first_play", Boolean, nullable=False),
     Column("event_p27_today_first_play", Boolean, nullable=False),
     Column("event_p27_teams", JSON, nullable=False),
+    # Hi~Cheers adds these fields to the account/config payload.
+    Column("popn_class", Integer, nullable=False),
+    Column("option_tuto", Boolean, nullable=False),
+    Column("sc_news_no", Integer, nullable=False),
+    Column("read_policy", Integer, nullable=False),
+    Column("language", Integer, nullable=False),
+    Column("customize", JSON, nullable=False),
+    Column("scores", JSON, nullable=False),
     mysql_charset="utf8mb4",
 )
 
@@ -150,9 +158,9 @@ def _defaults(name: str, pref: int) -> Dict[str, Any]:
         "total_days": 0,
         "interval_day": 0,
         "my_best": [-1] * 20,
-        "latest_music": [-1] * 10,
-        "nice": [-1] * 30,
-        "favorite_chara": [-1] * 20,
+        "latest_music": [-1] * 30,
+        "nice": [-1] * 100,
+        "favorite_chara": [-1] * 100,
         "special_area": [-1] * 8,
         "chocolate_charalist": [-1] * 5,
         "chocolate_sp_chara": 0,
@@ -200,6 +208,17 @@ def _defaults(name: str, pref: int) -> Dict[str, Any]:
             {"team_id": team_id, "ex_no": 0, "point": 0, "is_cleared": False}
             for team_id in range(8)
         ],
+        "popn_class": 0,
+        "option_tuto": False,
+        "sc_news_no": 0,
+        "read_policy": 0,
+        "language": 0,
+        "customize": {
+            "seal_0": 0, "seal_1": 0, "seal_2": 0, "seal_3": 0,
+            "seal_4": 0, "seal_5": 0, "seal_6": 0, "seat": 0,
+            "touch_th": 0, "lane_cover": 0, "stage_bk": 0, "highlight": 0,
+        },
+        "scores": [],
     }
 
 
