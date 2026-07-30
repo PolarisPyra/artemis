@@ -235,6 +235,10 @@ class PopnProfileData(BaseData):
         result = await self.execute(select(profile).where(profile.c.user == user_id))
         return None if result is None else result.fetchone()
 
+    async def get_profile_data(self, user_id: int) -> Dict[str, Any] | None:
+        row = await self.get_profile(user_id)
+        return None if row is None else dict(row._mapping)
+
     async def create_profile(self, user_id: int, name: str, pref: int):
         values = _defaults(name, pref)
         values["user"] = user_id
@@ -249,6 +253,12 @@ class PopnProfileData(BaseData):
             self.logger.error("Failed to create Pop'n profile for user %s", user_id)
             return None
         return await self.get_profile(user_id)
+
+    async def create_profile_data(
+        self, user_id: int, name: str, pref: int
+    ) -> Dict[str, Any] | None:
+        row = await self.create_profile(user_id, name, pref)
+        return None if row is None else dict(row._mapping)
 
     async def update_profile(self, user_id: int, values: Dict[str, Any]) -> bool:
         values = {key: value for key, value in values.items() if key in profile.c}
