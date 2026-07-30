@@ -24,6 +24,21 @@ class PopnBase(BaseHandler):
         self.data = PopnData(core_config)
         self.extra_services = {"local": "", "lobby": ""}
 
+    async def check_profile(self, refid: str) -> bool:
+        user_id = await self.data.user.get_user_id_by_refid(refid)
+        if user_id is None:
+            return False
+
+        return await self.data.profile.get_profile(user_id) is not None
+
+    async def bind_profile(self, refid: str) -> None:
+        user_id = await self.data.user.get_user_id_by_refid(refid)
+        if user_id is None:
+            return
+
+        if await self.data.profile.get_profile(user_id) is None:
+            await self.data.profile.create_profile(user_id, "なし", 0)
+
     def decode_pcbevent(self, event: str, value: int) -> str:
         evt_split = event.split(".")
         ret = None

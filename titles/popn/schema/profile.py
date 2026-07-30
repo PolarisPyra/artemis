@@ -213,7 +213,10 @@ class PopnProfileData(BaseData):
         values["user"] = user_id
         values["g_pm_id"] = f"{user_id:012d}"
         statement = insert(profile).values(**values)
-        conflict = statement.on_duplicate_key_update(user=statement.inserted.user)
+        conflict = statement.on_duplicate_key_update(
+            name=statement.inserted.name,
+            pref=statement.inserted.pref,
+        )
         result = await self.execute(conflict)
         if result is None:
             self.logger.error("Failed to create Pop'n profile for user %s", user_id)
