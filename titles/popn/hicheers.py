@@ -377,6 +377,7 @@ class PopnHiCheers(PopnJamFizz):
             evt27_team.append("is_cleared", Type.Bool, False)
             evt27.children.append(evt27_team)
 
+        root.append('result', Type.U8, 0)
         root.children.append(acct)
         root.children.append(cfg)
         root.children.append(opt)
@@ -395,14 +396,10 @@ class PopnHiCheers(PopnJamFizz):
 
 
     async def handle_player_new(self, request: XMLNode) -> XMLNode:
-        root = await self.handle_player_read(request)
-        root.append('result', Type.U8, 0)
-        return root
+        return await self.handle_player_read(request)
 
     async def handle_player_conversion(self, request: XMLNode) -> XMLNode:
-        root = await self.handle_player_read(request)
-        root.append('result', Type.U8, 0)
-        return root
+        return await self.handle_player_read(request)
 
     async def handle_player_write(self, request: XMLNode) -> XMLNode:
         user_id, _ = await self._get_profile(request)
