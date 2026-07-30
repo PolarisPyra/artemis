@@ -196,8 +196,6 @@ class PopnHiCheers(PopnJamFizz):
             sh_riddles ->  sh_riddles_id U32
         )
         """
-        root.append('result', Type.U8, 0) # doesn't seem to matter
-
         acct = XMLNode.void("account")
         acct.append('g_pm_id', Type.Str, '123456789012')
         acct.append('name', Type.Str, 'ＨＡＹ１ＴＳ')
@@ -399,10 +397,14 @@ class PopnHiCheers(PopnJamFizz):
 
 
     async def handle_player_new(self, request: XMLNode) -> XMLNode:
-        return await self.handle_player_read(request)
+        root = await self.handle_player_read(request)
+        root.append('result', Type.U8, 0)
+        return root
 
     async def handle_player_conversion(self, request: XMLNode) -> XMLNode:
-        return await self.handle_player_read(request)
+        root = await self.handle_player_read(request)
+        root.append('result', Type.U8, 0)
+        return root
 
     async def handle_player_write(self, request: XMLNode) -> XMLNode:
         user_id, _ = await self._get_profile(request)
