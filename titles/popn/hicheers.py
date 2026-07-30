@@ -58,6 +58,13 @@ class PopnHiCheers(PopnJamFizz):
                 child.value = values[index]
                 index += 1
 
+    @staticmethod
+    def _set_array(parent: XMLNode, name: str, values) -> None:
+        for child in parent.children:
+            if child.name == name:
+                child.value = list(values)
+                return
+
     def _apply_profile(self, root: XMLNode, row) -> None:
         if row is None:
             return
@@ -71,7 +78,10 @@ class PopnHiCheers(PopnJamFizz):
             for xml_name, column in fields.items():
                 value = values[column]
                 if isinstance(value, list):
-                    self._set_repeated(parent, xml_name, value)
+                    if xml_name == "dialog":
+                        self._set_repeated(parent, xml_name, value)
+                    else:
+                        self._set_array(parent, xml_name, value)
                 else:
                     self._set_child(parent, xml_name, value)
 
@@ -139,7 +149,7 @@ class PopnHiCheers(PopnJamFizz):
             }
             for xml_name, column in set_values.items():
                 value = values[column]
-                self._set_repeated(event, xml_name, value) if isinstance(value, list) else self._set_child(event, xml_name, value)
+                self._set_array(event, xml_name, value) if isinstance(value, list) else self._set_child(event, xml_name, value)
         event = next((child for child in root.children if child.name == "event_p27"), None)
         if event is not None:
             for xml_name, column in {
