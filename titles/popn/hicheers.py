@@ -403,7 +403,6 @@ class PopnHiCheers(PopnJamFizz):
         )
 
     async def handle_player_end(self, request: XMLNode) -> XMLNode:
-        await self._finish_session(request)
         return XMLNode.void("player")
 
     async def handle_player_logout(self, request: XMLNode) -> XMLNode:
@@ -687,7 +686,6 @@ class PopnHiCheers(PopnJamFizz):
         await self.data.profile.update_profile(user_id, values)
         for stage_number, stage in enumerate(self._children(node, "stage"), 1):
             await self._save_music(user_id, stage, node, stage_number, profile)
-        await self._finish_session(request)
         return XMLNode.void("player")
 
     async def handle_player_friend(self, request: XMLNode) -> XMLNode:
