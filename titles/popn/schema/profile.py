@@ -190,7 +190,7 @@ def _defaults(name: str, pref: int) -> Dict[str, Any]:
         "category": -1, "sub_category": -1, "chara_category": -1,
         "ms_banner_disp": 0, "ms_down_info": 0, "ms_raise_type": 0,
         "banner_sort": 0, "disp_setting": 0, "h_vol": 0,
-        "hiscore_disp": 0, "lane_type": 0, "brightness": 0,
+        "hiscore_disp": 0, "lane_type": 0, "brightness": 50,
         "key_beam": 0, "lane_line": 0, "course_id": 0, "course_folder": 0,
         "hispeed": 10, "popkun": 0, "hidden": False, "hidden_rate": -1,
         "sudden": False, "sudden_rate": -1, "randmir": 0, "gauge_type": 0,

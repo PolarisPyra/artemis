@@ -42,6 +42,12 @@ class PopnHiCheers(PopnJamFizz):
         (2935, 1775433600000, 1776038400000, 1777),
     )
     POPULAR_CHARACTERS = (1866, 2495, 577, 2445)
+    OPTION_FIELDS = (
+        "hispeed", "popkun", "hidden", "hidden_rate", "sudden", "sudden_rate",
+        "randmir", "gauge_type", "ojama_0", "ojama_1", "forever_0",
+        "forever_1", "full_setting", "judge", "guide_se", "guide_se_vol",
+        "lift", "lift_rate", "judge_ad", "roof", "long_pop",
+    )
     POPULAR_MUSIC = (
         1082, 1027, 1042, 2209, 859, 1230, 1420, 1114, 699, 1854, 1310,
         1169, 1876, 1887, 135, 1641, 1202, 1893, 2331, 795, 883, 929,
@@ -87,7 +93,10 @@ class PopnHiCheers(PopnJamFizz):
     @staticmethod
     def _value(request: XMLNode, path: str, default: Any = None) -> Any:
         try:
-            return request.xpath(path).value
+            value = request.xpath(path).value
+            # Container nodes created with XMLNode.void use an empty tuple as
+            # their value. Treat that as absent when reading scalar fields.
+            return default if value == () else value
         except Exception:
             return default
 
@@ -179,11 +188,11 @@ class PopnHiCheers(PopnJamFizz):
             "category": -1, "sub_category": -1, "chara_category": -1,
             "ms_banner_disp": 0, "ms_down_info": 0, "ms_raise_type": 0,
             "banner_sort": 0, "disp_setting": 0, "h_vol": 0,
-            "hiscore_disp": False, "lane_type": 0, "brightness": 0,
+            "hiscore_disp": False, "lane_type": 0, "brightness": 50,
             "key_beam": 0, "lane_line": 0,
         }
         if fresh:
-            for key in ("ms_banner_disp", "ms_down_info", "ms_raise_type", "banner_sort", "disp_setting", "h_vol", "lane_type", "brightness", "key_beam", "lane_line"):
+            for key in ("ms_banner_disp", "ms_down_info", "ms_raise_type", "banner_sort", "disp_setting", "h_vol", "lane_type", "key_beam", "lane_line"):
                 config_defaults[key] = -1
         config_types = {
             "mode": Type.U8, "chara": Type.S16, "music": Type.S16, "sheet": Type.U8,
@@ -470,7 +479,7 @@ class PopnHiCheers(PopnJamFizz):
             await self._save_music(user_id, node)
             if self._value(node, "is_option_save", 0):
                 option_values = {}
-                for name in ("hispeed", "popkun", "hidden", "hidden_rate", "sudden", "sudden_rate", "randmir", "ojama_0", "ojama_1", "forever_0", "forever_1", "full_setting", "guide_se", "guide_se_vol", "lift", "lift_rate", "judge_ad", "roof", "long_pop"):
+                for name in self.OPTION_FIELDS:
                     value = self._value(node, name)
                     if value is not None:
                         option_values[name] = value
@@ -515,12 +524,7 @@ class PopnHiCheers(PopnJamFizz):
             "ms_banner_disp", "ms_down_info", "ms_raise_type", "banner_sort", "disp_setting",
             "h_vol", "hiscore_disp", "lane_type", "brightness", "key_beam", "lane_line",
         )
-        option_fields = (
-            "hispeed", "popkun", "hidden", "hidden_rate", "sudden", "sudden_rate", "randmir",
-            "gauge_type", "ojama_0", "ojama_1", "forever_0", "forever_1", "full_setting", "judge",
-            "guide_se", "guide_se_vol", "lift", "lift_rate", "judge_ad", "roof", "long_pop",
-        )
-        for section, fields in (("account", account_fields), ("config", config_fields), ("option", option_fields)):
+        for section, fields in (("account", account_fields), ("config", config_fields), ("option", self.OPTION_FIELDS)):
             section_node = next((child for child in node.children if child.name == section), None)
             for field in fields:
                 value = self._value(section_node, field) if section_node is not None else None
