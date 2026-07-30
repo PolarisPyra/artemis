@@ -353,7 +353,8 @@ class PopnHiCheers(PopnJamFizz):
 
     async def handle_player_new(self, request: XMLNode) -> XMLNode:
         _, profile = await self._get_profile(request)
-        return self._profile_response(profile, fresh=True)
+        fresh = self._row_value(profile, "total_play_cnt", 0) == 0
+        return self._profile_response(profile, fresh=fresh)
 
     async def handle_player_conversion(self, request: XMLNode) -> XMLNode:
         return await self.handle_player_read(request)
@@ -686,6 +687,5 @@ class PopnHiCheers(PopnJamFizz):
 
     async def handle_sppass_close(self, request: XMLNode) -> XMLNode:
         return XMLNode.void("sppass")
-
 
 
