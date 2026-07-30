@@ -60,7 +60,8 @@ class PopnHiCheers(PopnJamFizz):
         return default if value is None else value
 
     async def _get_profile(self, request: XMLNode):
-        ref_id = self._value(request, "@ref_id/player")
+        player = self._player(request)
+        ref_id = player.attributes.get("ref_id") if player is not None else None
         if not ref_id:
             ref_id = self._value(request, "player/ref_id")
         if not ref_id:
@@ -396,13 +397,13 @@ class PopnHiCheers(PopnJamFizz):
         return self._info_response("player", include_play_id=True)
 
     async def handle_player_end(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player")
+        return XMLNode.void("player", status="0")
 
     async def handle_player_logout(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player")
+        return XMLNode.void("player", status="0")
 
     async def handle_player_read_option(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player")
+        return XMLNode.void("player", status="0")
 
     @staticmethod
     def _children(node: Optional[XMLNode], name: str) -> List[XMLNode]:
@@ -551,7 +552,7 @@ class PopnHiCheers(PopnJamFizz):
                         option_values[name] = value
                 if option_values:
                     await self.data.profile.update_profile(user_id, option_values)
-        return XMLNode.void("player")
+        return XMLNode.void("player", status="0")
 
     async def handle_player_read_score(self, request: XMLNode) -> XMLNode:
         user_id, _ = await self._get_profile(request)
@@ -585,7 +586,7 @@ class PopnHiCheers(PopnJamFizz):
         user_id, profile = await self._get_profile(request)
         node = self._player(request)
         if user_id is None or node is None:
-            return XMLNode.void("player")
+            return XMLNode.void("player", status="0")
 
         values: Dict[str, Any] = {}
         account_fields = (
@@ -680,22 +681,22 @@ class PopnHiCheers(PopnJamFizz):
         await self.data.profile.update_profile(user_id, values)
         for stage_number, stage in enumerate(self._children(node, "stage"), 1):
             await self._save_music(user_id, stage, node, stage_number, profile)
-        return XMLNode.void("player")
+        return XMLNode.void("player", status="0")
 
     async def handle_player_friend(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player")
+        return XMLNode.void("player", status="0")
 
     async def handle_player_write_course(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player")
+        return XMLNode.void("player", status="0")
 
     async def handle_player_update_ranking(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player")
+        return XMLNode.void("player", status="0")
 
     async def handle_player_buy(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player")
+        return XMLNode.void("player", status="0")
 
     async def handle_player_tsumtsum(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player")
+        return XMLNode.void("player", status="0")
 
     async def handle_loctest24_log(self, request: XMLNode) -> XMLNode:
         return XMLNode.void("loctest24")
