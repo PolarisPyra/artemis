@@ -21,3 +21,11 @@
 - Read `.agent/CONTINUITY.md` at the start of every turn.
 - Maintain `.agent/CONTINUITY.md` as the canonical state file for this
   workspace, and update it only when something materially changes.
+- This is a `uv` Python project. Never activate a virtual environment or call
+  `pip` directly. Use `uv add` for dependencies and `uv run` for scripts or
+  tooling.
+- Dockerfiles and Docker Compose files are not the production deployment for
+  this workspace. Ignore them when determining how to update production; use
+  the native `uv`-managed deployment instead.
+- Never write tests for this repository, including unit, integration, end-to-
+  end, regression, or smoke tests.

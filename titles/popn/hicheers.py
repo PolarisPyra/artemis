@@ -9,6 +9,9 @@ from .const import PopnConstants
 from .jamfizz import PopnJamFizz
 
 
+HICHEERS_ITEM_MASK = bytes.fromhex("3df7b7ff4fb9bfe2f7d77af7b7dfdaffffdfffffff7bff3f9fffffffff00000000bcfff8ff1cf8ff0f00e0ff3fb7ffff3f006cbfffaf1fc0fbddfdf8f09fffafeff7f70bffffefffffff27fefffffffffff9fdfffdffffcfffffdffffffff5a7f8fffffffffffcff9fffffffffffffff29f97fffffffffffff02e1fff0ffffffffffffff2ffffffffffffdffff3f80fffffffffffffff7ffcfffffbfffdfffff0000f0ff8fffffdffeffffffffffffffff7ffcffbffffffbd3fffffeffffff0b80feffdbf3fffffffffdffdffffff7fffffffdfffffffffefffffffffffffffdfffffffffbfffffff9fffffffffffefdfffbffffffffffc7fff7ffff27fafffbfff8ffffffffffffffffffffffff27f9ffffffffffffffffffffffffffffbffbfcffffffffffffe73f")
+
+
 class PopnHiCheers(PopnJamFizz):
     """The M39 Hi~Cheers player protocol.
 
@@ -64,11 +67,11 @@ class PopnHiCheers(PopnJamFizz):
         (46, 60, 80), (61, 98, 200), (99, 169, 250),
     )
     # Bitset of the item IDs present in the captured M39 player payload.
-    ITEM_MASK = bytes.fromhex("3df7b7ff4fb9bfe2f7d77af7b7dfdaffffdfffffff7bff3f9fffffffff00000000bcfff8ff1cf8ff0f00e0ff3fb7ffff3f006cbfffaf1fc0fbddfdf8f09fffafeff7f70bffffefffffff27fefffffffffff9fdfffdffffcfffffdffffffff5a7f8fffffffffffcff9fffffffffffffff29f97fffffffffffff02e1fff0ffffffffffffff2ffffffffffffdffff3f80fffffffffffffff7ffcfffffbfffdfffff0000f0ff8fffffdffeffffffffffffffff7ffcffbffffffbd3fffffeffffff0b80feffdbf3fffffffffdffdffffff7fffffffdfffffffffefffffffffffffffdfffffffffbfffffff9fffffffffffefdfffbffffffffffc7fff7ffff27fafffbfff8ffffffffffffffffffffffff27f9ffffffffffffffffffffffffffffbffbfcffffffffffffe73f")
+    ITEM_MASK = HICHEERS_ITEM_MASK
     ITEM_IDS = tuple(
         item_id
-        for item_id in range(len(ITEM_MASK) * 8)
-        if ITEM_MASK[item_id // 8] & (1 << (item_id % 8))
+        for item_id in range(len(HICHEERS_ITEM_MASK) * 8)
+        if HICHEERS_ITEM_MASK[item_id // 8] & (1 << (item_id % 8))
     )
 
     def __init__(
