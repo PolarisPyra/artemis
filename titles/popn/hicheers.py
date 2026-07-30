@@ -377,7 +377,7 @@ class PopnHiCheers(PopnJamFizz):
             evt27_team.append("is_cleared", Type.Bool, False)
             evt27.children.append(evt27_team)
 
-        root.append('result', Type.U8, 0)
+        root.append('result', Type.S8, 0)
         root.children.append(acct)
         root.children.append(cfg)
         root.children.append(opt)
