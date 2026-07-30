@@ -25,6 +25,8 @@ from .eaapi.exception import InvalidModel
 from .eaapi.const import FAULT_MALFORMED_REQUEST, FAULT_BAD_GAME, FAULT_EA_REGISTRATION_NEEDED, FAULT_GAME_UNSUPORTED, FAULT_GAME_OLD
 from .eaapi.cardconv import uid_to_konami
 
+PASELI_BALANCE: Final[int] = 5730
+
 class EAModel:
     def __init__(self, model: str) -> None:
         match = re.match(
@@ -705,19 +707,9 @@ class BaseHandler:
         if old_seshes:
             pass # TODO: Handle hanging sessions
     
-        bal = 5730
-        
-        if not self.core_config.eamuse.global_infinite_paseli:
-            bal_acid = machine['arcade'] if not self.core_config.eamuse.global_paseli_balances else None
-            ubal = await self.data.user.get_paseli_balance_by_user_arcade(userid, bal_acid)
-            
-            if ubal:
-                if not ubal['is_infinite']:
-                    bal = ubal['balance']
-            
-            else:
-                bal = 0
-                await self.data.user.create_paseli_balance(userid, bal_acid)
+        # Paseli is virtual for this server: cabinets always receive a full
+        # balance and consume calls reload it instead of debiting the DB row.
+        bal = PASELI_BALANCE
         
         sesh = await self.data.user.create_paseli_session(userid, machine['id'], self.protocol.model.gamecode)
         if not sesh:
@@ -764,36 +756,12 @@ class BaseHandler:
         
         self.logger.info(f"Paseli session {sesh} (user {session['user']} machine {session['machine']}) paid {ammount}p for {self.decode_paseli_item(detail)} at machine {self.protocol.pcbid} (tx #{seq})")
         
-        machine = await self.data.arcade.get_machine(id=session['machine'])
+        await self.data.user.put_paseli_transaction(
+            session['id'], seq, -ammount, detail, self.decode_paseli_item(detail)
+        )
 
-        bal = 5730 - ammount
-        acstat = 0
-        
-        if not self.core_config.eamuse.global_infinite_paseli:
-            bal = 0
-            acstat = 1
-            if self.core_config.eamuse.global_paseli_balances:
-                ubal = await self.data.user.get_paseli_balance_by_user_arcade(session['user'])
-            else:
-                ubal = await self.data.user.get_paseli_balance_by_user_arcade(session['user'], machine['arcade'])
-            
-            if ubal:
-                if ubal['is_infinite']:
-                    bal = 5730 - ammount
-                    acstat = 0
-                
-                elif ubal['balance'] < ammount:
-                    self.logger.error(f"{self.protocol.pcbid} attempted to charge {ammount} paseli from {session['user']}@{machine['arcade']} but balance was insufficiant!")
-                    bal = ubal['balance']
-                
-                else:
-                    await self.data.user.spend_paseli_balance_by_id(ubal['id'], ammount)
-                    await self.data.user.put_paseli_transaction(session['id'], seq, -ammount, detail, self.decode_paseli_item(detail))
-                    bal = ubal['balance'] - ammount
-                    acstat = 0
-
-        eacoin.append("acstatus", Type.U8, acstat)
-        eacoin.append("balance", Type.S32, bal)
+        eacoin.append("acstatus", Type.U8, 0)
+        eacoin.append("balance", Type.S32, PASELI_BALANCE)
         return eacoin
 
     async def handle_eacoin_opcheckin(self, request: XMLNode) -> XMLNode:
