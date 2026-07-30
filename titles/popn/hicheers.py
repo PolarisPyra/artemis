@@ -361,9 +361,9 @@ class PopnHiCheers(PopnJamFizz):
         if (
             user_id is not None
             and existing is not None
-            and self._row_value(profile, "total_play_cnt", 0) == 0
+            and self._row_value(profile, "total_play_cnt", 0) <= 1
         ):
-            migration = {"total_play_cnt": 1, "tutorial": 0, "sc_news_no": 2951}
+            migration = {"total_play_cnt": 2, "tutorial": 0, "sc_news_no": 2951}
             await self.data.profile.update_profile(user_id, migration)
             profile = {**profile, **migration}
         return self._profile_response(profile)
