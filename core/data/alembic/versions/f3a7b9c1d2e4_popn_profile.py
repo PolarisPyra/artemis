@@ -6,7 +6,7 @@ from titles.popn.schema.profile import profile
 
 
 revision = "f3a7b9c1d2e4"
-down_revision = "merge_artemis_heads"
+down_revision = "0d4d7f6c2a91"
 branch_labels = None
 depends_on = None
 
