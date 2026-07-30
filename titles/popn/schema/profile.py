@@ -133,7 +133,6 @@ profile = Table(
     Column("read_policy", Integer, nullable=False),
     Column("language", Integer, nullable=False),
     Column("customize", JSON, nullable=False),
-    Column("scores", JSON, nullable=False),
     mysql_charset="utf8mb4",
 )
 
@@ -218,7 +217,6 @@ def _defaults(name: str, pref: int) -> Dict[str, Any]:
             "seal_4": 0, "seal_5": 0, "seal_6": 0, "seat": 0,
             "touch_th": 0, "lane_cover": 0, "stage_bk": 0, "highlight": 0,
         },
-        "scores": [],
     }
 
 

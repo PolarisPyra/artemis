@@ -43,24 +43,24 @@ class PopnHiCheers(PopnJamFizz):
     )
     POPULAR_CHARACTERS = (1866, 2495, 577, 2445)
     POPULAR_MUSIC = (
-        1082, 1027, 859, 1042, 2209, 1854, 1310, 1230, 1420, 1114, 699,
-        883, 929, 1169, 1876, 1887, 135, 1641, 1202, 1893, 2331, 795,
-        2285, 1208, 1899, 276, 873, 2291, 1211, 88, 1165, 1585, 1359,
-        2311, 2315, 1376, 576, 1795, 2221, 660, 1198, 1250, 1892, 2253,
-        1824, 2262, 2327, 1672, 1160, 1856, 1212, 453, 1868, 89, 1588,
-        1870, 1368, 1757, 1912, 1171, 1191, 1433, 1616, 2014, 693, 1482,
-        148, 1204, 1258, 1495, 1273, 2332, 224, 819, 1127, 1207, 1276,
-        1499, 1718, 1845, 1896, 2049, 2334, 269, 1128, 1278, 1500, 1721,
-        2050, 2290, 2335, 1129, 1210, 1548, 1730, 1855, 1900, 2099, 346,
-        1324, 1553, 1733, 1903, 2106, 2293, 352, 888, 1161, 1353, 1568,
-        1744, 1861, 1908, 2110, 2299, 1214, 1358, 1754, 1910, 2147, 2308,
-        548, 1168, 1217, 1756, 1911, 2150, 107, 557, 1229, 1592, 2207,
-        108, 558, 1068, 1593, 1763, 1885, 1919, 2317, 126, 1183, 1233,
-        1395, 1602, 1886, 1921, 2214, 2318, 133, 655, 1102, 1244, 1613,
-        1798, 1922, 2319, 1192, 1248, 1800, 1888, 1982, 2228, 2321, 145,
-        672, 1118, 1476, 1801, 2326, 147, 1120, 1251, 1655, 2016, 1121,
-        1665, 1830, 1894, 2021, 2263, 159, 1125, 1205, 1498, 1837, 1895,
-        2025, 2264,
+        1082, 1027, 1042, 2209, 859, 1230, 1420, 1114, 699, 1854, 1310,
+        1169, 1876, 1887, 135, 1641, 1202, 1893, 2331, 795, 883, 929,
+        1359, 2311, 2315, 1376, 576, 1795, 2221, 660, 1198, 1250, 1892,
+        2253, 1824, 2262, 2327, 1672, 2285, 1208, 1899, 276, 873, 2291,
+        1211, 88, 1165, 1585, 89, 1588, 1870, 1368, 1757, 1912, 1171,
+        1191, 1433, 1616, 2014, 693, 1482, 148, 1204, 1258, 1495, 1273,
+        2332, 1160, 1856, 1212, 453, 1868, 548, 1168, 1217, 1756, 1911,
+        2150, 107, 557, 1229, 1592, 2207, 108, 558, 1068, 1593, 1763,
+        1885, 1919, 2317, 126, 1183, 1233, 1395, 1602, 1886, 1921, 2214,
+        2318, 133, 655, 1102, 1244, 1613, 1798, 1922, 2319, 1192, 1248,
+        1800, 1888, 1982, 2228, 2321, 145, 672, 1118, 1476, 1801, 2326,
+        147, 1120, 1251, 1655, 2016, 1121, 1665, 1830, 1894, 2021, 2263,
+        159, 1125, 1205, 1498, 1837, 1895, 2025, 2264, 224, 819, 1127,
+        1207, 1276, 1499, 1718, 1845, 1896, 2049, 2334, 269, 1128, 1278,
+        1500, 1721, 2050, 2290, 2335, 1129, 1210, 1548, 1730, 1855, 1900,
+        2099, 346, 1324, 1553, 1733, 1903, 2106, 2293, 352, 888, 1161,
+        1353, 1568, 1744, 1861, 1908, 2110, 2299, 1214, 1358, 1754, 1910,
+        2147, 2308,
     )
     GOODS = (
         (1, 15, 30), (16, 30, 40), (31, 45, 60),
@@ -82,7 +82,7 @@ class PopnHiCheers(PopnJamFizz):
     ) -> None:
         super().__init__(core_config, game_config, protocol)
         self.version = PopnConstants.VER_HI_CHEERS
-        self.extra_services.update({"local3": ""})
+        self.extra_services.update({"local": "", "lobby": "", "local3": ""})
 
     @staticmethod
     def _value(request: XMLNode, path: str, default: Any = None) -> Any:
@@ -129,9 +129,8 @@ class PopnHiCheers(PopnJamFizz):
         return user_id, profile
 
     @staticmethod
-    def _append(parent: XMLNode, name: str, type_: Type, value: Any, count: int = None) -> XMLNode:
-        attrs = {} if count is None else {"__count": count}
-        return parent.append(name, type_, value, **attrs)
+    def _append(parent: XMLNode, name: str, type_: Type, value: Any) -> XMLNode:
+        return parent.append(name, type_, value)
 
     def _append_account(self, root: XMLNode, row, fresh: bool = False) -> None:
         account = XMLNode.void("account")
@@ -159,8 +158,7 @@ class PopnHiCheers(PopnJamFizz):
         )
         for name, type_ in specs:
             value = defaults[name]
-            count = len(value) if isinstance(value, list) else None
-            self._append(account, name, type_, value, count)
+            self._append(account, name, type_, value)
         root.children.append(account)
 
     def _append_profile_sections(self, root: XMLNode, row, fresh: bool = False) -> None:
@@ -246,12 +244,12 @@ class PopnHiCheers(PopnJamFizz):
             root.children.append(mission)
 
         netvs = XMLNode.void("netvs")
-        self._append(netvs, "record", Type.S16, self._row_value(row, "netvs_record", [0] * 6), 6)
+        self._append(netvs, "record", Type.S16, self._row_value(row, "netvs_record", [0] * 6))
         for _ in range(6):
             self._append(netvs, "dialog", Type.Str, "")
-        self._append(netvs, "ojama_condition", Type.S8, self._row_value(row, "ojama_condition", [0] * 74), 74)
-        self._append(netvs, "set_ojama", Type.S8, self._row_value(row, "set_ojama", [0] * 3), 3)
-        self._append(netvs, "set_recommend", Type.S8, self._row_value(row, "set_recommend", [0] * 3), 3)
+        self._append(netvs, "ojama_condition", Type.S8, self._row_value(row, "ojama_condition", [0] * 74))
+        self._append(netvs, "set_ojama", Type.S8, self._row_value(row, "set_ojama", [0] * 3))
+        self._append(netvs, "set_recommend", Type.S8, self._row_value(row, "set_recommend", [0] * 3))
         self._append(netvs, "netvs_play_cnt", Type.U32, self._row_value(row, "netvs_play_cnt", 0))
         root.children.append(netvs)
 
@@ -375,43 +373,102 @@ class PopnHiCheers(PopnJamFizz):
             return []
         return [child for child in node.children if child.name == name]
 
-    def _music_record(self, node: XMLNode, previous: List[Dict[str, Any]]) -> Dict[str, Any]:
-        def value(name: str, default: Any = 0) -> Any:
-            return self._value(node, name, default)
+    def _playlog_values(
+        self,
+        node: XMLNode,
+        parent: Optional[XMLNode] = None,
+        stage_number: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        def value(name: str, default: Any = None) -> Any:
+            current = self._value(node, name)
+            if current is None and parent is not None:
+                current = self._value(parent, name)
+            return default if current is None else current
 
-        music_num = value("music_num", value("no", 0))
-        sheet_num = value("sheet_num", value("sheet", 0))
-        key = f"{music_num}:{sheet_num}"
-        old = next((record for record in previous if record.get("key") == key), None)
-        return {
-            "key": key,
-            "music_num": music_num,
-            "sheet_num": sheet_num,
-            "score": value("score"),
+        values = {
+            "ref_id": value("ref_id"),
+            "data_id": value("data_id"),
+            "name": value("name"),
+            "chara_num": value("chara_num"),
+            "mode": value("mode"),
+            "play_id": value("play_id"),
+            "stage": value("stage", stage_number),
+            "music_num": value("music_num", value("no", 0)),
+            "sheet_num": value("sheet_num", value("sheet", 0)),
             "clear_type": value("clear_type"),
-            "score_ver": value("score"),
-            "clear_type_ver": value("clear_type"),
             "clear_rank": value("clear_rank"),
-            "cnt": (old or {}).get("cnt", 0) + 1,
-            "detail": {child.name: child.value for child in node.children},
+            "score": value("score"),
+            "cool": value("cool"),
+            "great": value("great"),
+            "good": value("good"),
+            "bad": value("bad"),
+            "combo": value("combo"),
+            "highlight": value("highlight"),
+            "gauge": value("gauge"),
+            "gauge_type": value("gauge_type"),
+            "is_netvs": value("is_netvs"),
+            "is_win": value("is_win"),
+            "is_image_store": value("is_image_store"),
+            "is_option_save": value("is_option_save"),
+            "hispeed": value("hispeed"),
+            "popkun": value("popkun"),
+            "hidden": value("hidden"),
+            "hidden_rate": value("hidden_rate"),
+            "sudden": value("sudden"),
+            "sudden_rate": value("sudden_rate"),
+            "randmir": value("randmir"),
+            "ojama_0": value("ojama_0"),
+            "ojama_1": value("ojama_1"),
+            "forever_0": value("forever_0"),
+            "forever_1": value("forever_1"),
+            "full_setting": value("full_setting"),
+            "guide_se": value("guide_se"),
+            "guide_se_vol": value("guide_se_vol"),
+            "lift": value("lift"),
+            "lift_rate": value("lift_rate"),
+            "judge_ad": value("judge_ad"),
+            "roof": value("roof"),
+            "long_pop": value("long_pop"),
+            "judge": value("judge"),
+            "slow": value("slow"),
+            "fast": value("fast"),
+            "ex_gauge_lv": value("ex_gauge_lv"),
+            "is_super_extra": value("is_super_extra"),
+            "netvs_ojama_type": value("netvs_ojama_type"),
+            "netvs_type": value("netvs_type"),
+            "netvs_rank": value("netvs_rank"),
+            "netvs_ojama_0": value("netvs_ojama_0"),
+            "netvs_ojama_1": value("netvs_ojama_1"),
+            "netvs_ojama_2": value("netvs_ojama_2"),
+            "play_date": value("play_date"),
+            "select_total_time": value("select_total_time"),
+            "select_used_time": value("select_used_time"),
+            "select_remain_time": value("select_remain_time"),
+            "category": value("category"),
+            "sub_category": value("sub_category"),
+            "matching": value("matching"),
+            "ojama_vs": value("ojama_vs"),
         }
+        return {key: value for key, value in values.items() if value is not None}
 
-    async def _save_music(self, user_id: int, node: XMLNode) -> None:
-        profile = await self.data.profile.get_profile(user_id)
-        previous = self._row_value(profile, "scores", [])
-        if not isinstance(previous, list):
-            previous = []
-        record = self._music_record(node, previous)
-        scores = [item for item in previous if item.get("key") != record["key"]]
-        scores.append(record)
-        await self.data.profile.update_profile(user_id, {"scores": scores})
+    async def _save_music(
+        self,
+        user_id: int,
+        node: XMLNode,
+        parent: Optional[XMLNode] = None,
+        stage_number: Optional[int] = None,
+    ) -> None:
+        await self.data.score.put_playlog(
+            user_id,
+            self._playlog_values(node, parent, stage_number),
+        )
 
     async def handle_player_write_music(self, request: XMLNode) -> XMLNode:
         user_id, _ = await self._get_profile(request)
         node = self._player(request)
         if user_id is not None and node is not None:
             await self._save_music(user_id, node)
-            if self._value(request, "player/is_option_save", 0):
+            if self._value(node, "is_option_save", 0):
                 option_values = {}
                 for name in ("hispeed", "popkun", "hidden", "hidden_rate", "sudden", "sudden_rate", "randmir", "ojama_0", "ojama_1", "forever_0", "forever_1", "full_setting", "guide_se", "guide_se_vol", "lift", "lift_rate", "judge_ad", "roof", "long_pop"):
                     value = self._value(node, name)
@@ -422,11 +479,9 @@ class PopnHiCheers(PopnJamFizz):
         return XMLNode.void("player")
 
     async def handle_player_read_score(self, request: XMLNode) -> XMLNode:
-        _, profile = await self._get_profile(request)
+        user_id, _ = await self._get_profile(request)
         root = XMLNode("player")
-        scores = self._row_value(profile, "scores", [])
-        if not isinstance(scores, list):
-            scores = []
+        scores = await self.data.score.get_scores(user_id) if user_id is not None else []
         for record in scores:
             music = XMLNode.void("music")
             for name, type_ in (
@@ -434,7 +489,12 @@ class PopnHiCheers(PopnJamFizz):
                 ("clear_type", Type.U8), ("score_ver", Type.S32),
                 ("clear_type_ver", Type.U8), ("clear_rank", Type.U8), ("cnt", Type.S16),
             ):
-                self._append(music, name, type_, record.get(name, 0))
+                value = record.get(name, 0)
+                if name == "score_ver":
+                    value = record.get("score", 0)
+                elif name == "clear_type_ver":
+                    value = record.get("clear_type", 0)
+                self._append(music, name, type_, value)
             root.children.append(music)
         root.attributes["status"] = "0"
         return root
@@ -479,8 +539,8 @@ class PopnHiCheers(PopnJamFizz):
             values["customize"] = customization
 
         await self.data.profile.update_profile(user_id, values)
-        for stage in self._children(node, "stage"):
-            await self._save_music(user_id, stage)
+        for stage_number, stage in enumerate(self._children(node, "stage"), 1):
+            await self._save_music(user_id, stage, node, stage_number)
         return XMLNode.void("player")
 
     async def handle_player_friend(self, request: XMLNode) -> XMLNode:
