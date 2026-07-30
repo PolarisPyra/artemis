@@ -724,7 +724,7 @@ class BaseHandler:
         eacoin.append("balance", Type.S32, bal)
         eacoin.append("sessid", Type.Str, sesh)
         eacoin.append("acstatus", Type.U8, 0)
-        eacoin.append("sequence", Type.S16, 1)
+        eacoin.append("sequence", Type.S16, 0)
         eacoin.append("acid", Type.Str, "PASELI_AC_ID") # TODO: un-dummy these when I figure out what they're for
         eacoin.append("acname", Type.Str, "PASELI_AC_NAME")
         eacoin.append("inshopcharge", Type.U8, 0) # ?

@@ -26,7 +26,9 @@ class PopnHiCheers(PopnJamFizz):
     ) -> None:
         super().__init__(core_config, game_config, protocol)
         self.version = PopnConstants.VER_HI_CHEERS
-        self.extra_services.update({"local": "", "lobby": "", "local3": ""})
+        self.extra_services.update(
+            {"local": "", "lobby": "", "local2": "", "local3": "", "lobby2": ""}
+        )
 
     @staticmethod
     def _value(request: XMLNode, path: str, default: Any = None) -> Any:
@@ -687,5 +689,4 @@ class PopnHiCheers(PopnJamFizz):
 
     async def handle_sppass_close(self, request: XMLNode) -> XMLNode:
         return XMLNode.void("sppass")
-
 
