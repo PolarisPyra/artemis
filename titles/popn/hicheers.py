@@ -77,8 +77,6 @@ class PopnHiCheers(PopnJamFizz):
                 return
             for xml_name, column in fields.items():
                 value = values[column]
-                if xml_name == "category" and value < 0:
-                    value = 0
                 if isinstance(value, list):
                     if xml_name == "dialog":
                         self._set_repeated(parent, xml_name, value)
@@ -245,7 +243,7 @@ class PopnHiCheers(PopnJamFizz):
         cfg.append('chara', Type.S16, -1)
         cfg.append('music', Type.S16, -1)
         cfg.append('sheet', Type.U8, 0)
-        cfg.append('category', Type.U8, 0)
+        cfg.append('category', Type.S8, -1)
         cfg.append('sub_category', Type.S16, -1)
         cfg.append('chara_category', Type.S16, -1)
         cfg.append('ms_banner_disp', Type.U8, 0)
