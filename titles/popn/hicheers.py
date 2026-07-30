@@ -103,6 +103,58 @@ class PopnHiCheers(PopnJamFizz):
         account.append("language", Type.S8, self._row_value(row, "language", 0))
         root.children.append(account)
 
+    def _append_static_items(self, root: XMLNode) -> None:
+        item_mask = bytes.fromhex(
+            "3df7b7ff4fb9bfe2f7d77af7b7dfdaffffdfffffff7bff3f9fffffffff00000000bcfff8ff1cf8ff0f00e0ff3fb7ffff3f006cbfffaf1fc0fbddfdf8f09fffafeff7f70bffffefffffff27fefffffffffff9fdfffdffffcfffffdffffffff5a7f8fffffffffffcff9fffffffffffffff29f97fffffffffffff02e1fff0ffffffffffffff2ffffffffffffdffff3f80fffffffffffffff7ffcfffffbfffdfffff0000f0ff8fffffdffeffffffffffffffff7ffcffbffffffbd3fffffeffffff0b80feffdbf3fffffffffdffdffffff7fffffffdfffffffffefffffffffffffffdfffffffffbfffffff9fffffffffffefdfffbffffffffffc7fff7ffff27fafffbfff8ffffffffffffffffffffffff27f9ffffffffffffffffffffffffffffbffbfcffffffffffffe73f"
+        )
+        for item_id in range(len(item_mask) * 8):
+            if not item_mask[item_id // 8] & (1 << (item_id % 8)):
+                continue
+            item = XMLNode.void("item")
+            item.append("type", Type.U8, 0)
+            item.append("id", Type.U16, item_id)
+            item.append("param", Type.U16, 15)
+            item.append("is_new", Type.Bool, False)
+            item.append("get_time", Type.U64, 0)
+            root.children.append(item)
+
+    def _append_missions(self, root: XMLNode, fresh: bool) -> None:
+        mission_ids = (140, 213, 95) if fresh else (142, 197, 3)
+        for mission_id in mission_ids:
+            mission = XMLNode.void("mission")
+            mission.append("mission_id", Type.U32, mission_id)
+            mission.append("gauge_point", Type.U32, 0)
+            mission.append("mission_comp", Type.U32, 0)
+            root.children.append(mission)
+
+    def _append_netvs(self, root: XMLNode, row) -> None:
+        netvs = XMLNode.void("netvs")
+        netvs.append("record", Type.S16, self._row_value(row, "netvs_record", [0] * 6))
+        for _ in range(6):
+            netvs.append("dialog", Type.Str, "")
+        netvs.append("ojama_condition", Type.S8, self._row_value(row, "ojama_condition", [0] * 74))
+        netvs.append("set_ojama", Type.S8, self._row_value(row, "set_ojama", [0] * 3))
+        netvs.append("set_recommend", Type.S8, self._row_value(row, "set_recommend", [0] * 3))
+        netvs.append("netvs_play_cnt", Type.U32, self._row_value(row, "netvs_play_cnt", 0))
+        root.children.append(netvs)
+
+    def _append_customize(self, root: XMLNode, row) -> None:
+        customize = self._row_value(row, "customize", {})
+        customize = customize if isinstance(customize, dict) else {}
+        custom = XMLNode.void("customize")
+        for field in (
+            "seal_0", "seal_1", "seal_2", "seal_3", "seal_4", "seal_5",
+            "seal_6", "seat", "touch_th", "lane_cover", "stage_bk", "highlight",
+        ):
+            custom.append(field, Type.U16, customize.get(field, 0))
+        root.children.append(custom)
+
+    def _append_stamp(self, root: XMLNode, row) -> None:
+        stamp = XMLNode.void("stamp")
+        stamp.append("stamp_id", Type.S16, self._row_value(row, "stamp_id", 0))
+        stamp.append("cnt", Type.S16, self._row_value(row, "stamp_cnt", 0))
+        root.children.append(stamp)
+
     def _append_profile_sections(self, root: XMLNode, row, fresh: bool = False) -> None:
         self._append_account(root, row, fresh)
 
@@ -171,64 +223,11 @@ class PopnHiCheers(PopnJamFizz):
 
         root.children.append(XMLNode.void("navi_data"))
 
-        item_mask = bytes.fromhex(
-            "3df7b7ff4fb9bfe2f7d77af7b7dfdaffffdfffffff7bff3f9fffffffff00000000bcfff8ff1cf8ff0f00e0ff3fb7ffff3f006cbfffaf1fc0fbddfdf8f09fffafeff7f70bffffefffffff27fefffffffffff9fdfffdffffcfffffdffffffff5a7f8fffffffffffcff9fffffffffffffff29f97fffffffffffff02e1fff0ffffffffffffff2ffffffffffffdffff3f80fffffffffffffff7ffcfffffbfffdfffff0000f0ff8fffffdffeffffffffffffffff7ffcffbffffffbd3fffffeffffff0b80feffdbf3fffffffffdffdffffff7fffffffdfffffffffefffffffffffffffdfffffffffbfffffff9fffffffffffefdfffbffffffffffc7fff7ffff27fafffbfff8ffffffffffffffffffffffff27f9ffffffffffffffffffffffffffffbffbfcffffffffffffe73f"
-        )
-
-        for item_id in range(len(item_mask) * 8):
-            if not item_mask[item_id // 8] & (1 << (item_id % 8)):
-                continue
-            item = XMLNode.void("item")
-            item.append("type", Type.U8, 0)
-            item.append("id", Type.U16, item_id)
-            item.append("param", Type.U16, 15)
-            item.append("is_new", Type.Bool, False)
-            item.append("get_time", Type.U64, 0)
-            root.children.append(item)
-
-        for mission_id in (140, 213, 95) if fresh else (142, 197, 3):
-            mission = XMLNode.void("mission")
-            mission.append("mission_id", Type.U32, mission_id)
-            mission.append("gauge_point", Type.U32, 0)
-            mission.append("mission_comp", Type.U32, 0)
-            root.children.append(mission)
-
-        netvs = XMLNode.void("netvs")
-        netvs.append("record", Type.S16, self._row_value(row, "netvs_record", [0] * 6))
-        netvs.append("dialog", Type.Str, "")
-        netvs.append("dialog", Type.Str, "")
-        netvs.append("dialog", Type.Str, "")
-        netvs.append("dialog", Type.Str, "")
-        netvs.append("dialog", Type.Str, "")
-        netvs.append("dialog", Type.Str, "")
-        netvs.append("ojama_condition", Type.S8, self._row_value(row, "ojama_condition", [0] * 74))
-        netvs.append("set_ojama", Type.S8, self._row_value(row, "set_ojama", [0] * 3))
-        netvs.append("set_recommend", Type.S8, self._row_value(row, "set_recommend", [0] * 3))
-        netvs.append("netvs_play_cnt", Type.U32, self._row_value(row, "netvs_play_cnt", 0))
-        root.children.append(netvs)
-
-        customize = self._row_value(row, "customize", {})
-        if not isinstance(customize, dict):
-            customize = {}
-        custom = XMLNode.void("customize")
-        custom.append("seal_0", Type.U16, customize.get("seal_0", 0))
-        custom.append("seal_1", Type.U16, customize.get("seal_1", 0))
-        custom.append("seal_2", Type.U16, customize.get("seal_2", 0))
-        custom.append("seal_3", Type.U16, customize.get("seal_3", 0))
-        custom.append("seal_4", Type.U16, customize.get("seal_4", 0))
-        custom.append("seal_5", Type.U16, customize.get("seal_5", 0))
-        custom.append("seal_6", Type.U16, customize.get("seal_6", 0))
-        custom.append("seat", Type.U16, customize.get("seat", 0))
-        custom.append("touch_th", Type.U16, customize.get("touch_th", 0))
-        custom.append("lane_cover", Type.U16, customize.get("lane_cover", 0))
-        custom.append("stage_bk", Type.U16, customize.get("stage_bk", 0))
-        custom.append("highlight", Type.U16, customize.get("highlight", 0))
-        root.children.append(custom)
-
-        stamp = XMLNode.void("stamp")
-        stamp.append("stamp_id", Type.S16, self._row_value(row, "stamp_id", 0))
-        stamp.append("cnt", Type.S16, self._row_value(row, "stamp_cnt", 0))
-        root.children.append(stamp)
+        self._append_static_items(root)
+        self._append_missions(root, fresh)
+        self._append_netvs(root, row)
+        self._append_customize(root, row)
+        self._append_stamp(root, row)
 
     def _profile_response(self, row, fresh: bool = False) -> XMLNode:
         root = XMLNode("player")
@@ -554,12 +553,8 @@ class PopnHiCheers(PopnJamFizz):
                     await self.data.profile.update_profile(user_id, option_values)
         return XMLNode.void("player", status="0")
 
-    async def handle_player_read_score(self, request: XMLNode) -> XMLNode:
-        user_id, _ = await self._get_profile(request)
+    def _score_response(self, scores) -> XMLNode:
         root = XMLNode("player")
-        scores = (
-            await self.data.score.get_scores(user_id) if user_id is not None else []
-        )
         for record in scores:
             music = XMLNode.void("music")
             for name, type_ in (
@@ -581,6 +576,11 @@ class PopnHiCheers(PopnJamFizz):
             root.children.append(music)
         root.attributes["status"] = "0"
         return root
+
+    async def handle_player_read_score(self, request: XMLNode) -> XMLNode:
+        user_id, _ = await self._get_profile(request)
+        scores = await self.data.score.get_scores(user_id) if user_id is not None else []
+        return self._score_response(scores)
 
     async def handle_player_write(self, request: XMLNode) -> XMLNode:
         user_id, profile = await self._get_profile(request)

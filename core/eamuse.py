@@ -25,7 +25,9 @@ from .eaapi.exception import InvalidModel
 from .eaapi.const import FAULT_MALFORMED_REQUEST, FAULT_BAD_GAME, FAULT_EA_REGISTRATION_NEEDED, FAULT_GAME_UNSUPORTED, FAULT_GAME_OLD
 from .eaapi.cardconv import uid_to_konami
 
-PASELI_BALANCE: Final[int] = 5730
+# The cabinet expects this signed 32-bit display value for an unlimited wallet.
+# Finite wallets use their database balance instead.
+INFINITE_PASELI_BALANCE: Final[int] = 5730
 
 class EAModel:
     def __init__(self, model: str) -> None:
@@ -707,9 +709,21 @@ class BaseHandler:
         if old_seshes:
             pass # TODO: Handle hanging sessions
     
-        # Paseli is virtual for this server: cabinets always receive a full
-        # balance and consume calls reload it instead of debiting the DB row.
-        bal = PASELI_BALANCE
+        bal = INFINITE_PASELI_BALANCE
+        if not self.core_config.eamuse.global_infinite_paseli:
+            balance_arcade = (
+                machine["arcade"]
+                if not self.core_config.eamuse.global_paseli_balances
+                else None
+            )
+            wallet = await self.data.user.get_paseli_balance_by_user_arcade(
+                userid, balance_arcade
+            )
+            if wallet is None:
+                bal = 0
+                await self.data.user.create_paseli_balance(userid, balance_arcade)
+            elif not wallet["is_infinite"]:
+                bal = wallet["balance"]
         
         sesh = await self.data.user.create_paseli_session(userid, machine['id'], self.protocol.model.gamecode)
         if not sesh:
@@ -756,12 +770,48 @@ class BaseHandler:
         
         self.logger.info(f"Paseli session {sesh} (user {session['user']} machine {session['machine']}) paid {ammount}p for {self.decode_paseli_item(detail)} at machine {self.protocol.pcbid} (tx #{seq})")
         
-        await self.data.user.put_paseli_transaction(
-            session['id'], seq, -ammount, detail, self.decode_paseli_item(detail)
-        )
+        machine = await self.data.arcade.get_machine(id=session["machine"])
+        balance = INFINITE_PASELI_BALANCE - ammount
+        acstatus = 0
+        charged = True
 
-        eacoin.append("acstatus", Type.U8, 0)
-        eacoin.append("balance", Type.S32, PASELI_BALANCE)
+        if not self.core_config.eamuse.global_infinite_paseli:
+            balance = 0
+            acstatus = 1
+            charged = False
+            balance_arcade = (
+                None
+                if self.core_config.eamuse.global_paseli_balances
+                else machine["arcade"]
+            )
+            wallet = await self.data.user.get_paseli_balance_by_user_arcade(
+                session["user"], balance_arcade
+            )
+            if wallet is not None:
+                if wallet["is_infinite"]:
+                    balance = INFINITE_PASELI_BALANCE - ammount
+                    acstatus = 0
+                    charged = True
+                elif wallet["balance"] < ammount:
+                    self.logger.error(
+                        f"{self.protocol.pcbid} attempted to charge {ammount} paseli "
+                        f"from {session['user']} but balance was insufficient!"
+                    )
+                    balance = wallet["balance"]
+                else:
+                    await self.data.user.spend_paseli_balance_by_id(
+                        wallet["id"], ammount
+                    )
+                    balance = wallet["balance"] - ammount
+                    acstatus = 0
+                    charged = True
+
+        if charged:
+            await self.data.user.put_paseli_transaction(
+                session["id"], seq, -ammount, detail, self.decode_paseli_item(detail)
+            )
+        eacoin.append("acstatus", Type.U8, acstatus)
+        eacoin.append("balance", Type.S32, balance)
         return eacoin
 
     async def handle_eacoin_opcheckin(self, request: XMLNode) -> XMLNode:
