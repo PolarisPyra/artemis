@@ -29,6 +29,7 @@ class PopnHiCheers(PopnJamFizz):
         self.extra_services.update(
             {"local": "", "lobby": "", "local2": "", "local3": "", "lobby2": ""}
         )
+        self._active_sessions: set[int] = set()
 
     @staticmethod
     def _value(request: XMLNode, path: str, default: Any = None) -> Any:
@@ -385,18 +386,28 @@ class PopnHiCheers(PopnJamFizz):
     async def handle_player_start(self, request: XMLNode) -> XMLNode:
         user_id, profile = await self._get_profile(request)
         if user_id is not None and profile is not None:
-            total = self._row_value(profile, "total_play_cnt", 0)
-            today = self._row_value(profile, "today_play_cnt", 0)
-            await self.data.profile.update_profile(
-                user_id,
-                {"total_play_cnt": total + 1, "today_play_cnt": today + 1},
-            )
+            self._active_sessions.add(user_id)
         return self._info_response("player", include_play_id=True)
 
+    async def _finish_session(self, request: XMLNode) -> None:
+        user_id, profile = await self._get_profile(request)
+        if user_id is None or profile is None or user_id not in self._active_sessions:
+            return
+
+        self._active_sessions.remove(user_id)
+        total = self._row_value(profile, "total_play_cnt", 0)
+        today = self._row_value(profile, "today_play_cnt", 0)
+        await self.data.profile.update_profile(
+            user_id,
+            {"total_play_cnt": total + 1, "today_play_cnt": today + 1},
+        )
+
     async def handle_player_end(self, request: XMLNode) -> XMLNode:
+        await self._finish_session(request)
         return XMLNode.void("player")
 
     async def handle_player_logout(self, request: XMLNode) -> XMLNode:
+        await self._finish_session(request)
         return XMLNode.void("player")
 
     async def handle_player_read_option(self, request: XMLNode) -> XMLNode:
@@ -676,6 +687,7 @@ class PopnHiCheers(PopnJamFizz):
         await self.data.profile.update_profile(user_id, values)
         for stage_number, stage in enumerate(self._children(node, "stage"), 1):
             await self._save_music(user_id, stage, node, stage_number, profile)
+        await self._finish_session(request)
         return XMLNode.void("player")
 
     async def handle_player_friend(self, request: XMLNode) -> XMLNode:
