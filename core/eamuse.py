@@ -344,13 +344,11 @@ class BaseHandler:
         return root
 
     async def handle_pcbtracker_alive(self, request: XMLNode):
-        paseli_flag = request.attributes.get("ecflag", "0")
-
         return XMLNode(
             "pcbtracker",
             Type.Void,
             attributes={
-                "ecenable": paseli_flag,
+                "ecenable": "1",
                 "eclimit": "0",
                 "expire": "600",
                 "limit": "0",
