@@ -672,8 +672,13 @@ class BaseHandler:
     async def handle_eacoin_checkin(self, request: XMLNode) -> XMLNode:
         cardid = request.xpath('eacoin/cardid').value
         passwd = request.xpath('eacoin/passwd').value
-        access_code = self.data.card.to_access_code(cardid)
-        userid = await self.data.card.get_user_id_from_card(access_code)
+        card = await self.data.card.get_card_by_idm(cardid)
+        if card is not None:
+            access_code = card["access_code"]
+            userid = int(card["user"])
+        else:
+            access_code = self.data.card.to_access_code(cardid)
+            userid = await self.data.card.get_user_id_from_card(access_code)
         machine = await self.data.arcade.get_bemani_machine(self.protocol.pcbid)
 
         if userid is None:
