@@ -78,47 +78,21 @@ class PopnHiCheers(PopnJamFizz):
 
     def _append_account(self, root: XMLNode, row, fresh: bool = False) -> None:
         account = XMLNode.void("account")
-        account.append(
-            "g_pm_id", Type.Str, self._row_value(row, "g_pm_id", "000000000000")
-        )
+        account.append("g_pm_id", Type.Str, self._row_value(row, "g_pm_id", "000000000000"))
         account.append("name", Type.Str, self._row_value(row, "name", "なし"))
-        account.append(
-            "read_news", Type.S16, 0 if fresh else self._row_value(row, "read_news", 0)
-        )
+        account.append("read_news", Type.S16, 0 if fresh else self._row_value(row, "read_news", 0))
         account.append("nice", Type.S16, self._row_value(row, "nice", [-1] * 100))
-        account.append(
-            "favorite_chara",
-            Type.S16,
-            self._row_value(row, "favorite_chara", [-1] * 100),
-        )
+        account.append("favorite_chara", Type.S16, self._row_value(row, "favorite_chara", [-1] * 100))
         account.append("power_point", Type.S32, self._row_value(row, "power_point", 0))
-        account.append(
-            "player_point", Type.S32, self._row_value(row, "player_point", 300)
-        )
-        account.append(
-            "power_point_list",
-            Type.S32,
-            self._row_value(row, "power_point_list", [-1] * 20),
-        )
-        account.append(
-            "tutorial", Type.S16, 0 if fresh else self._row_value(row, "tutorial", 0)
-        )
+        account.append("player_point", Type.S32, self._row_value(row, "player_point", 300))
+        account.append("power_point_list", Type.S32, self._row_value(row, "power_point_list", [-1] * 20))
+        account.append("tutorial", Type.S16, 0 if fresh else self._row_value(row, "tutorial", 0))
         account.append("is_conv", Type.S8, self._row_value(row, "is_conv", 0))
-        account.append(
-            "latest_music", Type.S16, self._row_value(row, "latest_music", [-1] * 30)
-        )
-        account.append(
-            "total_play_cnt",
-            Type.S16,
-            1 if fresh else self._row_value(row, "total_play_cnt", 0),
-        )
-        account.append(
-            "active_fr_num", Type.U8, self._row_value(row, "active_fr_num", 0)
-        )
+        account.append("latest_music", Type.S16, self._row_value(row, "latest_music", [-1] * 30))
+        account.append("total_play_cnt", Type.S16, 1 if fresh else self._row_value(row, "total_play_cnt", 0))
+        account.append("active_fr_num", Type.U8, self._row_value(row, "active_fr_num", 0))
         account.append("popn_class", Type.S8, self._row_value(row, "popn_class", 0))
-        account.append(
-            "option_tuto", Type.Bool, self._row_value(row, "option_tuto", False)
-        )
+        account.append("option_tuto", Type.Bool, self._row_value(row, "option_tuto", False))
         account.append("sc_news_no", Type.S32, self._row_value(row, "sc_news_no", 0))
         account.append("read_policy", Type.S16, self._row_value(row, "read_policy", 0))
         account.append("language", Type.S8, self._row_value(row, "language", 0))
@@ -128,9 +102,7 @@ class PopnHiCheers(PopnJamFizz):
         self._append_account(root, row, fresh)
 
         eaappli = XMLNode.void("eaappli")
-        eaappli.append(
-            "relation", Type.S8, -1 if fresh else self._row_value(row, "relation", 1)
-        )
+        eaappli.append("relation", Type.S8, -1 if fresh else self._row_value(row, "relation", 1))
         root.children.append(eaappli)
 
         info = XMLNode.void("info")
@@ -145,88 +117,38 @@ class PopnHiCheers(PopnJamFizz):
         config.append("sheet", Type.U8, self._row_value(row, "sheet", 0))
         config.append("category", Type.S8, self._row_value(row, "category", -1))
         config.append("sub_category", Type.S8, self._row_value(row, "sub_category", -1))
-        config.append(
-            "chara_category", Type.S8, self._row_value(row, "chara_category", -1)
-        )
-        config.append(
-            "ms_banner_disp",
-            Type.S8,
-            -1 if fresh else self._row_value(row, "ms_banner_disp", 0),
-        )
-        config.append(
-            "ms_down_info",
-            Type.S8,
-            -1 if fresh else self._row_value(row, "ms_down_info", 0),
-        )
-        config.append(
-            "ms_raise_type",
-            Type.S8,
-            -1 if fresh else self._row_value(row, "ms_raise_type", 0),
-        )
-        config.append(
-            "banner_sort",
-            Type.S8,
-            -1 if fresh else self._row_value(row, "banner_sort", 0),
-        )
-        config.append(
-            "disp_setting",
-            Type.S8,
-            -1 if fresh else self._row_value(row, "disp_setting", 0),
-        )
-        config.append(
-            "h_vol", Type.S8, -1 if fresh else self._row_value(row, "h_vol", 0)
-        )
-        config.append(
-            "hiscore_disp", Type.Bool, self._row_value(row, "hiscore_disp", False)
-        )
-        config.append(
-            "lane_type", Type.S8, -1 if fresh else self._row_value(row, "lane_type", 0)
-        )
+        config.append("chara_category", Type.S8, self._row_value(row, "chara_category", -1))
+        config.append("ms_banner_disp", Type.S8, -1 if fresh else self._row_value(row, "ms_banner_disp", 0))
+        config.append("ms_down_info", Type.S8, -1 if fresh else self._row_value(row, "ms_down_info", 0))
+        config.append("ms_raise_type", Type.S8, -1 if fresh else self._row_value(row, "ms_raise_type", 0))
+        config.append("banner_sort", Type.S8, -1 if fresh else self._row_value(row, "banner_sort", 0))
+        config.append("disp_setting", Type.S8, -1 if fresh else self._row_value(row, "disp_setting", 0))
+        config.append("h_vol", Type.S8, -1 if fresh else self._row_value(row, "h_vol", 0))
+        config.append("hiscore_disp", Type.Bool, self._row_value(row, "hiscore_disp", False))
+        config.append("lane_type", Type.S8, -1 if fresh else self._row_value(row, "lane_type", 0))
         config.append("brightness", Type.S8, self._row_value(row, "brightness", 50))
-        config.append(
-            "key_beam", Type.S8, -1 if fresh else self._row_value(row, "key_beam", 0)
-        )
-        config.append(
-            "lane_line", Type.S8, -1 if fresh else self._row_value(row, "lane_line", 0)
-        )
+        config.append("key_beam", Type.S8, -1 if fresh else self._row_value(row, "key_beam", 0))
+        config.append("lane_line", Type.S8, -1 if fresh else self._row_value(row, "lane_line", 0))
         root.children.append(config)
 
         option = XMLNode.void("option")
-        option.append(
-            "hispeed", Type.S16, 0 if fresh else self._row_value(row, "hispeed", 10)
-        )
+        option.append("hispeed", Type.S16, 0 if fresh else self._row_value(row, "hispeed", 10))
         option.append("popkun", Type.U8, self._row_value(row, "popkun", 0))
         option.append("hidden", Type.Bool, self._row_value(row, "hidden", False))
-        option.append(
-            "hidden_rate",
-            Type.S16,
-            0 if fresh else self._row_value(row, "hidden_rate", -1),
-        )
+        option.append("hidden_rate", Type.S16, 0 if fresh else self._row_value(row, "hidden_rate", -1))
         option.append("sudden", Type.Bool, self._row_value(row, "sudden", False))
-        option.append(
-            "sudden_rate",
-            Type.S16,
-            0 if fresh else self._row_value(row, "sudden_rate", -1),
-        )
+        option.append("sudden_rate", Type.S16, 0 if fresh else self._row_value(row, "sudden_rate", -1))
         option.append("randmir", Type.S8, self._row_value(row, "randmir", 0))
         option.append("gauge_type", Type.S8, self._row_value(row, "gauge_type", 0))
         option.append("ojama_0", Type.U8, self._row_value(row, "ojama_0", 0))
         option.append("ojama_1", Type.U8, self._row_value(row, "ojama_1", 0))
         option.append("forever_0", Type.Bool, self._row_value(row, "forever_0", False))
         option.append("forever_1", Type.Bool, self._row_value(row, "forever_1", False))
-        option.append(
-            "full_setting",
-            Type.Bool,
-            False if fresh else self._row_value(row, "full_setting", True),
-        )
-        option.append(
-            "judge", Type.U8, 0 if fresh else self._row_value(row, "judge", 1)
-        )
+        option.append("full_setting", Type.Bool, False if fresh else self._row_value(row, "full_setting", True))
+        option.append("judge", Type.U8, 0 if fresh else self._row_value(row, "judge", 1))
         option.append("guide_se", Type.S8, self._row_value(row, "guide_se", 0))
         option.append("lift", Type.Bool, self._row_value(row, "lift", False))
-        option.append(
-            "lift_rate", Type.S16, 0 if fresh else self._row_value(row, "lift_rate", -1)
-        )
+        option.append("lift_rate", Type.S16, 0 if fresh else self._row_value(row, "lift_rate", -1))
         option.append("judge_ad", Type.S8, self._row_value(row, "judge_ad", 0))
         option.append("roof", Type.S16, self._row_value(row, "roof", 0))
         option.append("long_pop", Type.S8, self._row_value(row, "long_pop", 0))
@@ -274,18 +196,10 @@ class PopnHiCheers(PopnJamFizz):
         netvs.append("dialog", Type.Str, "")
         netvs.append("dialog", Type.Str, "")
         netvs.append("dialog", Type.Str, "")
-        netvs.append(
-            "ojama_condition",
-            Type.S8,
-            self._row_value(row, "ojama_condition", [0] * 74),
-        )
+        netvs.append("ojama_condition", Type.S8, self._row_value(row, "ojama_condition", [0] * 74))
         netvs.append("set_ojama", Type.S8, self._row_value(row, "set_ojama", [0] * 3))
-        netvs.append(
-            "set_recommend", Type.S8, self._row_value(row, "set_recommend", [0] * 3)
-        )
-        netvs.append(
-            "netvs_play_cnt", Type.U32, self._row_value(row, "netvs_play_cnt", 0)
-        )
+        netvs.append("set_recommend", Type.S8, self._row_value(row, "set_recommend", [0] * 3))
+        netvs.append("netvs_play_cnt", Type.U32, self._row_value(row, "netvs_play_cnt", 0))
         root.children.append(netvs)
 
         customize = self._row_value(row, "customize", {})
@@ -952,3 +866,5 @@ class PopnHiCheers(PopnJamFizz):
 
     async def handle_sppass_close(self, request: XMLNode) -> XMLNode:
         return XMLNode.void("sppass")
+
+
