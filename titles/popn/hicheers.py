@@ -350,7 +350,15 @@ class PopnHiCheers(PopnJamFizz):
         return self._info_response()
 
     async def handle_player_read(self, request: XMLNode) -> XMLNode:
-        _, profile = await self._get_profile(request)
+        user_id, profile = await self._get_profile(request)
+        if (
+            user_id is not None
+            and profile is not None
+            and self._row_value(profile, "total_play_cnt", 0) == 0
+        ):
+            migration = {"total_play_cnt": 1, "tutorial": 0, "sc_news_no": 2951}
+            await self.data.profile.update_profile(user_id, migration)
+            profile = {**profile, **migration}
         return self._profile_response(profile)
 
     async def handle_player_new(self, request: XMLNode) -> XMLNode:
