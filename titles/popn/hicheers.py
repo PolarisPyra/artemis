@@ -60,7 +60,9 @@ class PopnHiCheers(PopnJamFizz):
         return default if value is None else value
 
     async def _get_profile(self, request: XMLNode):
-        ref_id = self._value(request, "player/ref_id")
+        ref_id = self._value(request, "@ref_id/player")
+        if not ref_id:
+            ref_id = self._value(request, "player/ref_id")
         if not ref_id:
             return None, None
 
