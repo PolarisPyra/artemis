@@ -18,6 +18,141 @@ class PopnHiCheers(PopnJamFizz):
         self.version = PopnConstants.VER_HI_CHEERS
         self.extra_services.update({"local3": ""})
 
+    @staticmethod
+    def _request_value(request: XMLNode, path: str):
+        try:
+            return request.xpath(path).value
+        except Exception:
+            return None
+
+    async def _get_profile(self, request: XMLNode):
+        ref_id = self._request_value(request, "player/ref_id")
+        if not ref_id:
+            return None, None
+
+        user_id = await self.data.user.get_user_id_by_refid(ref_id)
+        if user_id is None:
+            return None, None
+
+        profile = await self.data.profile.get_profile(user_id)
+        if profile is None:
+            name = self._request_value(request, "player/name") or "なし"
+            pref = self._request_value(request, "player/pref") or 0
+            profile = await self.data.profile.create_profile(user_id, name, pref)
+
+        return user_id, profile
+
+    @staticmethod
+    def _set_child(parent: XMLNode, name: str, value) -> None:
+        for child in parent.children:
+            if child.name == name:
+                child.value = value
+                return
+
+    @staticmethod
+    def _set_repeated(parent: XMLNode, name: str, values) -> None:
+        values = list(values)
+        index = 0
+        for child in parent.children:
+            if child.name == name and index < len(values):
+                child.value = values[index]
+                index += 1
+
+    def _apply_profile(self, root: XMLNode, row) -> None:
+        if row is None:
+            return
+
+        values = row._mapping
+
+        def set_section(section: str, fields) -> None:
+            parent = next((child for child in root.children if child.name == section), None)
+            if parent is None:
+                return
+            for xml_name, column in fields.items():
+                value = values[column]
+                if isinstance(value, list):
+                    self._set_repeated(parent, xml_name, value)
+                else:
+                    self._set_child(parent, xml_name, value)
+
+        set_section("account", {
+            "name": "name", "g_pm_id": "g_pm_id", "tutorial": "tutorial",
+            "area_id": "area_id", "use_navi": "use_navi", "read_news": "read_news",
+            "staff": "staff", "item_type": "item_type", "item_id": "item_id",
+            "is_conv": "is_conv", "active_fr_num": "active_fr_num",
+            "total_play_cnt": "total_play_cnt", "today_play_cnt": "today_play_cnt",
+            "consecutive_days": "consecutive_days", "total_days": "total_days",
+            "interval_day": "interval_day", "my_best": "my_best",
+            "latest_music": "latest_music", "nice": "nice",
+            "favorite_chara": "favorite_chara", "special_area": "special_area",
+            "chocolate_charalist": "chocolate_charalist",
+            "chocolate_sp_chara": "chocolate_sp_chara",
+            "chocolate_pass_cnt": "chocolate_pass_cnt", "chocolate_hon_cnt": "chocolate_hon_cnt",
+            "teacher_setting": "teacher_setting", "license_data": "license_data",
+            "welcom_pack": "welcom_pack", "ranking_node": "ranking_node",
+            "chara_ranking_kind_id": "chara_ranking_kind_id",
+            "navi_evolution_flg": "navi_evolution_flg",
+            "ranking_news_last_no": "ranking_news_last_no", "power_point": "power_point",
+            "player_point": "player_point", "power_point_list": "power_point_list",
+            "sp_riddles_id": "sp_riddles_id",
+        })
+        set_section("config", {
+            name: name for name in [
+                "mode", "chara", "music", "sheet", "category", "sub_category",
+                "chara_category", "ms_banner_disp", "ms_down_info", "ms_raise_type",
+                "banner_sort", "disp_setting", "h_vol", "hiscore_disp", "lane_type",
+                "brightness", "key_beam", "lane_line", "course_id", "course_folder",
+            ]
+        })
+        set_section("option", {
+            name: name for name in [
+                "hispeed", "popkun", "hidden", "hidden_rate", "sudden", "sudden_rate",
+                "randmir", "gauge_type", "ojama_0", "ojama_1", "forever_0", "forever_1",
+                "full_setting", "judge", "guide_se", "guide_se_vol", "lift", "lift_rate",
+                "judge_ad", "roof", "long_pop",
+            ]
+        })
+        set_section("custom_cate", {
+            xml_name: f"custom_{xml_name}"
+            for xml_name in ["valid", "lv_min", "lv_max", "medal_min", "medal_max", "friend_no", "score_flg"]
+        })
+        set_section("customize", {
+            name: name for name in ["effect_left", "effect_center", "effect_right", "hukidashi", "comment_1", "comment_2"]
+        })
+        set_section("eaappli", {"relation": "relation"})
+        set_section("info", {"ep": "ep"})
+        set_section("netvs", {
+            "record": "netvs_record", "ojama_condition": "ojama_condition",
+            "set_ojama": "set_ojama", "set_recommend": "set_recommend",
+            "netvs_play_cnt": "netvs_play_cnt",
+        })
+        stamp = next((child for child in root.children if child.name == "stamp"), None)
+        if stamp is not None:
+            self._set_child(stamp, "stamp_id", values["stamp_id"])
+            self._set_child(stamp, "cnt", values["stamp_cnt"])
+        event = next((child for child in root.children if child.name == "event2021"), None)
+        if event is not None:
+            set_values = {
+                "point": "event2021_point", "step": "event2021_step",
+                "quest_point": "event2021_quest_point", "step_nos": "event2021_step_nos",
+                "quest_point_nos": "event2021_quest_point_nos",
+            }
+            for xml_name, column in set_values.items():
+                value = values[column]
+                self._set_repeated(event, xml_name, value) if isinstance(value, list) else self._set_child(event, xml_name, value)
+        event = next((child for child in root.children if child.name == "event_p27"), None)
+        if event is not None:
+            for xml_name, column in {
+                "team_id": "event_p27_team_id", "first_play": "event_p27_first_play",
+                "select_battery_id": "event_p27_select_battery_id", "elem_first_play": "event_p27_elem_first_play",
+                "today_first_play": "event_p27_today_first_play",
+            }.items():
+                self._set_child(event, xml_name, values[column])
+            teams = values["event_p27_teams"]
+            for child, team in zip([child for child in event.children if child.name == "team"], teams):
+                for field in ["team_id", "ex_no", "point", "is_cleared"]:
+                    self._set_child(child, field, team[field])
+
     async def handle_pcb_boot(self, request: XMLNode) -> XMLNode:
         return XMLNode.void("pcb")
 
@@ -33,6 +168,7 @@ class PopnHiCheers(PopnJamFizz):
         return root
 
     async def handle_player_read(self, request: XMLNode) -> XMLNode:
+        _, profile = await self._get_profile(request)
         root = XMLNode('player')
         """
         [2024/09/28 04:03:14] M:automap: property_search error: course_data ( course_id S16, clear_type U8, clear_rank U8, total_score S32, update_count S32, sheet_num U8 )
@@ -244,15 +380,7 @@ class PopnHiCheers(PopnJamFizz):
         root.children.append(stamp)
         root.children.append(evt2021)
         root.children.append(evt27)
-        try:
-            submitted_name = request.xpath("player/name").value
-        except Exception:
-            submitted_name = None
-
-        if submitted_name:
-            name = next((child for child in acct.children if child.name == "name"), None)
-            if name is not None:
-                name.value = submitted_name
+        self._apply_profile(root, profile)
 
         root.attributes["status"] = "0"
         return root
@@ -265,6 +393,29 @@ class PopnHiCheers(PopnJamFizz):
         return await self.handle_player_read(request)
 
     async def handle_player_write(self, request: XMLNode) -> XMLNode:
+        user_id, _ = await self._get_profile(request)
+        if user_id is not None:
+            values = {}
+            for section, names in {
+                "player/account": ["name", "tutorial", "read_news", "sp_riddles_id"],
+                "player/config": [
+                    "mode", "chara", "music", "sheet", "category", "sub_category",
+                    "chara_category", "ms_banner_disp", "ms_down_info", "ms_raise_type",
+                    "banner_sort", "disp_setting", "h_vol", "hiscore_disp", "lane_type",
+                    "brightness", "key_beam", "lane_line", "course_id", "course_folder",
+                ],
+                "player/option": [
+                    "hispeed", "popkun", "hidden", "hidden_rate", "sudden", "sudden_rate",
+                    "randmir", "gauge_type", "ojama_0", "ojama_1", "forever_0", "forever_1",
+                    "full_setting", "judge", "guide_se", "guide_se_vol", "lift", "lift_rate",
+                    "judge_ad", "roof", "long_pop",
+                ],
+            }.items():
+                for name in names:
+                    value = self._request_value(request, f"{section}/{name}")
+                    if value is not None:
+                        values[name] = value
+            await self.data.profile.update_profile(user_id, values)
         return XMLNode.void("player")
 
     async def handle_player_start(self, request: XMLNode) -> XMLNode:
