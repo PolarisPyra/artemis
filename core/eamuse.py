@@ -344,11 +344,7 @@ class BaseHandler:
         return root
 
     async def handle_pcbtracker_alive(self, request: XMLNode):
-        machine = await self.data.arcade.get_bemani_machine(self.protocol.pcbid)
         paseli_flag = request.attributes.get("ecflag", "0")
-
-        if machine is None or not machine["paseli_enable"]:
-            paseli_flag = "0"
 
         return XMLNode(
             "pcbtracker",
@@ -356,7 +352,7 @@ class BaseHandler:
             attributes={
                 "ecenable": paseli_flag,
                 "eclimit": "0",
-                "expire": "1200",
+                "expire": "600",
                 "limit": "0",
                 "status": "0",
                 "time": str(int(datetime.now().timestamp())),
