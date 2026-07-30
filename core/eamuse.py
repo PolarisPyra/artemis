@@ -345,10 +345,7 @@ class BaseHandler:
 
     async def handle_pcbtracker_alive(self, request: XMLNode):
         machine = await self.data.arcade.get_bemani_machine(self.protocol.pcbid)
-        try:
-            paseli_flag = request.xpath("@ecflag/pcbtracker")
-        except Exception:
-            paseli_flag = "0"
+        paseli_flag = request.attributes.get("ecflag", "0")
 
         if machine is None or not machine["paseli_enable"]:
             paseli_flag = "0"
