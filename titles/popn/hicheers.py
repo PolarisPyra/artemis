@@ -591,6 +591,8 @@ class PopnHiCheers(PopnJamFizz):
             "tutorial",
             "read_news",
             "latest_music",
+            "total_play_cnt",
+            "today_play_cnt",
             "nice",
             "favorite_chara",
             "popn_class",
