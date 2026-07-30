@@ -275,6 +275,14 @@ class PopnHiCheers(PopnJamFizz):
         self._append(stamp, "cnt", Type.S16, self._row_value(row, "stamp_cnt", 0))
         root.children.append(stamp)
 
+        # The M39 client unconditionally looks up these optional collections
+        # after decoding a profile. An empty collection is the protocol's
+        # "no progress" representation; omitting the node makes a saved
+        # profile appear incomplete to the cabinet.
+        for name in ("chara_param", "chara_param_old", "course_data", "ex_info"):
+            root.children.append(XMLNode.void(name))
+        root.children.append(XMLNode.void("event_p29"))
+
     def _profile_response(self, row, fresh: bool = False) -> XMLNode:
         root = XMLNode("player")
         self._append(root, "result", Type.S8, 0)
@@ -297,7 +305,28 @@ class PopnHiCheers(PopnJamFizz):
             self._append(node, "start_date", Type.U64, start_date)
             self._append(node, "end_date", Type.U64, end_date)
             self._append(node, "music_id", Type.S32, music_id)
+            # No local course entries yet. Keep the four per-chart result
+            # collections present so M39 distinguishes "empty" from missing.
+            for name in ("loc_ranking_e", "loc_ranking_n", "loc_ranking_h", "loc_ranking_ex"):
+                node.children.append(XMLNode.void(name))
             root.children.append(node)
+        for area_id in range(1, 16):
+            area = XMLNode.void("area")
+            self._append(area, "area_id", Type.S16, area_id)
+            self._append(area, "end_date", Type.U64, 0)
+            self._append(area, "medal_id", Type.S16, area_id)
+            self._append(area, "is_limit", Type.Bool, False)
+            root.children.append(area)
+        fes = XMLNode.void("fes")
+        self._append(fes, "fes_id", Type.S16, -1)
+        self._append(fes, "gauge_count", Type.S32, -1)
+        self._append(fes, "gauge", Type.S32, [-1] * 6)
+        self._append(fes, "music", Type.S32, [-1] * 6)
+        self._append(fes, "r", Type.S16, -1)
+        self._append(fes, "g", Type.S16, -1)
+        self._append(fes, "b", Type.S16, -1)
+        self._append(fes, "poster", Type.S16, -1)
+        root.children.append(fes)
         for choco_id in range(5):
             node = XMLNode.void("choco")
             self._append(node, "choco_id", Type.S16, choco_id)
@@ -320,6 +349,26 @@ class PopnHiCheers(PopnJamFizz):
             node = XMLNode.void("popular_music")
             self._append(node, "music_num", Type.S16, music_num)
             root.children.append(node)
+        recommend = XMLNode.void("recommend")
+        self._append(recommend, "music_no", Type.S32, [-1] * 30)
+        root.children.append(recommend)
+
+        mission_point = XMLNode.void("mission_point")
+        self._append(mission_point, "point", Type.S32, -1)
+        self._append(mission_point, "bonus_point", Type.S32, -1)
+        root.children.append(mission_point)
+
+        medal = XMLNode.void("medal")
+        self._append(medal, "medal_id", Type.S16, -1)
+        self._append(medal, "percent", Type.S16, -1)
+        root.children.append(medal)
+
+        chara_ranking = XMLNode.void("chara_ranking")
+        self._append(chara_ranking, "rank", Type.S32, -1)
+        self._append(chara_ranking, "kind_id", Type.S32, -1)
+        self._append(chara_ranking, "point", Type.S32, -1)
+        self._append(chara_ranking, "month", Type.S32, -1)
+        root.children.append(chara_ranking)
         self._append(root, "license_music", Type.S16, -1)
         self._append(root, "license_music_new", Type.S16, -1)
         for no in range(1, 5):
@@ -490,6 +539,7 @@ class PopnHiCheers(PopnJamFizz):
     async def handle_player_read_score(self, request: XMLNode) -> XMLNode:
         user_id, _ = await self._get_profile(request)
         root = XMLNode("player")
+        self._append(root, "con_flg", Type.Bool, False)
         scores = await self.data.score.get_scores(user_id) if user_id is not None else []
         for record in scores:
             music = XMLNode.void("music")
