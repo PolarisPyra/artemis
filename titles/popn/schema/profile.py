@@ -2,6 +2,7 @@ from typing import Any, Dict
 
 from sqlalchemy import Column, Table, select
 from sqlalchemy.dialects.mysql import insert
+from sqlalchemy.schema import ForeignKey
 from sqlalchemy.types import Boolean, Integer, JSON, String
 
 from core.data.schema import BaseData, metadata
@@ -11,9 +12,18 @@ profile = Table(
     "popn_profile",
     metadata,
     Column("id", Integer, primary_key=True, nullable=False, autoincrement=True),
-    # This is deliberately not a foreign key. The Pop'n table is additive and
-    # must not modify any existing ARTEMiS table.
-    Column("user", Integer, nullable=False, unique=True),
+    Column(
+        "user",
+        Integer,
+        ForeignKey(
+            "aime_user.id",
+            name="popn_profile_user_fk",
+            ondelete="cascade",
+            onupdate="cascade",
+        ),
+        nullable=False,
+        unique=True,
+    ),
     Column("name", String(32), nullable=False),
     Column("pref", Integer, nullable=False),
     Column("g_pm_id", String(32), nullable=False),
