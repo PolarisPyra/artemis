@@ -387,6 +387,7 @@ class PopnHiCheers(PopnJamFizz):
         node: XMLNode,
         parent: Optional[XMLNode] = None,
         stage_number: Optional[int] = None,
+        profile=None,
     ) -> Dict[str, Any]:
         def value(name: str, default: Any = None) -> Any:
             current = self._value(node, name)
@@ -394,13 +395,27 @@ class PopnHiCheers(PopnJamFizz):
                 current = self._value(parent, name)
             return default if current is None else current
 
+        def parent_value(path: str, default: Any = None) -> Any:
+            if parent is None:
+                return default
+            return self._value(parent, path, default)
+
         values = {
             "ref_id": value("ref_id"),
             "data_id": value("data_id"),
-            "name": value("name"),
-            "chara_num": value("chara_num"),
-            "mode": value("mode"),
-            "play_id": value("play_id"),
+            # player.write stages do not repeat these values. They live in
+            # account/config, except for the player name, which is retained
+            # in the profile and omitted from this request entirely.
+            "name": value("name", self._row_value(profile, "name")),
+            "chara_num": value(
+                "chara_num",
+                parent_value("config/chara", self._row_value(profile, "chara")),
+            ),
+            "mode": value(
+                "mode",
+                parent_value("config/mode", self._row_value(profile, "mode")),
+            ),
+            "play_id": value("play_id", parent_value("account/play_id")),
             "stage": value("stage", stage_number),
             "music_num": value("music_num", value("no", 0)),
             "sheet_num": value("sheet_num", value("sheet", 0)),
@@ -466,17 +481,18 @@ class PopnHiCheers(PopnJamFizz):
         node: XMLNode,
         parent: Optional[XMLNode] = None,
         stage_number: Optional[int] = None,
+        profile=None,
     ) -> None:
         await self.data.score.put_playlog(
             user_id,
-            self._playlog_values(node, parent, stage_number),
+            self._playlog_values(node, parent, stage_number, profile),
         )
 
     async def handle_player_write_music(self, request: XMLNode) -> XMLNode:
-        user_id, _ = await self._get_profile(request)
+        user_id, profile = await self._get_profile(request)
         node = self._player(request)
         if user_id is not None and node is not None:
-            await self._save_music(user_id, node)
+            await self._save_music(user_id, node, profile=profile)
             if self._value(node, "is_option_save", 0):
                 option_values = {}
                 for name in self.OPTION_FIELDS:
@@ -544,7 +560,7 @@ class PopnHiCheers(PopnJamFizz):
 
         await self.data.profile.update_profile(user_id, values)
         for stage_number, stage in enumerate(self._children(node, "stage"), 1):
-            await self._save_music(user_id, stage, node, stage_number)
+            await self._save_music(user_id, stage, node, stage_number, profile)
         return XMLNode.void("player")
 
     async def handle_player_friend(self, request: XMLNode) -> XMLNode:
