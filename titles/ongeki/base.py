@@ -174,8 +174,16 @@ class OngekiBase:
         return {"type": data["type"], "length": 0, "gameIdlistList": []}
 
     async def handle_get_game_ranking_api_request(self, data: Dict) -> Dict:
-        # The historical static ranking table was removed from the schema.
-        # Keep the endpoint valid for clients, but do not query that table.
+        # TODO: Causes crash on card in for some reason.
+        # game_ranking_list = await self.data.static.get_ranking_list(self.version)
+        #
+        # ranking_list = []
+        # for music in game_ranking_list:
+        #     tmp = music._asdict()
+        #     ranking_list.append(tmp)
+        #
+        # if ranking_list is None:
+        #     return {"length": 0, "gameRankingList": []}
         return {
             "type": data["type"],
             "gameRankingList": [],
