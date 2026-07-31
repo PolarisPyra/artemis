@@ -1,6 +1,6 @@
 from core.config import CoreConfig
 from core.data import Data
-from titles.popn.schema import PopnProfileData, PopnScoreData
+from titles.popn.schema import PopnProfileData, PopnScoreData, PopnStaticData
 
 
 class PopnData(Data):
@@ -8,3 +8,4 @@ class PopnData(Data):
         super().__init__(cfg)
         self.profile = PopnProfileData(cfg, self.session)
         self.score = PopnScoreData(cfg, self.session)
+        self.static = PopnStaticData(cfg, self.session)
