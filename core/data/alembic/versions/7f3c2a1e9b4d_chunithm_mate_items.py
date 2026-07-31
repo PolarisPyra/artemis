@@ -1,7 +1,7 @@
 """create Chunithm MATE item storage
 
 Revision ID: 7f3c2a1e9b4d
-Revises: merge_artemis_heads
+Revises: 9e3b5c7d1f2a
 """
 
 import sqlalchemy as sa
@@ -9,7 +9,7 @@ from alembic import op
 
 
 revision = "7f3c2a1e9b4d"
-down_revision = "merge_artemis_heads"
+down_revision = "9e3b5c7d1f2a"
 branch_labels = None
 depends_on = None
 
