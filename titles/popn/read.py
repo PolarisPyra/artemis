@@ -60,6 +60,9 @@ class PopnReader(BaseReader):
     MUSIC_LENGTH = 2189
     FILE_OFFSET = 0x2B2F28
     FILE_STEP = 32
+    MODERN_MUSIC_OFFSET = 0x78A020
+    MODERN_MUSIC_STEP = 0x138
+    MODERN_MUSIC_MAX = 3000
 
     def __init__(
         self,
@@ -133,10 +136,64 @@ class PopnReader(BaseReader):
         pe = _PEFile(data)
 
         def read_string(pointer: int) -> str:
+            if pointer == 0:
+                return ""
             offset = pe.virtual_to_physical(pointer)
             end = data.index(b"\0", offset)
             return data[offset:end].decode("shift_jisx0213")
 
+        modern = self._scrape_modern(data, pe, read_string)
+        if modern:
+            return modern
+
+        return self._scrape_legacy(data, pe, read_string)
+
+    def _scrape_modern(
+        self, data: bytes, pe: _PEFile, read_string
+    ) -> List[Dict[str, object]]:
+        songs: List[Dict[str, object]] = []
+
+        for song_index in range(self.MODERN_MUSIC_MAX):
+            offset = self.MODERN_MUSIC_OFFSET + (self.MODERN_MUSIC_STEP * song_index)
+            if offset + self.MODERN_MUSIC_STEP > len(data):
+                break
+
+            pointers = struct.unpack_from("<7Q", data, offset)
+            valid_pointers = 0
+            for pointer in pointers:
+                if pointer == 0:
+                    valid_pointers += 1
+                    continue
+                try:
+                    pe.virtual_to_physical(pointer)
+                    valid_pointers += 1
+                except ValueError:
+                    pass
+
+            if valid_pointers < 6:
+                break
+
+            packed_id = struct.unpack_from("<I", data, offset + 0x38)[0]
+            difficulties = struct.unpack_from("<4B", data, offset + 0x4C)
+            songs.append(
+                {
+                    "id": packed_id & 0xFFFF,
+                    "genre": read_string(pointers[0]),
+                    "title": read_string(pointers[3]),
+                    "artist": read_string(pointers[2]),
+                    "comment": read_string(pointers[3]),
+                    "title_en": read_string(pointers[4]),
+                    "artist_en": read_string(pointers[6]),
+                    "folder": struct.unpack_from("<I", data, offset + 0x3C)[0],
+                    "difficulty": list(difficulties),
+                }
+            )
+
+        return songs
+
+    def _scrape_legacy(
+        self, data: bytes, pe: _PEFile, read_string
+    ) -> List[Dict[str, object]]:
         def available_charts(mask: int) -> Tuple[bool, bool, bool, bool]:
             return (True, True, bool(mask & 0x1000000), bool(mask & 0x2000000))
 
