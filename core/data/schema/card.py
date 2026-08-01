@@ -37,7 +37,6 @@ eamuse_card: Table = Table(
     Column("is_locked", Boolean, server_default="0"),
     Column("is_banned", Boolean, server_default="0"),
     Column("memo", VARCHAR(16)),
-    UniqueConstraint("user", name="eamuse_card_user_uk"),
     mysql_charset="utf8mb4",
 )
 
