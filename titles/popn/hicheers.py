@@ -123,6 +123,15 @@ class PopnHiCheers(PopnJamFizz):
         if songs is None:
             return
 
+        existing_item_ids = set()
+        for child in root.children:
+            if child.name != "item":
+                continue
+            try:
+                existing_item_ids.add(int(child.xpath("id").value))
+            except (AttributeError, TypeError, ValueError):
+                continue
+
         for song_id in sorted(
             {
                 int(self._row_value(song, "songId"))
@@ -130,6 +139,9 @@ class PopnHiCheers(PopnJamFizz):
                 if self._row_value(song, "songId") is not None
             }
         ):
+            if song_id in existing_item_ids:
+                continue
+
             item = XMLNode.void("item")
             item.append("type", Type.U8, 0)
             item.append("id", Type.U16, song_id)
@@ -137,6 +149,7 @@ class PopnHiCheers(PopnJamFizz):
             item.append("is_new", Type.Bool, False)
             item.append("get_time", Type.U64, 0)
             root.children.append(item)
+            existing_item_ids.add(song_id)
 
     def _append_missions(self, root: XMLNode, fresh: bool) -> None:
         mission_ids = (140, 213, 95) if fresh else (142, 197, 3)
