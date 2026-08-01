@@ -18,6 +18,18 @@ class PopnHiCheers(PopnJamFizz):
     persist the state that is sent by the game.
     """
 
+    FORCE_UNLOCK_OPTION = "popn_force_unlock_songs"
+    EVENT_PHASES = {
+        0: 8,
+        1: 2,
+        2: 4,
+        3: 0,
+        4: 12,
+        5: 3,
+        6: 2,
+        7: 2,
+    }
+
     def __init__(
         self,
         core_config: CoreConfig,
@@ -260,7 +272,7 @@ class PopnHiCheers(PopnJamFizz):
 
         self._append_static_items(root)
         force_unlock_songs = await self.data.cozynet.get_option(
-            user_id, "popn_force_unlock_songs"
+            user_id, self.FORCE_UNLOCK_OPTION
         )
         if int(force_unlock_songs or 0):
             await self._append_force_unlocked_songs(root)
@@ -325,20 +337,11 @@ class PopnHiCheers(PopnJamFizz):
         if include_play_id:
             root.append("play_id", Type.S32, 0)
 
-        def add_phase(event_id: int, phase: int) -> None:
+        for event_id, phase_value in self.EVENT_PHASES.items():
             node = XMLNode.void("phase")
             node.append("event_id", Type.S16, event_id)
-            node.append("phase", Type.S16, phase)
+            node.append("phase", Type.S16, phase_value)
             root.children.append(node)
-
-        add_phase(0, 8)
-        add_phase(1, 2)
-        add_phase(2, 4)
-        add_phase(3, 0)
-        add_phase(4, 12)
-        add_phase(5, 3)
-        add_phase(6, 2)
-        add_phase(7, 2)
         for course_id, start_date, end_date, music_id in ranking_info:
             node = XMLNode.void("ranking_info")
             node.append("course_id", Type.S16, course_id)
