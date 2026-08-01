@@ -192,7 +192,7 @@ class PopnReader(BaseReader):
                 return ""
             offset = pe.virtual_to_physical(pointer)
             end = data.index(b"\0", offset)
-            return data[offset:end].decode("shift_jisx0213")
+            return data[offset:end].decode("cp932")
 
         modern = self._scrape_modern(data, pe, read_string)
         if modern:
