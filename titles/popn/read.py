@@ -125,7 +125,7 @@ class PopnReader(BaseReader):
         binaries = self._find_binaries()
         if not binaries:
             self.logger.error(
-                "Pop'n reader requires --binfolder to point to the M39 executable"
+                "Pop'n reader requires --binfolder to point to the M39 executable or MDB"
             )
             return
 
