@@ -99,6 +99,7 @@ class PopnReader(BaseReader):
         "彑": "Ø",
         "暠": "Ⓤ",
         "[/c][c:FF6d6d]Ⓤ[/c]": "Ⓤ",
+        "[/c][c:FF6d6d]鉑[/c]": "",
     }
 
     def __init__(
