@@ -14,6 +14,7 @@ aime_card: Table = Table(
     Column("id", Integer, primary_key=True, nullable=False),
     Column("user", ForeignKey("aime_user.id", ondelete="cascade", onupdate="cascade"), nullable=False),
     Column("access_code", String(20), nullable=False, unique=True),
+    Column("primary_eamuse_card", ForeignKey("eamuse_card.id", ondelete="set null", onupdate="cascade")),
     Column("idm", String(16), unique=True),
     Column("chip_id", BIGINT, unique=True),
     Column("created_date", TIMESTAMP, server_default=func.now()),

@@ -23,7 +23,6 @@ aime_user: Table = Table(
     Column("last_login_date", TIMESTAMP, onupdate=func.now()),
     Column("suspend_expire_time", TIMESTAMP),
     Column("pin", CHAR(4)),
-    Column("primary_eamuse_card", Integer, ForeignKey("eamuse_card.id", ondelete="set null", onupdate="cascade")),
     mysql_charset="utf8mb4",
 )
 
