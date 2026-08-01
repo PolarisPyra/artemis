@@ -212,7 +212,9 @@ class PopnReader(BaseReader):
         """Read the 312-byte High☆Cheers music database records."""
 
         marker = bytes.fromhex(
-            "1c001d00000008070100000000000000000000030e1326"
+            # High☆Cheers has one extra zero here compared with older MDB
+            # dumps; this is the marker in the M39 DLL itself.
+            "1c001d0000000807010000000000000000000000030e1326"
         )
         marker_offset = data.find(marker)
         if marker_offset < 0:
@@ -235,6 +237,9 @@ class PopnReader(BaseReader):
         if length == 0:
             return []
 
+        file_marker = data.find(bytes.fromhex("ecffffffeeffffffecffffff"))
+        file_offset = file_marker - 0x14 if file_marker >= 0 else None
+
         def read_string(pointer: int) -> str:
             if pointer == 0:
                 return ""
@@ -247,17 +252,32 @@ class PopnReader(BaseReader):
             end = data.index(b"\0", string_offset)
             return data[string_offset:end].decode("cp932")
 
+        def read_file(index: int) -> str:
+            if file_offset is None:
+                return ""
+            record_offset = file_offset + (index * 40)
+            if record_offset < 0 or record_offset + 40 > len(data):
+                return ""
+            folder_pointer, name_pointer = struct.unpack_from("<QQ", data, record_offset)
+            try:
+                folder = read_string(folder_pointer)
+                name = read_string(name_pointer)
+            except (ValueError, UnicodeDecodeError):
+                return ""
+            return f"{folder}/{name}" if folder else name
+
         songs: List[Dict[str, object]] = []
         music_id = 0
         for _ in range(length):
             values = struct.unpack_from(record_format, data, offset)
             pointers = values[:7]
             chart_mask = values[9]
-            difficulties = values[13:17]
+            difficulties = values[13:21]
             try:
                 title = read_string(pointers[1])
                 artist = read_string(pointers[2])
                 genre = read_string(pointers[0])
+                long_genre = read_string(pointers[3])
                 title_en = read_string(pointers[5])
                 artist_en = read_string(pointers[6])
                 comment = read_string(pointers[4])
@@ -272,6 +292,7 @@ class PopnReader(BaseReader):
                 "title": title,
                 "artist": artist,
                 "comment": comment,
+                "long_genre": long_genre,
                 "title_en": title_en,
                 "artist_en": artist_en,
                 "folder": values[10],
@@ -281,6 +302,26 @@ class PopnReader(BaseReader):
                     difficulties[2] if chart_mask & 0x1000000 else 0,
                     difficulties[3] if chart_mask & 0x2000000 else 0,
                 ],
+                "battle_difficulty": [
+                    difficulties[4],
+                    difficulties[5] if chart_mask & 0x4000000 else 0,
+                ],
+                "jumbo_difficulty": [
+                    difficulties[6] if chart_mask & 0x200000 else 0,
+                    0,
+                ],
+                "file": {
+                    "standard": {
+                        "easy": read_file(values[21]) if chart_mask & 0x0080000 else "",
+                        "normal": read_file(values[22]),
+                        "hyper": read_file(values[23]) if chart_mask & 0x1000000 else "",
+                        "ex": read_file(values[24]) if chart_mask & 0x2000000 else "",
+                    },
+                    "battle": {
+                        "normal": read_file(values[25]),
+                        "hyper": read_file(values[26]) if chart_mask & 0x4000000 else "",
+                    },
+                },
             }))
             offset += step
             music_id += 1
@@ -376,7 +417,15 @@ class PopnReader(BaseReader):
 
     @classmethod
     def _fix_song_text(cls, song: Dict[str, object]) -> Dict[str, object]:
-        for field in ("genre", "title", "artist", "comment", "title_en", "artist_en"):
+        for field in (
+            "genre",
+            "title",
+            "artist",
+            "comment",
+            "long_genre",
+            "title_en",
+            "artist_en",
+        ):
             value = song[field]
             if isinstance(value, str):
                 for original, replacement in cls.ACCENT_LUT.items():
