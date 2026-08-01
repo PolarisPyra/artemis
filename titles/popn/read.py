@@ -222,8 +222,8 @@ class PopnReader(BaseReader):
                 except ValueError:
                     pass
 
-            if valid_pointers < 6:
-                break
+			if valid_pointers < 6:
+				continue
 
             packed_id = struct.unpack_from("<I", data, offset + 0x38)[0]
             difficulties = struct.unpack_from("<4B", data, offset + 0x4C)
