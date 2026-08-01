@@ -317,11 +317,14 @@ class PopnReader(BaseReader):
                 songs.append(self._fix_song_text(
                     {
                         "id": packed_id & 0xFFFF,
+                        # High☆Cheers records use the same field order as the
+                        # extracted MDB parser: genre, title, artist, long
+                        # genre, comment, English title, English artist.
                         "genre": read_string(pointers[0]),
-                        "title": read_string(pointers[3]),
+                        "title": read_string(pointers[1]),
                         "artist": read_string(pointers[2]),
-                        "comment": read_string(pointers[3]),
-                        "title_en": read_string(pointers[4]),
+                        "comment": read_string(pointers[4]),
+                        "title_en": read_string(pointers[5]),
                         "artist_en": read_string(pointers[6]),
                         "folder": struct.unpack_from("<I", data, offset + 0x3C)[0],
                         "difficulty": list(difficulties),
