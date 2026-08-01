@@ -476,13 +476,20 @@ class BaseHandler:
 
         return root
 
+    async def _get_card_by_konami_id(self, card_id: str):
+        """Resolve a Konami E004 binding before falling back to the cabinet IDm."""
+        card = await self.data.card.get_card_by_eamuse_access_code(card_id)
+        if card is None:
+            card = await self.data.card.get_card_by_idm(card_id)
+        return card
+
     async def handle_cardmng_inquire(self, request: XMLNode) -> XMLNode:
         card_id = request.xpath("@cardid/cardmng")
         card_type = request.xpath("@cardtype/cardmng")
         self.logger.info(f"Inquire access code for cardid {card_id} (type {card_type})")
         binded = "0"
 
-        card = await self.data.card.get_card_by_idm(card_id)
+        card = await self._get_card_by_konami_id(card_id)
         if card is None:
             self.logger.info(f"Cardid {card_id} (type {card_type}) does not exist")
             return XMLNode("cardmng", Type.Void, attributes={"status": "112"})
@@ -556,7 +563,7 @@ class BaseHandler:
             )
             return XMLNode("cardmng", Type.Void, attributes={"status": "116"})
 
-        card = await self.data.card.get_card_by_idm(cardid)
+        card = await self._get_card_by_konami_id(cardid)
         if card is None:
             if not self.core_config.server.allow_user_registration:
                 self.logger.error(f"Registration of card {cardid} (type {card_type}) blocked!")
@@ -603,11 +610,14 @@ class BaseHandler:
             userid = user["id"]
             if user["pin"] is None:
                 await self.data.user.set_user_pin(user["id"], passwd)
+            elif user["pin"] != passwd:
+                self.logger.error(
+                    f"handle_cardmng_getrefid: PIN mismatch for bound card {cardid}"
+                )
+                return XMLNode("cardmng", Type.Void, attributes={"status": "116"})
 
-            else:
-                # How'd we get here?
-                self.logger.error(f"handle_cardmng_getrefid: Unknown state!")
-                return XMLNode("cardmng", Type.Void, attributes={"status": "110"})
+            if card["idm"] is None:
+                await self.data.card.set_idm_by_card_id(card["id"], cardid)
 
         refid = await self.data.user.create_refid(userid, self.game, self.version)
         if refid is None:

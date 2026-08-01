@@ -14,6 +14,7 @@ aime_card: Table = Table(
     Column("id", Integer, primary_key=True, nullable=False),
     Column("user", ForeignKey("aime_user.id", ondelete="cascade", onupdate="cascade"), nullable=False),
     Column("access_code", String(20), nullable=False, unique=True),
+    Column("eamuse_access_code", String(16), unique=True),
     Column("idm", String(16), unique=True),
     Column("chip_id", BIGINT, unique=True),
     Column("created_date", TIMESTAMP, server_default=func.now()),
@@ -129,6 +130,20 @@ class CardData(BaseData):
         result = await self.execute(aime_card.select(aime_card.c.idm == idm))
         if result:
             return result.fetchone()
+
+    async def get_card_by_eamuse_access_code(self, access_code: str) -> Optional[Row]:
+        result = await self.execute(
+            aime_card.select(aime_card.c.eamuse_access_code == access_code)
+        )
+        if result:
+            return result.fetchone()
+
+    async def set_idm_by_card_id(self, card_id: int, idm: str) -> None:
+        result = await self.execute(
+            aime_card.update(aime_card.c.id == card_id).values(idm=idm)
+        )
+        if not result:
+            self.logger.error(f"Failed to update IDm to {idm} for card {card_id}")
 
     async def get_card_by_chip_id(self, chip_id: int) -> Optional[Row]:
         result = await self.execute(aime_card.select(aime_card.c.chip_id == chip_id))
