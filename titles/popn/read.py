@@ -223,6 +223,16 @@ class PopnReader(BaseReader):
         if offset < 0 or offset + record_size > len(data):
             return []
 
+        length = 0
+        check_offset = 8
+        while offset + ((length + 1) * step) <= len(data):
+            check = offset + ((length + 1) * step) - check_offset
+            if data[check : check + 1] != b"\0":
+                break
+            length += 1
+        if length == 0:
+            return []
+
         def read_string(pointer: int) -> str:
             if pointer == 0:
                 return ""
@@ -237,7 +247,7 @@ class PopnReader(BaseReader):
 
         songs: List[Dict[str, object]] = []
         music_id = 0
-        while offset + record_size <= len(data):
+        for _ in range(length):
             values = struct.unpack_from(record_format, data, offset)
             pointers = values[:7]
             chart_mask = values[9]
@@ -248,6 +258,7 @@ class PopnReader(BaseReader):
                 genre = read_string(pointers[0])
                 title_en = read_string(pointers[5])
                 artist_en = read_string(pointers[6])
+                comment = read_string(pointers[4])
             except (ValueError, UnicodeDecodeError):
                 offset += step
                 music_id += 1
@@ -258,7 +269,7 @@ class PopnReader(BaseReader):
                 "genre": genre,
                 "title": title,
                 "artist": artist,
-                "comment": read_string(pointers[4]),
+                "comment": comment,
                 "title_en": title_en,
                 "artist_en": artist_en,
                 "folder": values[10],
