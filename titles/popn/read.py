@@ -185,7 +185,13 @@ class PopnReader(BaseReader):
     def _scrape(self, filename: str) -> List[Dict[str, object]]:
         with open(filename, "rb") as handle:
             data = handle.read()
-        pe = _PEFile(data)
+        pe = _PEFile(data) if data[:2] == b"MZ" else None
+
+        mdb = self._scrape_mdb(data, pe)
+        if mdb:
+            return mdb
+        if pe is None:
+            raise ValueError("Pop'n music database input is not a supported PE or MDB file")
 
         def read_string(pointer: int) -> str:
             if pointer == 0:
@@ -199,6 +205,74 @@ class PopnReader(BaseReader):
             return modern
 
         return self._scrape_legacy(data, pe, read_string)
+
+    def _scrape_mdb(self, data: bytes, pe: Optional[_PEFile]) -> List[Dict[str, object]]:
+        """Read the 312-byte High☆Cheers music database records."""
+
+        marker = bytes.fromhex(
+            "1c001d00000008070100000000000000000000030e1326"
+        )
+        marker_offset = data.find(marker)
+        if marker_offset < 0:
+            return []
+
+        offset = marker_offset - 0x38
+        step = 312
+        record_format = "<" + "Q" * 7 + "H" * 2 + "I" * 4 + "B" * 8 + "xx" + "H" * 6
+        record_size = struct.calcsize(record_format)
+        if offset < 0 or offset + record_size > len(data):
+            return []
+
+        def read_string(pointer: int) -> str:
+            if pointer == 0:
+                return ""
+            try:
+                string_offset = pe.virtual_to_physical(pointer) if pe is not None else pointer
+            except ValueError:
+                string_offset = pointer
+            if string_offset < 0 or string_offset >= len(data):
+                raise ValueError(f"MDB string offset 0x{pointer:x} is out of range")
+            end = data.index(b"\0", string_offset)
+            return data[string_offset:end].decode("cp932")
+
+        songs: List[Dict[str, object]] = []
+        music_id = 0
+        while offset + record_size <= len(data):
+            values = struct.unpack_from(record_format, data, offset)
+            pointers = values[:7]
+            chart_mask = values[9]
+            difficulties = values[13:17]
+            try:
+                title = read_string(pointers[1])
+                artist = read_string(pointers[2])
+                genre = read_string(pointers[0])
+                title_en = read_string(pointers[5])
+                artist_en = read_string(pointers[6])
+            except (ValueError, UnicodeDecodeError):
+                offset += step
+                music_id += 1
+                continue
+
+            songs.append(self._fix_song_text({
+                "id": music_id,
+                "genre": genre,
+                "title": title,
+                "artist": artist,
+                "comment": read_string(pointers[4]),
+                "title_en": title_en,
+                "artist_en": artist_en,
+                "folder": values[10],
+                "difficulty": [
+                    difficulties[0] if chart_mask & 0x0080000 else 0,
+                    difficulties[1],
+                    difficulties[2] if chart_mask & 0x1000000 else 0,
+                    difficulties[3] if chart_mask & 0x2000000 else 0,
+                ],
+            }))
+            offset += step
+            music_id += 1
+
+        return songs
 
     def _scrape_modern(
         self, data: bytes, pe: _PEFile, read_string
