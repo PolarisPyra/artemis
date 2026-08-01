@@ -62,7 +62,9 @@ class PopnReader(BaseReader):
     FILE_STEP = 32
     MODERN_MUSIC_OFFSET = 0x78A020
     MODERN_MUSIC_STEP = 0x138
-    MODERN_MUSIC_MAX = 3000
+    # The High☆Cheers table is followed immediately by unrelated DLL data.
+    # Do not scan the rest of the image as if it were music records.
+    MODERN_MUSIC_MAX = 626
     ACCENT_LUT = {
         "鵝": "7",
         "圄": "à",
@@ -309,12 +311,12 @@ class PopnReader(BaseReader):
                     invalid_pointer = True
 
             if invalid_pointer or valid_pointers < 6:
-                continue
+                break
 
             packed_id = struct.unpack_from("<I", data, offset + 0x38)[0]
             difficulties = struct.unpack_from("<4B", data, offset + 0x4C)
             try:
-                songs.append(self._fix_song_text(
+                song = self._fix_song_text(
                     {
                         "id": packed_id & 0xFFFF,
                         # High☆Cheers records use the same field order as the
@@ -329,7 +331,13 @@ class PopnReader(BaseReader):
                         "folder": struct.unpack_from("<I", data, offset + 0x3C)[0],
                         "difficulty": list(difficulties),
                     }
-                ))
+                )
+                # Empty records are table padding, not playable songs.
+                if not song["title"] and not song["artist"] and not song["genre"]:
+                    continue
+                if not any(song["difficulty"]):
+                    continue
+                songs.append(song)
             except (ValueError, UnicodeDecodeError):
                 continue
 
