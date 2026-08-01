@@ -63,6 +63,43 @@ class PopnReader(BaseReader):
     MODERN_MUSIC_OFFSET = 0x78A020
     MODERN_MUSIC_STEP = 0x138
     MODERN_MUSIC_MAX = 3000
+    ACCENT_LUT = {
+        "鵝": "7",
+        "圄": "à",
+        "圉": "ä",
+        "鵤": "Ä",
+        "鶸": "á",
+        "鵑": "👁",
+        "鶤": "©",
+        "圈": "é",
+        "鵐": "ê",
+        "鵙": "Ə",
+        "鵲": "ë",
+        "！": "!",
+        "囿": "♥",
+        "鶚": "㊙",
+        "鶉": "ó",
+        "鶇": "ö",
+        "鶲": "Ⓟ",
+        "鶫": "²",
+        "鷆": "ř",
+        "鷏": "í",
+        "圍": "@",
+        "圖": "ţ",
+        "鵺": "Ü",
+        "鶺": "Ú",
+        "囎": "⧗",
+        "囂": "♡",
+        "佰": "你",
+        "釁": "🐾",
+        "炙": "焱",
+        "罕": "έ",
+        "罔": "ς",
+        "冫": "ꓘ",
+        "彑": "Ø",
+        "暠": "Ⓤ",
+        "[/c][c:FF6d6d]Ⓤ[/c]": "Ⓤ",
+    }
 
     def __init__(
         self,
@@ -189,7 +226,7 @@ class PopnReader(BaseReader):
 
             packed_id = struct.unpack_from("<I", data, offset + 0x38)[0]
             difficulties = struct.unpack_from("<4B", data, offset + 0x4C)
-            songs.append(
+            songs.append(self._fix_song_text(
                 {
                     "id": packed_id & 0xFFFF,
                     "genre": read_string(pointers[0]),
@@ -201,7 +238,7 @@ class PopnReader(BaseReader):
                     "folder": struct.unpack_from("<I", data, offset + 0x3C)[0],
                     "difficulty": list(difficulties),
                 }
-            )
+            ))
 
         return songs
 
@@ -218,8 +255,7 @@ class PopnReader(BaseReader):
                 "<IIIIIIHHIIII6B2x6H108x", data, offset
             )
             charts = available_charts(values[8])
-            songs.append(
-                {
+            songs.append(self._fix_song_text({
                     "id": song_id,
                     "genre": read_string(values[0]),
                     "title": read_string(values[1]),
@@ -234,6 +270,15 @@ class PopnReader(BaseReader):
                         values[14] if charts[2] else 0,
                         values[15] if charts[3] else 0,
                     ],
-                }
-            )
+                }))
         return songs
+
+    @classmethod
+    def _fix_song_text(cls, song: Dict[str, object]) -> Dict[str, object]:
+        for field in ("genre", "title", "artist", "comment", "title_en", "artist_en"):
+            value = song[field]
+            if isinstance(value, str):
+                for original, replacement in cls.ACCENT_LUT.items():
+                    value = value.replace(original, replacement)
+                song[field] = value
+        return song
