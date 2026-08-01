@@ -118,6 +118,26 @@ class PopnHiCheers(PopnJamFizz):
             item.append("get_time", Type.U64, 0)
             root.children.append(item)
 
+    async def _append_force_unlocked_songs(self, root: XMLNode) -> None:
+        songs = await self.data.static.get_music(self.version)
+        if songs is None:
+            return
+
+        for song_id in sorted(
+            {
+                int(self._row_value(song, "songId"))
+                for song in songs
+                if self._row_value(song, "songId") is not None
+            }
+        ):
+            item = XMLNode.void("item")
+            item.append("type", Type.U8, 0)
+            item.append("id", Type.U16, song_id)
+            item.append("param", Type.U16, 15)
+            item.append("is_new", Type.Bool, False)
+            item.append("get_time", Type.U64, 0)
+            root.children.append(item)
+
     def _append_missions(self, root: XMLNode, fresh: bool) -> None:
         mission_ids = (140, 213, 95) if fresh else (142, 197, 3)
         for mission_id in mission_ids:
@@ -155,7 +175,9 @@ class PopnHiCheers(PopnJamFizz):
         stamp.append("cnt", Type.S16, self._row_value(row, "stamp_cnt", 0))
         root.children.append(stamp)
 
-    def _append_profile_sections(self, root: XMLNode, row, fresh: bool = False) -> None:
+    async def _append_profile_sections(
+        self, root: XMLNode, row, user_id: int, fresh: bool = False
+    ) -> None:
         self._append_account(root, row, fresh)
 
         eaappli = XMLNode.void("eaappli")
@@ -224,15 +246,22 @@ class PopnHiCheers(PopnJamFizz):
         root.children.append(XMLNode.void("navi_data"))
 
         self._append_static_items(root)
+        force_unlock_songs = await self.data.cozynet.get_option(
+            user_id, "popn_force_unlock_songs"
+        )
+        if int(force_unlock_songs or 0):
+            await self._append_force_unlocked_songs(root)
         self._append_missions(root, fresh)
         self._append_netvs(root, row)
         self._append_customize(root, row)
         self._append_stamp(root, row)
 
-    def _profile_response(self, row, fresh: bool = False) -> XMLNode:
+    async def _profile_response(
+        self, row, user_id: int, fresh: bool = False
+    ) -> XMLNode:
         root = XMLNode("player")
         root.append("result", Type.S8, 0)
-        self._append_profile_sections(root, row, fresh)
+        await self._append_profile_sections(root, row, user_id, fresh)
         root.attributes["status"] = "0"
         return root
 
@@ -368,7 +397,7 @@ class PopnHiCheers(PopnJamFizz):
             migration = {"total_play_cnt": 2, "tutorial": 0, "sc_news_no": 2951}
             await self.data.profile.update_profile(user_id, migration)
             profile = {**profile, **migration}
-        return self._profile_response(profile)
+        return await self._profile_response(profile, user_id)
 
     async def handle_player_new(self, request: XMLNode) -> XMLNode:
         ref_id = self._value(request, "player/ref_id")
@@ -379,7 +408,7 @@ class PopnHiCheers(PopnJamFizz):
             else None
         )
         _, profile = await self._get_profile(request)
-        return self._profile_response(profile, fresh=existing is None)
+        return await self._profile_response(profile, user_id, fresh=existing is None)
 
     async def handle_player_conversion(self, request: XMLNode) -> XMLNode:
         return await self.handle_player_read(request)
