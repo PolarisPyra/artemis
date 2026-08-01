@@ -110,7 +110,7 @@ class PopnReader(BaseReader):
                 title = song["title_en"] or song["title"]
                 artist = song["artist_en"] or song["artist"]
                 for chart_id, difficulty in enumerate(song["difficulty"]):
-                    await self.data.static.put_music(
+                    result = await self.data.static.put_music(
                         self.version,
                         song["id"],
                         chart_id,
@@ -120,6 +120,20 @@ class PopnReader(BaseReader):
                         str(song["folder"]),
                         difficulty,
                     )
+                    if result is not None:
+                        self.logger.info(
+                            "Imported song %s chart %s: %s",
+                            song["id"],
+                            chart_id,
+                            title,
+                        )
+                    else:
+                        self.logger.warning(
+                            "Failed to import song %s chart %s: %s",
+                            song["id"],
+                            chart_id,
+                            title,
+                        )
 
     def _find_binaries(self) -> List[str]:
         binaries = []
