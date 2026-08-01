@@ -14,7 +14,6 @@ aime_card: Table = Table(
     Column("id", Integer, primary_key=True, nullable=False),
     Column("user", ForeignKey("aime_user.id", ondelete="cascade", onupdate="cascade"), nullable=False),
     Column("access_code", String(20), nullable=False, unique=True),
-    Column("eamuse_access_code", String(16), unique=True),
     Column("idm", String(16), unique=True),
     Column("chip_id", BIGINT, unique=True),
     Column("created_date", TIMESTAMP, server_default=func.now()),
@@ -23,6 +22,22 @@ aime_card: Table = Table(
     Column("is_banned", Boolean, server_default="0"),
     Column("memo", VARCHAR(16)),
     UniqueConstraint("user", "access_code", name="aime_card_uk"),
+    mysql_charset="utf8mb4",
+)
+
+eamuse_card: Table = Table(
+    "eamuse_card",
+    metadata,
+    Column("id", Integer, primary_key=True, nullable=False),
+    Column("user", ForeignKey("aime_user.id", ondelete="cascade", onupdate="cascade"), nullable=False),
+    Column("access_code", String(16), nullable=False, unique=True),
+    Column("idm", String(16), unique=True),
+    Column("created_date", TIMESTAMP, server_default=func.now()),
+    Column("last_login_date", TIMESTAMP, onupdate=func.now()),
+    Column("is_locked", Boolean, server_default="0"),
+    Column("is_banned", Boolean, server_default="0"),
+    Column("memo", VARCHAR(16)),
+    UniqueConstraint("user", name="eamuse_card_user_uk"),
     mysql_charset="utf8mb4",
 )
 
@@ -131,19 +146,32 @@ class CardData(BaseData):
         if result:
             return result.fetchone()
 
-    async def get_card_by_eamuse_access_code(self, access_code: str) -> Optional[Row]:
+    async def get_eamuse_card_by_access_code(self, access_code: str) -> Optional[Row]:
         result = await self.execute(
-            aime_card.select(aime_card.c.eamuse_access_code == access_code)
+            eamuse_card.select(eamuse_card.c.access_code == access_code)
         )
         if result:
             return result.fetchone()
 
-    async def set_idm_by_card_id(self, card_id: int, idm: str) -> None:
+    async def get_eamuse_card_by_idm(self, idm: str) -> Optional[Row]:
+        result = await self.execute(eamuse_card.select(eamuse_card.c.idm == idm))
+        if result:
+            return result.fetchone()
+
+    async def create_eamuse_card(self, user_id: int, access_code: str) -> Optional[int]:
         result = await self.execute(
-            aime_card.update(aime_card.c.id == card_id).values(idm=idm)
+            eamuse_card.insert().values(user=user_id, access_code=access_code)
+        )
+        if result is None:
+            return None
+        return result.lastrowid
+
+    async def set_eamuse_idm_by_card_id(self, card_id: int, idm: str) -> None:
+        result = await self.execute(
+            eamuse_card.update(eamuse_card.c.id == card_id).values(idm=idm)
         )
         if not result:
-            self.logger.error(f"Failed to update IDm to {idm} for card {card_id}")
+            self.logger.error(f"Failed to update IDm to {idm} for e-amusement card {card_id}")
 
     async def get_card_by_chip_id(self, chip_id: int) -> Optional[Row]:
         result = await self.execute(aime_card.select(aime_card.c.chip_id == chip_id))

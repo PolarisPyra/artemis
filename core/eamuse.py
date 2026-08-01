@@ -478,9 +478,9 @@ class BaseHandler:
 
     async def _get_card_by_konami_id(self, card_id: str):
         """Resolve a Konami E004 binding before falling back to the cabinet IDm."""
-        card = await self.data.card.get_card_by_eamuse_access_code(card_id)
+        card = await self.data.card.get_eamuse_card_by_access_code(card_id)
         if card is None:
-            card = await self.data.card.get_card_by_idm(card_id)
+            card = await self.data.card.get_eamuse_card_by_idm(card_id)
         return card
 
     async def handle_cardmng_inquire(self, request: XMLNode) -> XMLNode:
@@ -594,7 +594,7 @@ class BaseHandler:
             else:
                 kid = uid_to_konami(cardid, self.data.config.eamuse.card_key.encode())
             
-            card = await self.data.card.create_card(userid, kid)
+            card = await self.data.card.create_eamuse_card(userid, kid)
             if card is None:
                 self.logger.error(
                     f"handle_cardmng_getrefid: Failed to create card for user {userid}!"
@@ -603,7 +603,7 @@ class BaseHandler:
 
             if user["pin"] is None:
                 await self.data.user.set_user_pin(userid, passwd)
-            await self.data.card.set_idm_by_access_code(kid, cardid)
+            await self.data.card.set_eamuse_idm_by_card_id(card, cardid)
 
         else:
             user = await self.data.user.get_user(card["user"])  # User can't be none, SQL would throw a fit.
@@ -617,7 +617,7 @@ class BaseHandler:
                 return XMLNode("cardmng", Type.Void, attributes={"status": "116"})
 
             if card["idm"] is None:
-                await self.data.card.set_idm_by_card_id(card["id"], cardid)
+                await self.data.card.set_eamuse_idm_by_card_id(card["id"], cardid)
 
         refid = await self.data.user.create_refid(userid, self.game, self.version)
         if refid is None:
@@ -686,13 +686,20 @@ class BaseHandler:
     async def handle_eacoin_checkin(self, request: XMLNode) -> XMLNode:
         cardid = request.xpath('eacoin/cardid').value
         passwd = request.xpath('eacoin/passwd').value
-        card = await self.data.card.get_card_by_idm(cardid)
+        card = await self.data.card.get_eamuse_card_by_idm(cardid)
+        if card is None and cardid.startswith("E004"):
+            card = await self.data.card.get_eamuse_card_by_access_code(cardid)
         if card is not None:
             access_code = card["access_code"]
             userid = int(card["user"])
         else:
-            access_code = self.data.card.to_access_code(cardid)
-            userid = await self.data.card.get_user_id_from_card(access_code)
+            try:
+                access_code = self.data.card.to_access_code(cardid)
+            except ValueError:
+                self.logger.warning(f"Invalid e-amusement card ID {cardid} from {self.protocol.pcbid}")
+                return XMLNode("eacoin", Type.Void, attributes={"status": "112"})
+            card = await self.data.card.get_eamuse_card_by_access_code(access_code)
+            userid = int(card["user"]) if card is not None else None
         machine = await self.data.arcade.get_bemani_machine(self.protocol.pcbid)
 
         if userid is None:
