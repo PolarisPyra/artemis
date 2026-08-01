@@ -212,6 +212,7 @@ class PopnReader(BaseReader):
 
             pointers = struct.unpack_from("<7Q", data, offset)
             valid_pointers = 0
+            invalid_pointer = False
             for pointer in pointers:
                 if pointer == 0:
                     valid_pointers += 1
@@ -220,26 +221,29 @@ class PopnReader(BaseReader):
                     pe.virtual_to_physical(pointer)
                     valid_pointers += 1
                 except ValueError:
-                    pass
+                    invalid_pointer = True
 
-            if valid_pointers < 6:
+            if invalid_pointer or valid_pointers < 6:
                 continue
 
             packed_id = struct.unpack_from("<I", data, offset + 0x38)[0]
             difficulties = struct.unpack_from("<4B", data, offset + 0x4C)
-            songs.append(self._fix_song_text(
-                {
-                    "id": packed_id & 0xFFFF,
-                    "genre": read_string(pointers[0]),
-                    "title": read_string(pointers[3]),
-                    "artist": read_string(pointers[2]),
-                    "comment": read_string(pointers[3]),
-                    "title_en": read_string(pointers[4]),
-                    "artist_en": read_string(pointers[6]),
-                    "folder": struct.unpack_from("<I", data, offset + 0x3C)[0],
-                    "difficulty": list(difficulties),
-                }
-            ))
+            try:
+                songs.append(self._fix_song_text(
+                    {
+                        "id": packed_id & 0xFFFF,
+                        "genre": read_string(pointers[0]),
+                        "title": read_string(pointers[3]),
+                        "artist": read_string(pointers[2]),
+                        "comment": read_string(pointers[3]),
+                        "title_en": read_string(pointers[4]),
+                        "artist_en": read_string(pointers[6]),
+                        "folder": struct.unpack_from("<I", data, offset + 0x3C)[0],
+                        "difficulty": list(difficulties),
+                    }
+                ))
+            except (ValueError, UnicodeDecodeError):
+                continue
 
         return songs
 
