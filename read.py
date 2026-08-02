@@ -90,6 +90,8 @@ async def main():
     # Parse args, validate invariants.
     args = parser.parse_args()
 
+    os.environ["ARTEMIS_CFG_DIR"] = args.config
+
     config = CoreConfig()
     if path.exists(f"{args.config}/core.yaml"):
         config.update(yaml.safe_load(open(f"{args.config}/core.yaml")))
