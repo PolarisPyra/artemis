@@ -498,11 +498,13 @@ class BaseHandler:
             await self.data.card.set_eamuse_idm_by_card_id(card["id"], card_id)
 
         user = await self.data.user.get_user(card["user"])
-        if user["pin"] is None:
+        if card["pin"] is None:
             self.logger.info(f"Card {card_id} (type {card_type}) does not have pin set")
             return XMLNode("cardmng", Type.Void, attributes={"status": "112"})
 
-        refid = await self.data.user.get_refid_by_user(card["user"], self.game, self.version)
+        refid = await self.data.user.get_refid_by_user(
+            card["user"], self.game, self.version, card["id"]
+        )
         if refid is not None:
             binded = "1" if await self.check_profile(refid) else "0"
         
@@ -513,7 +515,9 @@ class BaseHandler:
                 if oldref is not None:
                     binded = "1" if await self.check_succession_profile(oldref) else "0"
             
-            refid = await self.data.user.create_refid(user["id"], self.game, self.version)
+            refid = await self.data.user.create_refid(
+                user["id"], self.game, self.version, card["id"]
+            )
 
         attribs = dict(  # Order matters here for some reason
             binded=binded,
@@ -543,12 +547,17 @@ class BaseHandler:
             self.logger.warning(f"Refid {refid} does not exist from {self.protocol.pcbid}")
             return XMLNode("cardmng", Type.Void, attributes={"status": "112"})
 
-        user = await self.data.user.get_user(userid)
-        if user["pin"] is None:
+        rid_info = await self.data.user.get_refid_info_by_refid(refid)
+        card = (
+            await self.data.card.get_eamuse_card_by_id(rid_info["eamuse_card"])
+            if rid_info["eamuse_card"] is not None
+            else None
+        )
+        if card is None or card["pin"] is None:
             self.logger.warning(f"No card pin set for {refid} from {self.protocol.pcbid}")
             return XMLNode("cardmng", Type.Void, attributes={"status": "112"})
 
-        if user["pin"] != passwd:
+        if card["pin"] != passwd:
             self.logger.warning(f"Password fail for refid {refid} from {self.protocol.pcbid}")
             return XMLNode("cardmng", Type.Void, attributes={"status": "116"})
 
@@ -586,12 +595,6 @@ class BaseHandler:
                 )
                 return XMLNode("cardmng", Type.Void, attributes={"status": "110"})
 
-            if user["pin"] is not None and user["pin"] != passwd:
-                self.logger.error(
-                    f"handle_cardmng_getrefid: PIN mismatch for arcade owner {userid}"
-                )
-                return XMLNode("cardmng", Type.Void, attributes={"status": "116"})
-
             if card_type == "2": # type 2 cards could reasonably also be used on sega games
                 kid = self.data.card.to_access_code(cardid)
             else:
@@ -604,25 +607,28 @@ class BaseHandler:
                 )
                 return XMLNode("cardmng", Type.Void, attributes={"status": "110"})
 
-            if user["pin"] is None:
-                await self.data.user.set_user_pin(userid, passwd)
+            await self.data.user.set_eamuse_card_pin(card, passwd)
             await self.data.card.set_eamuse_idm_by_card_id(card, cardid)
+            card = await self.data.card.get_eamuse_card_by_id(card)
 
         else:
             user = await self.data.user.get_user(card["user"])  # User can't be none, SQL would throw a fit.
             userid = user["id"]
-            if user["pin"] is None:
-                await self.data.user.set_user_pin(user["id"], passwd)
-            elif user["pin"] != passwd:
+            if card["pin"] is not None and card["pin"] != passwd:
                 self.logger.error(
                     f"handle_cardmng_getrefid: PIN mismatch for bound card {cardid}"
                 )
                 return XMLNode("cardmng", Type.Void, attributes={"status": "116"})
 
+            if card["pin"] is None:
+                await self.data.user.set_eamuse_card_pin(card["id"], passwd)
+
             if card["idm"] is None:
                 await self.data.card.set_eamuse_idm_by_card_id(card["id"], cardid)
 
-        refid = await self.data.user.create_refid(userid, self.game, self.version)
+        refid = await self.data.user.create_refid(
+            userid, self.game, self.version, card["id"]
+        )
         if refid is None:
             self.logger.error(
                 f"handle_cardmng_getrefid: Failed to create refid for user {user} game {self.game} version {self.version}!"
@@ -711,12 +717,11 @@ class BaseHandler:
             self.logger.warning(f"Card {access_code} not registered from {self.protocol.pcbid}")
             return XMLNode("eacoin", Type.Void, attributes={"status": "112"})
 
-        user = await self.data.user.get_user(userid)
-        if user["pin"] is None:
+        if card is None or card["pin"] is None:
             self.logger.warning(f"No card pin set for card {access_code} from {self.protocol.pcbid}")
             return XMLNode("eacoin", Type.Void, attributes={"status": "109"})
 
-        if user["pin"] != passwd:
+        if card["pin"] != passwd:
             self.logger.warning(f"Password fail for access code {access_code} from {self.protocol.pcbid}")
             return XMLNode("eacoin", Type.Void, attributes={"status": "116"})
 

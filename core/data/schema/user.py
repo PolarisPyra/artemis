@@ -10,6 +10,7 @@ from sqlalchemy.types import TIMESTAMP, Integer, String, BIGINT, INTEGER, CHAR, 
 from datetime import datetime
 
 from core.data.schema.base import BaseData, metadata, campaign, campaign_game
+from core.data.schema.card import eamuse_card
 
 aime_user: Table = Table(
     "aime_user",
@@ -22,7 +23,6 @@ aime_user: Table = Table(
     Column("created_date", TIMESTAMP, server_default=func.now()),
     Column("last_login_date", TIMESTAMP, onupdate=func.now()),
     Column("suspend_expire_time", TIMESTAMP),
-    Column("pin", CHAR(4)),
     mysql_charset="utf8mb4",
 )
 
@@ -33,6 +33,7 @@ refid = Table(
     Column("user", INTEGER, ForeignKey("aime_user.id", ondelete="cascade", onupdate="cascade"), nullable=False),
     Column("game", CHAR(3), nullable=False),
     Column("version", INTEGER, nullable=False),
+    Column("eamuse_card", INTEGER, ForeignKey("eamuse_card.id", ondelete="set null", onupdate="cascade")),
     mysql_charset="utf8mb4",
 )
 
@@ -204,8 +205,13 @@ class UserData(BaseData):
         result = await self.execute(sql)
         return result is not None
     
-    async def get_refid_by_user(self, user_id: int, game: str, ver: int) -> Optional[str]:
-        sql = refid.select(and_(refid.c.user == user_id, refid.c.game == game, refid.c.version == ver))
+    async def get_refid_by_user(
+        self, user_id: int, game: str, ver: int, eamuse_card_id: Optional[int] = None
+    ) -> Optional[str]:
+        conditions = [refid.c.user == user_id, refid.c.game == game, refid.c.version == ver]
+        if eamuse_card_id is not None:
+            conditions.append(refid.c.eamuse_card == eamuse_card_id)
+        sql = refid.select(and_(*conditions))
 
         result = await self.execute(sql)
         if result is None:
@@ -231,13 +237,16 @@ class UserData(BaseData):
         if row is not None:
             return row['user']
 
-    async def create_refid(self, user_id: int, game: str, ver: int) -> Optional[str]:
+    async def create_refid(
+        self, user_id: int, game: str, ver: int, eamuse_card_id: Optional[int] = None
+    ) -> Optional[str]:
         refid_ = ''.join(random.choice('0123456789ABCDEF') for _ in range(16))
         sql = insert(refid).values(
             id=refid_,
             user=user_id,
             game=game,
-            version=ver
+            version=ver,
+            eamuse_card=eamuse_card_id,
         )
 
         result = await self.execute(sql)
@@ -246,14 +255,14 @@ class UserData(BaseData):
             return None
         return refid_
     
-    async def set_user_pin(self, user_id: int, pin: str) -> None:
-        sql = aime_user.update(aime_user.c.id == user_id).values(
-            pin = pin
+    async def set_eamuse_card_pin(self, card_id: int, pin: str) -> None:
+        sql = eamuse_card.update(eamuse_card.c.id == card_id).values(
+            pin=pin
         )
 
         result = await self.execute(sql)
         if result is None:
-            self.logger.error(f"Failed to set user {user_id} pin to {pin}")
+            self.logger.error(f"Failed to set e-amusement card {card_id} pin")
 
     async def create_paseli_session(self, user_id: int, machine_id: int, game: str) -> Optional[str]:
         sesh_id = ''.join(random.choice('0123456789ABCDEF') for _ in range(16))

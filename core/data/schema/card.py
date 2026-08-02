@@ -33,6 +33,7 @@ eamuse_card: Table = Table(
     Column("user", ForeignKey("aime_user.id", ondelete="cascade", onupdate="cascade"), nullable=False),
     Column("access_code", String(16), nullable=False, unique=True),
     Column("idm", String(16), unique=True),
+    Column("pin", String(4)),
     Column("created_date", TIMESTAMP, server_default=func.now()),
     Column("last_login_date", TIMESTAMP, onupdate=func.now()),
     Column("is_locked", Boolean, server_default="0"),
@@ -155,6 +156,11 @@ class CardData(BaseData):
 
     async def get_eamuse_card_by_idm(self, idm: str) -> Optional[Row]:
         result = await self.execute(eamuse_card.select(eamuse_card.c.idm == idm))
+        if result:
+            return result.fetchone()
+
+    async def get_eamuse_card_by_id(self, card_id: int) -> Optional[Row]:
+        result = await self.execute(eamuse_card.select(eamuse_card.c.id == card_id))
         if result:
             return result.fetchone()
 
