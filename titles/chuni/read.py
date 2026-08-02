@@ -511,7 +511,7 @@ class ChuniReader(BaseReader):
             "nameplate",
             "system_voice_thumbnails",
             "map_icon",
-            "trophy",
+            "honorBackgrounds",
             "characters",
             "ticket",
             "stage",
@@ -1101,7 +1101,7 @@ class ChuniReader(BaseReader):
                     height = img.width * 72 // 608
                     trophy_img = img.crop((0, 0, img.width, height))
                     trophy_img.save(
-                        f"titles/chuni/assets/img/trophy/{image_path}",
+                        f"titles/chuni/assets/img/honorBackgrounds/{image_path}",
                         "WEBP",
                         quality=85,
                         method=6,
