@@ -47,9 +47,8 @@ from .mate import ChuniMate
 
 HONEYPOT_HEADER_NAME = "X-Cozynet-Version"
 STRICT_UNDERSCORE_RE = re.compile(r"([A-Z])([A-Z])")
-PUBLIC_DATA_VERSION = 249
-# Set machine.data.max_chuni_version to this value to allow CHUNITHM MATE.
-PRIVATE_DATA_VERSION = 254
+# CHUNITHM MATE is publicly supported.
+PUBLIC_DATA_VERSION = 254
 
 
 def strict_underscore(name: str) -> str:
@@ -361,7 +360,7 @@ class ChuniServlet(BaseServlet):
 
             machine_data = machine.data if machine.data is not None else {}
             # If max_chuni_version exists, use its DB value.
-            # If it does not exist, use PUBLIC_DATA_VERSION.
+            # If it does not exist, use the latest publicly supported version.
             max_allowed_version = machine_data.get(
                 "max_chuni_version", PUBLIC_DATA_VERSION
             )
