@@ -307,11 +307,9 @@ class PopnHiCheers(PopnJamFizz):
         option.append("lift", Type.Bool, self._row_value(row, "lift", False))
         option.append("lift_rate", Type.S16, 0 if fresh else self._row_value(row, "lift_rate", -1))
         option.append("guide_se_vol", Type.U8, self._row_value(row, "guide_se_vol", 3))
-        option.append("lift", Type.Bool, self._row_value(row, "lift", False))
-        option.append("lift_rate", Type.S16, 0 if fresh else self._row_value(row, "lift_rate", -1))
         option.append("judge_ad", Type.S8, self._row_value(row, "judge_ad", 0))
         option.append("roof", Type.S16, self._row_value(row, "roof", 0))
-        option.append("long_pop", Type.S8, self._row_value(row, "long_pop", 0))
+        option.append("long_pop", Type.S8, int(self._row_value(row, "long_pop", 0)))
         root.children.append(option)
 
         custom_cate = XMLNode.void("custom_cate")
