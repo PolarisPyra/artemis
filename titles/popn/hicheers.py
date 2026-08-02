@@ -20,13 +20,14 @@ class PopnHiCheers(PopnJamFizz):
 
     FORCE_UNLOCK_OPTION = "popn_force_unlock_songs"
     EVENT_PHASES = {
-        1: 7,
-        2: 1,
-        3: 3,  # Net Taisen
-        4: 0,
-        5: 11,
+        0: 8,
+        1: 1,
+        2: 4,
+        3: 0,
+        4: 12,
+        5: 3,
         6: 2,
-        7: 1,
+        7: 2,
     }
 
     def __init__(
@@ -270,13 +271,17 @@ class PopnHiCheers(PopnJamFizz):
         config.append("category", Type.S8, self._row_value(row, "category", -1))
         config.append("sub_category", Type.S8, self._row_value(row, "sub_category", -1))
         config.append("chara_category", Type.S8, self._row_value(row, "chara_category", -1))
+        config.append("course_id", Type.S16, self._row_value(row, "course_id", 0))
+        config.append("course_folder", Type.S8, self._row_value(row, "course_folder", 0))
         config.append("ms_banner_disp", Type.S8, -1 if fresh else self._row_value(row, "ms_banner_disp", 0))
         config.append("ms_down_info", Type.S8, -1 if fresh else self._row_value(row, "ms_down_info", 0))
+        config.append("ms_side_info", Type.S8, self._row_value(row, "ms_side_info", 3))
         config.append("ms_raise_type", Type.S8, -1 if fresh else self._row_value(row, "ms_raise_type", 0))
+        config.append("ms_rnd_type", Type.S8, self._row_value(row, "ms_rnd_type", 0))
         config.append("banner_sort", Type.S8, -1 if fresh else self._row_value(row, "banner_sort", 0))
         config.append("disp_setting", Type.S8, -1 if fresh else self._row_value(row, "disp_setting", 0))
         config.append("h_vol", Type.S8, -1 if fresh else self._row_value(row, "h_vol", 0))
-        config.append("hiscore_disp", Type.S8, int(self._row_value(row, "hiscore_disp", 0)))
+        config.append("hiscore_disp", Type.Bool, self._row_value(row, "hiscore_disp", False))
         config.append("lane_type", Type.S8, -1 if fresh else self._row_value(row, "lane_type", 0))
         config.append("brightness", Type.S8, self._row_value(row, "brightness", 50))
         config.append("key_beam", Type.S8, -1 if fresh else self._row_value(row, "key_beam", 0))
@@ -302,6 +307,8 @@ class PopnHiCheers(PopnJamFizz):
         option.append("lift", Type.Bool, self._row_value(row, "lift", False))
         option.append("lift_rate", Type.S16, 0 if fresh else self._row_value(row, "lift_rate", -1))
         option.append("guide_se_vol", Type.U8, self._row_value(row, "guide_se_vol", 3))
+        option.append("lift", Type.Bool, self._row_value(row, "lift", False))
+        option.append("lift_rate", Type.S16, 0 if fresh else self._row_value(row, "lift_rate", -1))
         option.append("judge_ad", Type.S8, self._row_value(row, "judge_ad", 0))
         option.append("roof", Type.S16, self._row_value(row, "roof", 0))
         option.append("long_pop", Type.S8, int(self._row_value(row, "long_pop", 0)))
@@ -334,7 +341,7 @@ class PopnHiCheers(PopnJamFizz):
         self, row, user_id: int, fresh: bool = False
     ) -> XMLNode:
         root = XMLNode("player")
-        root.append("result", Type.S8, 0)
+        root.append("con_type", Type.S16, 0)
         await self._append_profile_sections(root, row, user_id, fresh)
         return root
 
