@@ -21,7 +21,7 @@ class PopnHiCheers(PopnJamFizz):
     FORCE_UNLOCK_OPTION = "popn_force_unlock_songs"
     EVENT_PHASES = {
         0: 8,
-        1: 2,
+        1: 1,
         2: 4,
         3: 0,
         4: 12,
@@ -172,6 +172,17 @@ class PopnHiCheers(PopnJamFizz):
             mission.append("mission_comp", Type.U32, 0)
             root.children.append(mission)
 
+    def _append_event_p29(self, root: XMLNode) -> None:
+        event = XMLNode.void("event_p29")
+        event.append("basket_id", Type.S16, 22)
+        for basket_id in range(1, 23):
+            basket = XMLNode.void("basket")
+            basket.append("id", Type.S16, basket_id)
+            basket.append("point", Type.U32, 99999)
+            basket.append("is_cleared", Type.Bool, True)
+            event.children.append(basket)
+        root.children.append(event)
+
     def _append_netvs(self, root: XMLNode, row) -> None:
         netvs = XMLNode.void("netvs")
         netvs.append("record", Type.S16, self._row_value(row, "netvs_record", [0] * 6))
@@ -277,6 +288,7 @@ class PopnHiCheers(PopnJamFizz):
         if int(force_unlock_songs or 0):
             await self._append_force_unlocked_songs(root)
         self._append_missions(root, fresh)
+        self._append_event_p29(root)
         self._append_netvs(root, row)
         self._append_customize(root, row)
         self._append_stamp(root, row)
