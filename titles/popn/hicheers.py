@@ -150,8 +150,7 @@ class PopnHiCheers(PopnJamFizz):
             item.append("type", Type.U8, 0)
             item.append("id", Type.U16, item_id)
             item.append("param", Type.U16, 15)
-            if item_id != 0:
-                item.append("is_new", Type.Bool, False)
+            item.append("is_new", Type.Bool, False)
             item.append("get_time", Type.U64, 0)
             root.children.append(item)
 
