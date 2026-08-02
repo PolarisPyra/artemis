@@ -20,13 +20,14 @@ class PopnHiCheers(PopnJamFizz):
 
     FORCE_UNLOCK_OPTION = "popn_force_unlock_songs"
     EVENT_PHASES = {
-        1: 7,
-        2: 1,
-        3: 3,  # Net Taisen
-        4: 0,
-        5: 11,
+        0: 8,
+        1: 1,
+        2: 4,
+        3: 0,
+        4: 12,
+        5: 3,
         6: 2,
-        7: 1,
+        7: 2,
     }
 
     def __init__(
