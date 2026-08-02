@@ -97,36 +97,62 @@ class PopnHiCheers(PopnJamFizz):
         account = XMLNode.void("account")
         account.append("g_pm_id", Type.Str, self._row_value(row, "g_pm_id", "000000000000"))
         account.append("name", Type.Str, self._row_value(row, "name", "なし"))
+        account.append("tutorial", Type.S16, self._row_value(row, "tutorial", 1))
+        account.append("area_id", Type.S16, self._row_value(row, "area_id", 0))
+        account.append("use_navi", Type.S16, self._row_value(row, "use_navi", 1))
         account.append("read_news", Type.S16, 0 if fresh else self._row_value(row, "read_news", 0))
+        account.append("staff", Type.S8, self._row_value(row, "staff", 0))
+        account.append("item_type", Type.S16, self._row_value(row, "item_type", 0))
+        account.append("item_id", Type.S16, self._row_value(row, "item_id", 0))
+        account.append("is_conv", Type.S8, self._row_value(row, "is_conv", -1))
+        account.append("active_fr_num", Type.U8, self._row_value(row, "active_fr_num", 0))
+        account.append("total_play_cnt", Type.S16, 1 if fresh else self._row_value(row, "total_play_cnt", 0))
+        account.append("today_play_cnt", Type.S16, self._row_value(row, "today_play_cnt", 0))
+        account.append("consecutive_days", Type.S16, self._row_value(row, "consecutive_days", 0))
+        account.append("total_days", Type.S16, self._row_value(row, "total_days", 0))
+        account.append("interval_day", Type.S16, self._row_value(row, "interval_day", 0))
+        account.append("my_best", Type.S16, self._row_value(row, "my_best", [-1] * 20))
+        latest_music = self._row_value(row, "latest_music", [-1] * 10)
+        account.append("latest_music", Type.S16, latest_music[:10])
         account.append("nice", Type.S16, self._row_value(row, "nice", [-1] * 100))
         account.append("favorite_chara", Type.S16, self._row_value(row, "favorite_chara", [-1] * 100))
+        account.append("special_area", Type.S16, self._row_value(row, "special_area", [0] * 8))
+        account.append("chocolate_charalist", Type.S16, self._row_value(row, "chocolate_charalist", [-1] * 5))
+        account.append("chocolate_sp_chara", Type.S32, self._row_value(row, "chocolate_sp_chara", 0))
+        account.append("chocolate_pass_cnt", Type.S32, self._row_value(row, "chocolate_pass_cnt", 0))
+        account.append("chocolate_hon_cnt", Type.S32, self._row_value(row, "chocolate_hon_cnt", 0))
+        account.append("teacher_setting", Type.S16, self._row_value(row, "teacher_setting", [0] * 10))
+        account.append("license_data", Type.S16, self._row_value(row, "license_data", [0] * 20))
+        account.append("welcom_pack", Type.Bool, self._row_value(row, "welcom_pack", False))
+        account.append("ranking_node", Type.S32, self._row_value(row, "ranking_node", 0))
+        account.append("chara_ranking_kind_id", Type.S32, self._row_value(row, "chara_ranking_kind_id", 0))
+        account.append("navi_evolution_flg", Type.S8, self._row_value(row, "navi_evolution_flg", 1))
+        account.append("ranking_news_last_no", Type.S32, self._row_value(row, "ranking_news_last_no", 0))
         account.append("power_point", Type.S32, self._row_value(row, "power_point", 0))
-        account.append("player_point", Type.S32, self._row_value(row, "player_point", 300))
-        account.append("power_point_list", Type.S32, self._row_value(row, "power_point_list", [-1] * 20))
-        account.append("tutorial", Type.S16, 0 if fresh else self._row_value(row, "tutorial", 0))
-        account.append("is_conv", Type.S8, self._row_value(row, "is_conv", 0))
-        account.append("latest_music", Type.S16, self._row_value(row, "latest_music", [-1] * 30))
-        account.append("total_play_cnt", Type.S16, 1 if fresh else self._row_value(row, "total_play_cnt", 0))
-        account.append("active_fr_num", Type.U8, self._row_value(row, "active_fr_num", 0))
-        account.append("popn_class", Type.S8, self._row_value(row, "popn_class", 0))
+        account.append("player_point", Type.S32, self._row_value(row, "player_point", 0))
+        account.append("power_point_list", Type.S32, self._row_value(row, "power_point_list", [0] * 20))
+        account.append("sp_riddles_id", Type.S16, self._row_value(row, "sp_riddles_id", 0))
         account.append("option_tuto", Type.Bool, self._row_value(row, "option_tuto", False))
         account.append("sc_news_no", Type.S32, self._row_value(row, "sc_news_no", 0))
+        account.append("popn_class", Type.S8, self._row_value(row, "popn_class", 1))
         account.append("read_policy", Type.S16, self._row_value(row, "read_policy", 0))
-        account.append("language", Type.S8, self._row_value(row, "language", 0))
+        account.append("language", Type.S8, self._row_value(row, "language", -1))
         root.children.append(account)
 
     def _append_static_items(self, root: XMLNode) -> None:
-        item_mask = bytes.fromhex(
-            "3df7b7ff4fb9bfe2f7d77af7b7dfdaffffdfffffff7bff3f9fffffffff00000000bcfff8ff1cf8ff0f00e0ff3fb7ffff3f006cbfffaf1fc0fbddfdf8f09fffafeff7f70bffffefffffff27fefffffffffff9fdfffdffffcfffffdffffffff5a7f8fffffffffffcff9fffffffffffffff29f97fffffffffffff02e1fff0ffffffffffffff2ffffffffffffdffff3f80fffffffffffffff7ffcfffffbfffdfffff0000f0ff8fffffdffeffffffffffffffff7ffcffbffffffbd3fffffeffffff0b80feffdbf3fffffffffdffdffffff7fffffffdfffffffffefffffffffffffffdfffffffffbfffffff9fffffffffffefdfffbffffffffffc7fff7ffff27fafffbfff8ffffffffffffffffffffffff27f9ffffffffffffffffffffffffffffbffbfcffffffffffffe73f"
+        item_ids = (
+            2171, 2330, 2329, 2168, 2338, 2339, 2165, 2358, 2359, 2369,
+            2370, 2371, 2353, 2352, 2354, 2324, 2325, 2292, 2334, 2335,
+            2342, 2343, 2347, 2348, 2349, 2350, 2351, 2360, 2361, 2362,
+            2356, 2357, 2372, 2373, 2303, 2296, 2340, 0,
         )
-        for item_id in range(len(item_mask) * 8):
-            if not item_mask[item_id // 8] & (1 << (item_id % 8)):
-                continue
+        for item_id in item_ids:
             item = XMLNode.void("item")
             item.append("type", Type.U8, 0)
             item.append("id", Type.U16, item_id)
             item.append("param", Type.U16, 15)
-            item.append("is_new", Type.Bool, False)
+            if item_id != 0:
+                item.append("is_new", Type.Bool, False)
             item.append("get_time", Type.U64, 0)
             root.children.append(item)
 
@@ -164,7 +190,7 @@ class PopnHiCheers(PopnJamFizz):
             existing_item_ids.add(song_id)
 
     def _append_missions(self, root: XMLNode, fresh: bool) -> None:
-        mission_ids = (140, 213, 95) if fresh else (142, 197, 3)
+        mission_ids = (42, 117, 192)
         for mission_id in mission_ids:
             mission = XMLNode.void("mission")
             mission.append("mission_id", Type.U32, mission_id)
@@ -183,6 +209,23 @@ class PopnHiCheers(PopnJamFizz):
             event.children.append(basket)
         root.children.append(event)
 
+    def _append_chara_params(self, root: XMLNode) -> None:
+        for chara_id in range(50):
+            chara = XMLNode.void("chara_param")
+            chara.append("chara_id", Type.U16, chara_id)
+            chara.append("friendship", Type.U16, 0)
+            root.children.append(chara)
+
+    def _append_navi_data(self, root: XMLNode) -> None:
+        navi_data = XMLNode.void("navi_data")
+        navi_data.append("raisePoint", Type.S32, [0] * 5)
+        for navi_id in range(13):
+            navi = XMLNode.void("navi_param")
+            navi.append("navi_id", Type.U16, navi_id)
+            navi.append("friendship", Type.S32, 0)
+            navi_data.children.append(navi)
+        root.children.append(navi_data)
+
     def _append_netvs(self, root: XMLNode, row) -> None:
         netvs = XMLNode.void("netvs")
         netvs.append("record", Type.S16, self._row_value(row, "netvs_record", [0] * 6))
@@ -190,7 +233,7 @@ class PopnHiCheers(PopnJamFizz):
             netvs.append("dialog", Type.Str, "")
         netvs.append("ojama_condition", Type.S8, self._row_value(row, "ojama_condition", [0] * 74))
         netvs.append("set_ojama", Type.S8, self._row_value(row, "set_ojama", [0] * 3))
-        netvs.append("set_recommend", Type.S8, self._row_value(row, "set_recommend", [0] * 3))
+        netvs.append("set_recommend", Type.S8, self._row_value(row, "set_recommend", [1] * 3))
         netvs.append("netvs_play_cnt", Type.U32, self._row_value(row, "netvs_play_cnt", 0))
         root.children.append(netvs)
 
@@ -216,10 +259,6 @@ class PopnHiCheers(PopnJamFizz):
     ) -> None:
         self._append_account(root, row, fresh)
 
-        eaappli = XMLNode.void("eaappli")
-        eaappli.append("relation", Type.S8, -1 if fresh else self._row_value(row, "relation", 1))
-        root.children.append(eaappli)
-
         info = XMLNode.void("info")
         info.append("ep", Type.U16, self._row_value(row, "ep", 0))
         info.append("estatus", Type.U16, 0)
@@ -233,9 +272,13 @@ class PopnHiCheers(PopnJamFizz):
         config.append("category", Type.S8, self._row_value(row, "category", -1))
         config.append("sub_category", Type.S8, self._row_value(row, "sub_category", -1))
         config.append("chara_category", Type.S8, self._row_value(row, "chara_category", -1))
+        config.append("course_id", Type.S16, self._row_value(row, "course_id", 0))
+        config.append("course_folder", Type.S8, self._row_value(row, "course_folder", 0))
         config.append("ms_banner_disp", Type.S8, -1 if fresh else self._row_value(row, "ms_banner_disp", 0))
         config.append("ms_down_info", Type.S8, -1 if fresh else self._row_value(row, "ms_down_info", 0))
+        config.append("ms_side_info", Type.S8, self._row_value(row, "ms_side_info", 3))
         config.append("ms_raise_type", Type.S8, -1 if fresh else self._row_value(row, "ms_raise_type", 0))
+        config.append("ms_rnd_type", Type.S8, self._row_value(row, "ms_rnd_type", 0))
         config.append("banner_sort", Type.S8, -1 if fresh else self._row_value(row, "banner_sort", 0))
         config.append("disp_setting", Type.S8, -1 if fresh else self._row_value(row, "disp_setting", 0))
         config.append("h_vol", Type.S8, -1 if fresh else self._row_value(row, "h_vol", 0))
@@ -264,6 +307,9 @@ class PopnHiCheers(PopnJamFizz):
         option.append("guide_se", Type.S8, self._row_value(row, "guide_se", 0))
         option.append("lift", Type.Bool, self._row_value(row, "lift", False))
         option.append("lift_rate", Type.S16, 0 if fresh else self._row_value(row, "lift_rate", -1))
+        option.append("guide_se_vol", Type.U8, self._row_value(row, "guide_se_vol", 3))
+        option.append("lift", Type.Bool, self._row_value(row, "lift", False))
+        option.append("lift_rate", Type.S16, 0 if fresh else self._row_value(row, "lift_rate", -1))
         option.append("judge_ad", Type.S8, self._row_value(row, "judge_ad", 0))
         option.append("roof", Type.S16, self._row_value(row, "roof", 0))
         option.append("long_pop", Type.S8, self._row_value(row, "long_pop", 0))
@@ -271,15 +317,13 @@ class PopnHiCheers(PopnJamFizz):
 
         custom_cate = XMLNode.void("custom_cate")
         custom_cate.append("valid", Type.S8, 0)
-        custom_cate.append("lv_min", Type.S8, -1)
-        custom_cate.append("lv_max", Type.S8, -1)
-        custom_cate.append("medal_min", Type.S8, -1)
-        custom_cate.append("medal_max", Type.S8, -1)
-        custom_cate.append("friend_no", Type.S8, -1)
-        custom_cate.append("score_flg", Type.S8, -1)
+        custom_cate.append("lv_min", Type.S8, 0)
+        custom_cate.append("lv_max", Type.S8, 0)
+        custom_cate.append("medal_min", Type.S8, 0)
+        custom_cate.append("medal_max", Type.S8, 0)
+        custom_cate.append("friend_no", Type.S8, 0)
+        custom_cate.append("score_flg", Type.S8, 0)
         root.children.append(custom_cate)
-
-        root.children.append(XMLNode.void("navi_data"))
 
         self._append_static_items(root)
         force_unlock_songs = await self.data.cozynet.get_option(
@@ -287,65 +331,25 @@ class PopnHiCheers(PopnJamFizz):
         )
         if int(force_unlock_songs or 0):
             await self._append_force_unlocked_songs(root)
+        self._append_chara_params(root)
+        self._append_customize(root, row)
+        self._append_netvs(root, row)
+        self._append_navi_data(root)
         self._append_missions(root, fresh)
         self._append_event_p29(root)
-        self._append_netvs(root, row)
-        self._append_customize(root, row)
-        self._append_stamp(root, row)
 
     async def _profile_response(
         self, row, user_id: int, fresh: bool = False
     ) -> XMLNode:
         root = XMLNode("player")
-        root.append("result", Type.S8, 0)
+        root.append("con_type", Type.S16, 0)
         await self._append_profile_sections(root, row, user_id, fresh)
-        root.attributes["status"] = "0"
         return root
 
     def _info_response(
         self, root_name: str = "info", include_play_id: bool = False
     ) -> XMLNode:
         root = XMLNode(root_name)
-        ranking_info = (
-            (2951, 1785110400000, 1785715200000, 748),
-            (2950, 1784505600000, 1785110400000, 1739),
-            (2949, 1783900800000, 1784505600000, 2196),
-            (2948, 1783296000000, 1783900800000, 1596),
-            (2947, 1782691200000, 1783296000000, 1704),
-            (2946, 1782086400000, 1782691200000, 1518),
-            (2945, 1781481600000, 1782086400000, 1522),
-            (2944, 1780876800000, 1781481600000, 2078),
-            (2943, 1780272000000, 1780876800000, 996),
-            (2942, 1779667200000, 1780272000000, 2218),
-            (2941, 1779062400000, 1779667200000, 866),
-            (2940, 1778457600000, 1779062400000, 2180),
-            (2939, 1777852800000, 1778457600000, 207),
-            (2938, 1777248000000, 1777852800000, 2105),
-            (2937, 1776643200000, 1777248000000, 268),
-            (2936, 1776038400000, 1776643200000, 1516),
-            (2935, 1775433600000, 1776038400000, 1777),
-        )
-        popular_characters = (1866, 2495, 577, 2445)
-        popular_music = (
-            1082, 1027, 1042, 2209, 859, 1230, 1420, 1114, 699, 1854, 1310, 1169,
-            1876, 1887, 135, 1641, 1202, 1893, 2331, 795, 883, 929, 1359, 2311,
-            2315, 1376, 576, 1795, 2221, 660, 1198, 1250, 1892, 2253, 1824, 2262,
-            2327, 1672, 2285, 1208, 1899, 276, 873, 2291, 1211, 88, 1165, 1585,
-            89, 1588, 1870, 1368, 1757, 1912, 1171, 1191, 1433, 1616, 2014, 693,
-            1482, 148, 1204, 1258, 1495, 1273, 2332, 1160, 1856, 1212, 453, 1868,
-            548, 1168, 1217, 1756, 1911, 2150, 107, 557, 1229, 1592, 2207, 108,
-            558, 1068, 1593, 1763, 1885, 1919, 2317, 126, 1183, 1233, 1395, 1602,
-            1886, 1921, 2214, 2318, 133, 655, 1102, 1244, 1613, 1798, 1922, 2319,
-            1192, 1248, 1800, 1888, 1982, 2228, 2321, 145, 672, 1118, 1476, 1801,
-            2326, 147, 1120, 1251, 1655, 2016, 1121, 1665, 1830, 1894, 2021, 2263,
-            159, 1125, 1205, 1498, 1837, 1895, 2025, 2264, 224, 819, 1127, 1207,
-            1276, 1499, 1718, 1845, 1896, 2049, 2334, 269, 1128, 1278, 1500, 1721,
-            2050, 2290, 2335, 1129, 1210, 1548, 1730, 1855, 1900, 2099, 346, 1324,
-            1553, 1733, 1903, 2106, 2293, 352, 888, 1161, 1353, 1568, 1744, 1861,
-            1908, 2110, 2299, 1214, 1358, 1754, 1910, 2147, 2308,
-        )
-        goods = ((1, 15, 30), (16, 30, 40), (31, 45, 60), (46, 60, 80), (61, 98, 200), (99, 169, 250))
-
         if include_play_id:
             root.append("play_id", Type.S32, 0)
 
@@ -354,46 +358,6 @@ class PopnHiCheers(PopnJamFizz):
             node.append("event_id", Type.S16, event_id)
             node.append("phase", Type.S16, phase_value)
             root.children.append(node)
-        for course_id, start_date, end_date, music_id in ranking_info:
-            node = XMLNode.void("ranking_info")
-            node.append("course_id", Type.S16, course_id)
-            node.append("start_date", Type.U64, start_date)
-            node.append("end_date", Type.U64, end_date)
-            node.append("music_id", Type.S32, music_id)
-            root.children.append(node)
-        for choco_id in range(5):
-            node = XMLNode.void("choco")
-            node.append("choco_id", Type.S16, choco_id)
-            node.append("param", Type.S32, -1)
-            root.children.append(node)
-        for start, end, price in goods:
-            for item_id in range(start, end + 1):
-                node = XMLNode.void("goods")
-                node.append("item_id", Type.S32, item_id)
-                node.append("item_type", Type.S16, 3)
-                node.append("price", Type.S32, price)
-                node.append("goods_type", Type.S16, 0)
-                root.children.append(node)
-        for rank, chara_num in enumerate(popular_characters, 1):
-            node = XMLNode.void("popular")
-            node.append("rank", Type.S16, rank)
-            node.append("chara_num", Type.S16, chara_num)
-            root.children.append(node)
-        for music_num in popular_music:
-            node = XMLNode.void("popular_music")
-            node.append("music_num", Type.S16, music_num)
-            root.children.append(node)
-        root.append("license_music", Type.S16, -1)
-        root.append("license_music_new", Type.S16, -1)
-        for no in range(1, 5):
-            node = XMLNode.void("news")
-            node.append("no", Type.S16, no)
-            node.append("type", Type.U8, 0)
-            node.append("image_no", Type.S16, no)
-            node.append("title", Type.Str, "popn news thing")
-            node.append("main", Type.Str, "idk what this is")
-            root.children.append(node)
-        root.attributes["status"] = "0"
         return root
 
     async def handle_pcb_boot(self, request: XMLNode) -> XMLNode:
