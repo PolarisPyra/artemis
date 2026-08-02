@@ -493,7 +493,10 @@ class BaseHandler:
         if card is None:
             self.logger.info(f"Cardid {card_id} (type {card_type}) does not exist")
             return XMLNode("cardmng", Type.Void, attributes={"status": "112"})
-        
+
+        if card["idm"] is None and card_id.upper().startswith("E004"):
+            await self.data.card.set_eamuse_idm_by_card_id(card["id"], card_id)
+
         user = await self.data.user.get_user(card["user"])
         if user["pin"] is None:
             self.logger.info(f"Card {card_id} (type {card_type}) does not have pin set")
@@ -690,6 +693,8 @@ class BaseHandler:
         if card is None and cardid.startswith("E004"):
             card = await self.data.card.get_eamuse_card_by_access_code(cardid)
         if card is not None:
+            if card["idm"] is None and cardid.upper().startswith("E004"):
+                await self.data.card.set_eamuse_idm_by_card_id(card["id"], cardid)
             access_code = card["access_code"]
             userid = int(card["user"])
         else:
