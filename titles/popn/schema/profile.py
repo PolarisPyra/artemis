@@ -1,4 +1,3 @@
-import binascii
 import random
 from typing import Any, Dict
 
@@ -233,11 +232,9 @@ def _defaults(name: str, pref: int) -> Dict[str, Any]:
 
 class PopnProfileData(BaseData):
     async def _generate_g_pm_id(self) -> str:
-        """Generate a unique Pop'n public ID in the game's 12-digit format."""
+        """Generate a unique Pop'n public ID in the game's 16-digit format."""
         while True:
-            extid = random.randint(10000000, 99999999)
-            checksum = abs(binascii.crc32(str(extid).encode("ascii"))) % 10000
-            g_pm_id = f"{extid}{checksum:04d}"
+            g_pm_id = f"{random.randint(0, 9999999999999999):016d}"
 
             result = await self.execute(
                 select(profile.c.id).where(profile.c.g_pm_id == g_pm_id)
