@@ -232,9 +232,9 @@ def _defaults(name: str, pref: int) -> Dict[str, Any]:
 
 class PopnProfileData(BaseData):
     async def _generate_g_pm_id(self) -> str:
-        """Generate a unique Pop'n public ID in the game's 16-digit format."""
+        """Generate a unique Pop'n public ID in the game's 12-digit format."""
         while True:
-            g_pm_id = f"{random.randint(0, 9999999999999999):016d}"
+            g_pm_id = f"{random.randint(0, 999999999999):012d}"
 
             result = await self.execute(
                 select(profile.c.id).where(profile.c.g_pm_id == g_pm_id)
@@ -253,7 +253,10 @@ class PopnProfileData(BaseData):
     async def ensure_g_pm_id(self, user_id: int, row):
         """Replace IDs produced by the old deterministic/static implementation."""
         current = row["g_pm_id"] if isinstance(row, dict) else row._mapping["g_pm_id"]
-        if current not in {"123456789012", f"{user_id:012d}"}:
+        if len(str(current)) == 12 and current not in {
+            "123456789012",
+            f"{user_id:012d}",
+        }:
             return row
 
         g_pm_id = await self._generate_g_pm_id()
