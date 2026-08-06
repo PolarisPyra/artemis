@@ -231,18 +231,10 @@ def _defaults(name: str, pref: int) -> Dict[str, Any]:
 
 
 class PopnProfileData(BaseData):
-    @staticmethod
-    def _generate_g_pm_id_candidate() -> str:
-        """Generate three readable four-digit segments for a Pop'n ID."""
-        return "".join(
-            f"{random.randint(1000, 9999):04d}"
-            for _ in range(3)
-        )
-
     async def _generate_g_pm_id(self) -> str:
         """Generate a unique Pop'n public ID in the game's 12-digit format."""
         while True:
-            g_pm_id = self._generate_g_pm_id_candidate()
+            g_pm_id = f"{random.randint(0, 999999999999):012d}"
 
             result = await self.execute(
                 select(profile.c.id).where(profile.c.g_pm_id == g_pm_id)
