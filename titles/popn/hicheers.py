@@ -90,6 +90,8 @@ class PopnHiCheers(PopnJamFizz):
             profile = await self.data.profile.create_profile_data(
                 user_id, name, pref or 0
             )
+        else:
+            profile = await self.data.profile.ensure_g_pm_id(user_id, profile)
 
         return user_id, profile
 

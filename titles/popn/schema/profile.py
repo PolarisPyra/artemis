@@ -1,3 +1,5 @@
+import binascii
+import random
 from typing import Any, Dict
 
 from sqlalchemy import Column, Table, select
@@ -151,7 +153,6 @@ def _defaults(name: str, pref: int) -> Dict[str, Any]:
     return {
         "name": name,
         "pref": pref,
-        "g_pm_id": "123456789012",
         "tutorial": 308,
         "area_id": 0,
         "use_navi": 0,
@@ -231,6 +232,19 @@ def _defaults(name: str, pref: int) -> Dict[str, Any]:
 
 
 class PopnProfileData(BaseData):
+    async def _generate_g_pm_id(self) -> str:
+        """Generate a unique Pop'n public ID in the game's 12-digit format."""
+        while True:
+            extid = random.randint(10000000, 99999999)
+            checksum = abs(binascii.crc32(str(extid).encode("ascii"))) % 10000
+            g_pm_id = f"{extid}{checksum:04d}"
+
+            result = await self.execute(
+                select(profile.c.id).where(profile.c.g_pm_id == g_pm_id)
+            )
+            if result is not None and result.fetchone() is None:
+                return g_pm_id
+
     async def get_profile(self, user_id: int):
         result = await self.execute(select(profile).where(profile.c.user == user_id))
         return None if result is None else result.fetchone()
@@ -239,10 +253,22 @@ class PopnProfileData(BaseData):
         row = await self.get_profile(user_id)
         return None if row is None else dict(row._mapping)
 
+    async def ensure_g_pm_id(self, user_id: int, row):
+        """Replace IDs produced by the old deterministic/static implementation."""
+        current = row["g_pm_id"] if isinstance(row, dict) else row._mapping["g_pm_id"]
+        if current not in {"123456789012", f"{user_id:012d}"}:
+            return row
+
+        g_pm_id = await self._generate_g_pm_id()
+        result = await self.execute(
+            profile.update(profile.c.user == user_id).values(g_pm_id=g_pm_id)
+        )
+        return await self.get_profile(user_id) if result is not None else row
+
     async def create_profile(self, user_id: int, name: str, pref: int):
         values = _defaults(name, pref)
         values["user"] = user_id
-        values["g_pm_id"] = f"{user_id:012d}"
+        values["g_pm_id"] = await self._generate_g_pm_id()
         statement = insert(profile).values(**values)
         conflict = statement.on_duplicate_key_update(
             name=statement.inserted.name,
