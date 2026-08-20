@@ -20,14 +20,13 @@ class PopnHiCheers(PopnJamFizz):
 
     FORCE_UNLOCK_OPTION = "popn_force_unlock_songs"
     EVENT_PHASES = {
-        0: 8,
+        0: 0,
         1: 1,
-        2: 4,
-        3: 0,
-        4: 12,
-        5: 3,
-        6: 2,
-        7: 2,
+        2: 0,
+        3: -1,
+        4: 0,
+        5: 2,
+        7: 1,
     }
 
     def __init__(
@@ -201,13 +200,6 @@ class PopnHiCheers(PopnJamFizz):
 
     def _append_event_p29(self, root: XMLNode) -> None:
         event = XMLNode.void("event_p29")
-        event.append("basket_id", Type.S16, 22)
-        for basket_id in range(1, 23):
-            basket = XMLNode.void("basket")
-            basket.append("id", Type.S16, basket_id)
-            basket.append("point", Type.U32, 99999)
-            basket.append("is_cleared", Type.Bool, True)
-            event.children.append(basket)
         root.children.append(event)
 
     def _append_chara_params(self, root: XMLNode) -> None:
