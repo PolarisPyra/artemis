@@ -31,7 +31,6 @@ XML_ENCODING = {
 }
 ENCODING_BACK = {v: k for k, v in ENCODING.items()}
 XML_ENCODING_BACK = {v: k for k, v in XML_ENCODING.items()}
-XML_ENCODING_BACK["shift-jis"] = "SHIFT_JIS"
 ATTR = 0x2E
 END_NODE = 0xFE
 END_DOC = 0xFF
