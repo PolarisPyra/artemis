@@ -272,11 +272,11 @@ class PopnHiCheers(PopnJamFizz):
     def _append_netvs(self, root: XMLNode, row) -> None:
         netvs = XMLNode.void("netvs")
         netvs.append("record", Type.S16, self._row_value(row, "netvs_record", [0] * 6))
-        for _ in range(6):
-            netvs.append("dialog", Type.Str, "")
+        for dialog in self._row_value(row, "netvs_dialog", [""] * 6):
+            netvs.append("dialog", Type.Str, dialog)
         netvs.append("ojama_condition", Type.S8, self._row_value(row, "ojama_condition", [0] * 74))
         netvs.append("set_ojama", Type.S8, self._row_value(row, "set_ojama", [0] * 3))
-        netvs.append("set_recommend", Type.S8, self._row_value(row, "set_recommend", [1] * 3))
+        netvs.append("set_recommend", Type.S8, self._row_value(row, "set_recommend", [0] * 3))
         netvs.append("netvs_play_cnt", Type.U32, self._row_value(row, "netvs_play_cnt", 0))
         root.children.append(netvs)
 
@@ -284,9 +284,10 @@ class PopnHiCheers(PopnJamFizz):
         customize = self._row_value(row, "customize", {})
         customize = customize if isinstance(customize, dict) else {}
         custom = XMLNode.void("customize")
+        for field in ("effect_left", "effect_center", "effect_right", "hukidashi", "comment_1", "comment_2"):
+            custom.append(field, Type.U16, self._row_value(row, field, 0))
         for field in (
-            "effect_left", "effect_center", "effect_right", "hukidashi",
-            "comment_1", "comment_2", "seal_0", "seal_1", "seal_2", "seal_3", "seal_4", "seal_5",
+            "seal_0", "seal_1", "seal_2", "seal_3", "seal_4", "seal_5",
             "seal_6", "seat", "touch_th", "lane_cover", "stage_bk", "highlight",
         ):
             custom.append(field, Type.U16, customize.get(field, 0))
@@ -355,21 +356,19 @@ class PopnHiCheers(PopnJamFizz):
         option.append("lift", Type.Bool, self._row_value(row, "lift", False))
         option.append("lift_rate", Type.S16, 0 if fresh else self._row_value(row, "lift_rate", -1))
         option.append("guide_se_vol", Type.U8, self._row_value(row, "guide_se_vol", 3))
-        option.append("lift", Type.Bool, self._row_value(row, "lift", False))
-        option.append("lift_rate", Type.S16, 0 if fresh else self._row_value(row, "lift_rate", -1))
         option.append("judge_ad", Type.S8, self._row_value(row, "judge_ad", 0))
         option.append("roof", Type.S16, self._row_value(row, "roof", 0))
         option.append("long_pop", Type.S8, int(self._row_value(row, "long_pop", 0)))
         root.children.append(option)
 
         custom_cate = XMLNode.void("custom_cate")
-        custom_cate.append("valid", Type.S8, 0)
-        custom_cate.append("lv_min", Type.S8, 0)
-        custom_cate.append("lv_max", Type.S8, 0)
-        custom_cate.append("medal_min", Type.S8, 0)
-        custom_cate.append("medal_max", Type.S8, 0)
-        custom_cate.append("friend_no", Type.S8, 0)
-        custom_cate.append("score_flg", Type.S8, 0)
+        custom_cate.append("valid", Type.S8, self._row_value(row, "custom_valid", 0))
+        custom_cate.append("lv_min", Type.S8, self._row_value(row, "custom_lv_min", -1))
+        custom_cate.append("lv_max", Type.S8, self._row_value(row, "custom_lv_max", -1))
+        custom_cate.append("medal_min", Type.S8, self._row_value(row, "custom_medal_min", -1))
+        custom_cate.append("medal_max", Type.S8, self._row_value(row, "custom_medal_max", -1))
+        custom_cate.append("friend_no", Type.S8, self._row_value(row, "custom_friend_no", -1))
+        custom_cate.append("score_flg", Type.S8, self._row_value(row, "custom_score_flg", -1))
         root.children.append(custom_cate)
 
         self._append_navi_data(root)
