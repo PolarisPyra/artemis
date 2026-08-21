@@ -18,9 +18,14 @@ class PopnHiCheers(PopnJamFizz):
     persist the state that is sent by the game.
     """
 
-    FORCE_UNLOCK_OPTION = "popn_force_unlock_songs"
+    FORCE_UNLOCK_SONGS_OPTION = "popn_force_unlock_songs"
+    FORCE_UNLOCK_DECO_OPTION = "popn_force_unlock_deco"
+    MUSIC_PHASE_OPTION = "popn_music_phase"
+    EXTRA_STAGE_PHASE_OPTION = "popn_extra_stage_phase"
+    TATAITE_PONPON_PHASE_OPTION = "popn_tataite_ponpon_phase"
+    ENABLE_LICENSES_OPTION = "popn_enable_licenses"
     EVENT_PHASES = {
-        0: 0,
+        0: 7,
         1: 1,
         2: 0,
         3: -1,
@@ -28,6 +33,23 @@ class PopnHiCheers(PopnJamFizz):
         5: 2,
         7: 1,
     }
+    LICENSE_MUSIC = (
+        1186,
+        2272,
+        2286,
+        2288,
+        2289,
+        2290,
+        2309,
+        2312,
+        2313,
+        2314,
+        2316,
+        2318,
+        2319,
+        2320,
+        2321,
+    )
 
     def __init__(
         self,
@@ -93,6 +115,19 @@ class PopnHiCheers(PopnJamFizz):
             profile = await self.data.profile.ensure_g_pm_id(user_id, profile)
 
         return user_id, profile
+
+    async def _get_option(self, user_id: Optional[int], key: str, default: int) -> int:
+        if user_id is None:
+            return default
+        value = await self.data.cozynet.get_option(user_id, key)
+        try:
+            return int(value) if value is not None else default
+        except (TypeError, ValueError):
+            return default
+
+    async def _get_setting_user_id(self, fallback: Optional[int] = None) -> Optional[int]:
+        owner_id = await self.data.arcade.get_machine_owner(self.protocol.pcbid)
+        return owner_id if owner_id is not None else fallback
 
     def _append_account(self, root: XMLNode, row, fresh: bool = False) -> None:
         account = XMLNode.void("account")
@@ -188,6 +223,16 @@ class PopnHiCheers(PopnJamFizz):
             item.append("get_time", Type.U64, 0)
             root.children.append(item)
             existing_item_ids.add(song_id)
+
+    def _append_force_unlocked_deco(self, root: XMLNode) -> None:
+        for deco_id in range(1, 170):
+            item = XMLNode.void("item")
+            item.append("type", Type.U8, 7)
+            item.append("id", Type.U16, deco_id)
+            item.append("param", Type.U16, 0)
+            item.append("is_new", Type.Bool, False)
+            item.append("get_time", Type.U64, 0)
+            root.children.append(item)
 
     def _append_missions(self, root: XMLNode, fresh: bool) -> None:
         mission_ids = (42, 117, 192)
@@ -319,11 +364,18 @@ class PopnHiCheers(PopnJamFizz):
         root.children.append(custom_cate)
 
         self._append_static_items(root)
-        force_unlock_songs = await self.data.cozynet.get_option(
-            user_id, self.FORCE_UNLOCK_OPTION
+        setting_user_id = await self._get_setting_user_id(user_id)
+        force_unlock_songs = await self._get_option(
+            setting_user_id, self.FORCE_UNLOCK_SONGS_OPTION, 1
         )
-        if int(force_unlock_songs or 0):
+        if force_unlock_songs != 0:
             await self._append_force_unlocked_songs(root)
+
+        force_unlock_deco = await self._get_option(
+            setting_user_id, self.FORCE_UNLOCK_DECO_OPTION, 1
+        )
+        if force_unlock_deco != 0:
+            self._append_force_unlocked_deco(root)
         self._append_chara_params(root)
         self._append_customize(root, row)
         self._append_netvs(root, row)
@@ -340,17 +392,32 @@ class PopnHiCheers(PopnJamFizz):
         return root
 
     def _info_response(
-        self, root_name: str = "info", include_play_id: bool = False
+        self,
+        root_name: str = "info",
+        include_play_id: bool = False,
+        music_phase: int = 7,
+        extra_stage_phase: int = 0,
+        tataite_ponpon_phase: int = 0,
+        enable_licenses: bool = True,
     ) -> XMLNode:
         root = XMLNode(root_name)
         if include_play_id:
             root.append("play_id", Type.S32, 0)
 
-        for event_id, phase_value in self.EVENT_PHASES.items():
+        phases = {
+            **self.EVENT_PHASES,
+            0: music_phase,
+            2: extra_stage_phase,
+            4: tataite_ponpon_phase,
+        }
+        for event_id, phase_value in phases.items():
             node = XMLNode.void("phase")
             node.append("event_id", Type.S16, event_id)
             node.append("phase", Type.S16, phase_value)
             root.children.append(node)
+
+        if enable_licenses:
+            root.append("license_music", Type.S16, self.LICENSE_MUSIC)
         return root
 
     async def handle_pcb_boot(self, request: XMLNode) -> XMLNode:
@@ -363,7 +430,30 @@ class PopnHiCheers(PopnJamFizz):
         return XMLNode.void("pcb")
 
     async def handle_info_common(self, request: XMLNode) -> XMLNode:
-        return self._info_response()
+        setting_user_id = await self._get_setting_user_id()
+        return await self._configured_info_response(setting_user_id)
+
+    async def _configured_info_response(
+        self, setting_user_id: Optional[int], root_name: str = "info", include_play_id: bool = False
+    ) -> XMLNode:
+        music_phase = await self._get_option(setting_user_id, self.MUSIC_PHASE_OPTION, 7)
+        extra_stage_phase = await self._get_option(
+            setting_user_id, self.EXTRA_STAGE_PHASE_OPTION, 0
+        )
+        tataite_ponpon_phase = await self._get_option(
+            setting_user_id, self.TATAITE_PONPON_PHASE_OPTION, 0
+        )
+        enable_licenses = (
+            await self._get_option(setting_user_id, self.ENABLE_LICENSES_OPTION, 1) != 0
+        )
+        return self._info_response(
+            root_name,
+            include_play_id=include_play_id,
+            music_phase=music_phase,
+            extra_stage_phase=extra_stage_phase,
+            tataite_ponpon_phase=tataite_ponpon_phase,
+            enable_licenses=enable_licenses,
+        )
 
     async def handle_player_read(self, request: XMLNode) -> XMLNode:
         ref_id = self._value(request, "player/ref_id")
@@ -407,7 +497,10 @@ class PopnHiCheers(PopnJamFizz):
                 user_id,
                 {"total_play_cnt": total + 1, "today_play_cnt": today + 1},
             )
-        return self._info_response("player", include_play_id=True)
+        setting_user_id = await self._get_setting_user_id(user_id)
+        return await self._configured_info_response(
+            setting_user_id, "player", include_play_id=True
+        )
 
     async def handle_player_end(self, request: XMLNode) -> XMLNode:
         return XMLNode.void("player", status="0")
