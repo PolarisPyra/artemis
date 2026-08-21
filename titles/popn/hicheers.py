@@ -50,6 +50,10 @@ class PopnHiCheers(PopnJamFizz):
         2320,
         2321,
     )
+    POPULAR_CHARA = (
+        2449, 2502, 2495, 2409, 2450, 2475, 1864, 2441, 1499, 1879,
+        2420, 2365, 2474, 2488, 2506, 327, 2479, 2317, 996, 577,
+    )
     # These High☆Cheers song IDs are present in the native M39 response but
     # are absent from the imported static chart table. Keep them in the
     # force-unlock catalog so the profile item list matches the cabinet.
@@ -434,6 +438,35 @@ class PopnHiCheers(PopnJamFizz):
             node.append("event_id", Type.S16, event_id)
             node.append("phase", Type.S16, phase_value)
             root.children.append(node)
+
+        for choco_id in range(5):
+            choco = XMLNode.void("choco")
+            choco.append("choco_id", Type.S16, choco_id)
+            choco.append("param", Type.S32, -1)
+            root.children.append(choco)
+
+        goods_prices = (
+            (1, 15, 30),
+            (16, 30, 40),
+            (31, 45, 60),
+            (46, 60, 80),
+            (61, 98, 200),
+            (99, 169, 250),
+        )
+        for first_id, last_id, price in goods_prices:
+            for item_id in range(first_id, last_id + 1):
+                goods = XMLNode.void("goods")
+                goods.append("item_id", Type.S32, item_id)
+                goods.append("item_type", Type.S16, 3)
+                goods.append("price", Type.S32, price)
+                goods.append("goods_type", Type.S16, 0)
+                root.children.append(goods)
+
+        for rank, chara_num in enumerate(self.POPULAR_CHARA, start=1):
+            popular = XMLNode.void("popular")
+            popular.append("rank", Type.S16, rank)
+            popular.append("chara_num", Type.S16, chara_num)
+            root.children.append(popular)
 
         if enable_licenses:
             root.append("license_music", Type.S16, list(self.LICENSE_MUSIC))
