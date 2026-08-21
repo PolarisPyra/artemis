@@ -51,28 +51,14 @@ class PopnHiCheers(PopnJamFizz):
         2321,
     )
     POPULAR_CHARA = (
-        2449, 2502, 2495, 2409, 2450, 2475, 1864, 2441, 1499, 1879,
-        2420, 2365, 2474, 2488, 2506, 327, 2479, 2317, 996, 577,
+        2449, 2502, 2463, 2475, 1879, 2457, 2474, 2495, 2506, 2453,
+        2317, 996, 577, 891, 2290, 1892, 2033, 1000, 2437, 1216,
     )
-    POPULAR_MUSIC = (748,1089,808,1976,1272,690,1763,1241,1683,1567,1764,2150,1628,2072,1042,1024,1229,89,2025,2028,1110,875,449,1741,1119,1586,1748,1804,2136,1429,1109,1410,1945,1682,1812,2209,1593,1236,1765,1191,2094,820,1404,781,1403,1549,1495,1488,747,1130,2073,1487,223,1829,2002,1116,1469,1739,1729,2127,1025,1232,1364,1430,1349,1270,1271,2071,2221,2162,1623,314,1662,1547,1103,181,579,1085,1102,888,1346,25,601,1120,2111,417,1718,1746,818,1044,1214,1169,1752,1786,1986,2137,388,1419,1031,1216,946,1568,616,1598,1525,2118,1003,1087,1400,1377,2088,1611,1234,2210,1226,1009,1674,1800,2013,1701,2206,1022,1754,551,1778,1630,2049,0,1728,1352,1588,1944,1983,712,1731,1833,962,947,1604,370,1965,284,1956,354,436,1167,1111,561,2016,1742,1514,1243,1624,1520,1408,1392,1974,539,1923,1388,2203,1166,1730,991,2096,2160,1592,1326,1215,1310,1158,1698,1788,754,2015,1165,1795,1714,2041,787,594,1548,967,1187,1561,1484,851,1112,735,1197,963,188,1803,1678,2084,821,1721,1127,1794,1621,88,1096,1750,2158,1703,1801,1667,2045,1242,1209,846,1168,499,294,699,1194,2108,2017,1104,1697,1321,1964,1507,819,1928,1164,1065,142,2060,2107,1677,2117,2087,373,1892,341,2021,1737,2076,1200,171,172,668,822,487,912,1952,1126,2126,1049,663,1399,1267,147,1196,871,1876,1563,215,2047,1028,1726,115,1874,1426,1186,1506,2079,1438,2099,1307,1978,1798,1917,1862,882,1725,1444,1039,1827,1589,1749,670,1008,1811,1747,1250,1244,2014,1263,1524,1848,1617,1898,1521,2101,2115,697,1001,1515,1207,1824,2185,645,1796,1505,1550,945,1733,148,1114,1360,1401,1047,752,938,2089,823,2106,1922,353,869,1185,1118,1046,684,1012,1808,655,1450,985,2123,2144,1906,618,1670,1569,2030,1834,1977,1650,1370,1324,1080,1276,1830,833,2066,2082,1814,1037,1946,374,1368,2061,1357,1607,1576,572,1551,1625,1890,1359,1787,567,1522,1992,125,1014,2207,187,1602,1823,2213,1010,1545,743,2146,1402,1679,1231,2184,1499,1656,1676,195,809,1433,1350,95,1021,2009,1668,2211,1774,1380,320,1190,810,647,1160,1351,803,2095,2238,1279,692,1988,1391,1311,1245,1704,1091,1653,847,1870,2128,1381,877,285,999,1546,421,1990,2008,1325,1064,2193,1850,491,660,1128,1239,1777,723,1708,2114,1264,1202,778,2281,646,620,784,1953,836,1732,816,675,43,943,1492,1694,534,701,1768,1179,1825,1664,1206,1354,1789,1033,1695,1756,1378,1555,1663,1319,1210,914,857,1987,2152,795,2093,2256,1212,2027,1171,1646,983,1266,705,1355,1575,290,680,1680,2086,2138,1036,1799,577,1412,1554,874,1633,1414,2018)
-    # These High☆Cheers song IDs are present in the native M39 response but
-    # are absent from the imported static chart table. Keep them in the
-    # force-unlock catalog so the profile item list matches the cabinet.
+    POPULAR_MUSIC = (748,1089,808,1272,1976,690,1763,1241,1683,1567,1764,2150,2072,1628,1042,1024,1229,89,2025,2028,1110,1741,875,449,1119,1586,1748,1804,1429,1109,2136,1410,1945,1682,1812,1593,1236,1765,2209,1191,2094,781,820,1404,1403,1549,1495,1488,1130,2073,747,1487,1829,2002,1116,1729,1739,1469,1025,2127,1232,223,1270,1271,1430,1349,2071,1364,2162,181,2221,1623,1547,1103,1662,314,1102,888,1085,1346,2111,25,579,417,1718,1746,1044,1214,818,1169,601,1752,1786,1120,1986,1216,388,1525,1031,2137,1598,2118,1003,946,616,1568,1087,1377,1419,1400,1611,1234,2088,1674,1701,1800,1009,1226,1022,2013,2206,1754,1630,1352,0,1944,1728,2049,551,2210,1778,1983,712,1588,1965,1833,962,1604,947,370,354,1731,284,1956,1167,1742,1111,436,1514,1520,1243,1408,1624,1392,561,2016,1923,1388,539,2203,1166,1974,1730,991,1215,754,2160,1698,2096,1158,2015,1310,1326,1795,1788,594,787,2041,967,1561,1714,1187,1484,1165,1197,1548,963,1678,851,1721,1621,1592,188,1127,1703,1803,1794,1750,1112,2158,1801,1096,821,2084,88,1667,846,1209,1168,294,1242,1194,2045,499,1697,699,2108,1964,2017,1104,1321,1164,1507,2107,1065,1892,142,1928,819,2060,373,1677,2117,2087,735,2021,1200,1737,172,2076,822,341,171,912,1952,668,1126,487,1399,663,1267,871,2126,1028,147,1196,2047,1426,1049,1506,1726,1563,2079,215,115,1874,1186,1307,1876,1978,1798,1444,1827,1917,1749,1725,2099,1438,1862,1039,1589,670,1008,1811,2014,1244,1617,1521,1250,1263,1524,2115,1747,1848,2101,1824,1114,1515,1796,1898,645,697,1505,148,1001,1207,1733,1360,1550,938,945,2185,869,1401,752,2106,2089,1922,1185,1047,823,1012,1808,353,1046,2123,1118,1977,1450,985,1834,2030,655,1650,1370,1324,1569,1670,2082,1368,1906,1080,2061,1037,1946,1830,1276,2066,833,1576,882,618,1607,1359,374,1357,1625,1814,1787,1890,572,1522,1551,1992,2144,567,125,1014,743,2207,2213,1010,187,1545,1602,1402,1679,1656,1823,1499,1676,2146,809,195,1350,1021,1433,1668,1774,2009,2184,1231,95,320,1190,2211,647,684,1380,1351,2095,1279,810,692,1245,803,1391,1653,1704,2128,1988,1381,285,1160,1091,847,421,1064,1546,2008,877,999,1777,1311,1870,1325,2193,2114,723,1990,1264,620,1239,1128,1202,784,1953,2238,660,836,1850,1492,491,1768,1708,1694,675,646,778,1732,534,943,1354,1825,43,1206,1664,1179,1555,1695,1378,1033,1210,1319,914,857,1756,1789,2152,2027,2093,1987,983,705,1646,1212,1171,1799,1575,795,1680,2018,577,2086,1641,936,1663,1322,1775,1412,1633,1414,2138,680,874,1880,2256,1417,1266,1390)
+    # These three High☆Cheers song IDs are present in the native M39 response
+    # but are absent from the imported static chart table.
     FORCE_UNLOCK_CATALOG_GAPS = (
-        1, 6, 7, 11, 19, 22, 36, 37, 39, 41, 42, 46, 54, 56, 58, 59, 60,
-        67, 75, 77, 80, 82, 87, 91, 99, 102, 109, 112, 114, 117, 141, 175,
-        190, 198, 232, 233, 234, 236, 237, 238, 239, 240, 241, 242, 243,
-        244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 256, 257,
-        258, 259, 260, 261, 262, 263, 264, 265, 270, 280, 281, 282, 296,
-        297, 301, 302, 303, 304, 305, 306, 324, 325, 326, 327, 328, 329,
-        330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 358, 359,
-        363, 366, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400,
-        401, 404, 407, 414, 428, 430, 437, 438, 439, 440, 441, 442, 443,
-        444, 445, 450, 457, 461, 465, 472, 473, 474, 480, 481, 482, 493,
-        494, 508, 510, 516, 523, 531, 538, 540, 541, 542, 543, 564, 595,
-        596, 598, 599, 600, 657, 673, 700, 701, 725, 753, 755, 763, 764,
-        766, 768, 769, 770, 816, 817, 837, 838, 897, 898, 900, 902, 903,
-        905, 906, 919, 1912, 1929, 2149, 5171,
+        1912, 1929, 2149,
     )
 
     def __init__(
@@ -157,32 +143,17 @@ class PopnHiCheers(PopnJamFizz):
         account = XMLNode.void("account")
         account.append("g_pm_id", Type.Str, self._row_value(row, "g_pm_id", "000000000000"))
         account.append("name", Type.Str, self._row_value(row, "name", "なし"))
-        account.append("tutorial", Type.S16, self._row_value(row, "tutorial", 1))
         account.append("area_id", Type.S16, self._row_value(row, "area_id", 0))
         account.append("use_navi", Type.S16, self._row_value(row, "use_navi", 1))
         account.append("read_news", Type.S16, 0 if fresh else self._row_value(row, "read_news", 0))
-        account.append("staff", Type.S8, self._row_value(row, "staff", 0))
-        account.append("item_type", Type.S16, self._row_value(row, "item_type", 0))
-        account.append("item_id", Type.S16, self._row_value(row, "item_id", 0))
-        account.append("is_conv", Type.S8, self._row_value(row, "is_conv", -1))
-        account.append("active_fr_num", Type.U8, self._row_value(row, "active_fr_num", 0))
-        account.append("total_play_cnt", Type.S16, 1 if fresh else self._row_value(row, "total_play_cnt", 0))
-        account.append("today_play_cnt", Type.S16, self._row_value(row, "today_play_cnt", 0))
-        account.append("consecutive_days", Type.S16, self._row_value(row, "consecutive_days", 0))
-        account.append("total_days", Type.S16, self._row_value(row, "total_days", 0))
-        account.append("interval_day", Type.S16, self._row_value(row, "interval_day", 0))
-        account.append("my_best", Type.S16, self._row_value(row, "my_best", [-1] * 20))
-        latest_music = self._row_value(row, "latest_music", [-1] * 10)
-        account.append("latest_music", Type.S16, latest_music[:10])
         account.append("nice", Type.S16, self._row_value(row, "nice", [-1] * 100))
-        account.append("favorite_chara", Type.S16, self._row_value(row, "favorite_chara", [-1] * 100))
+        account.append("favorite_chara", Type.S16, self._row_value(row, "favorite_chara", [-1] * 20))
         account.append("special_area", Type.S16, self._row_value(row, "special_area", [0] * 8))
         account.append("chocolate_charalist", Type.S16, self._row_value(row, "chocolate_charalist", [-1] * 5))
         account.append("chocolate_sp_chara", Type.S32, self._row_value(row, "chocolate_sp_chara", 0))
         account.append("chocolate_pass_cnt", Type.S32, self._row_value(row, "chocolate_pass_cnt", 0))
         account.append("chocolate_hon_cnt", Type.S32, self._row_value(row, "chocolate_hon_cnt", 0))
         account.append("teacher_setting", Type.S16, self._row_value(row, "teacher_setting", [0] * 10))
-        account.append("license_data", Type.S16, self._row_value(row, "license_data", [0] * 20))
         account.append("welcom_pack", Type.Bool, self._row_value(row, "welcom_pack", False))
         account.append("ranking_node", Type.S32, self._row_value(row, "ranking_node", 0))
         account.append("chara_ranking_kind_id", Type.S32, self._row_value(row, "chara_ranking_kind_id", 0))
@@ -191,12 +162,22 @@ class PopnHiCheers(PopnJamFizz):
         account.append("power_point", Type.S32, self._row_value(row, "power_point", 0))
         account.append("player_point", Type.S32, self._row_value(row, "player_point", 0))
         account.append("power_point_list", Type.S32, self._row_value(row, "power_point_list", [0] * 20))
-        account.append("sp_riddles_id", Type.S16, self._row_value(row, "sp_riddles_id", 0))
-        account.append("option_tuto", Type.Bool, self._row_value(row, "option_tuto", False))
-        account.append("sc_news_no", Type.S32, self._row_value(row, "sc_news_no", 0))
+        account.append("tutorial", Type.S16, self._row_value(row, "tutorial", 1))
+        account.append("staff", Type.S8, self._row_value(row, "staff", 0))
+        account.append("item_type", Type.S16, self._row_value(row, "item_type", 0))
+        account.append("item_id", Type.S16, self._row_value(row, "item_id", 0))
+        account.append("is_conv", Type.S8, self._row_value(row, "is_conv", -1))
+        account.append("license_data", Type.S16, self._row_value(row, "license_data", [-1] * 20))
+        account.append("my_best", Type.S16, self._row_value(row, "my_best", [-1] * 20))
+        latest_music = self._row_value(row, "latest_music", [-1] * 10)
+        account.append("latest_music", Type.S16, latest_music[:10])
+        account.append("total_play_cnt", Type.S16, 1 if fresh else self._row_value(row, "total_play_cnt", 0))
+        account.append("today_play_cnt", Type.S16, self._row_value(row, "today_play_cnt", 0))
+        account.append("consecutive_days", Type.S16, self._row_value(row, "consecutive_days", 0))
+        account.append("total_days", Type.S16, self._row_value(row, "total_days", 0))
+        account.append("interval_day", Type.S16, self._row_value(row, "interval_day", 0))
+        account.append("active_fr_num", Type.U8, self._row_value(row, "active_fr_num", 0))
         account.append("popn_class", Type.S8, self._row_value(row, "popn_class", 1))
-        account.append("read_policy", Type.S16, self._row_value(row, "read_policy", 0))
-        account.append("language", Type.S8, self._row_value(row, "language", -1))
         root.children.append(account)
 
     def _append_static_items(self, root: XMLNode) -> None:
@@ -272,8 +253,8 @@ class PopnHiCheers(PopnJamFizz):
         root.children.append(event)
 
     def _append_chara_params(self, root: XMLNode) -> None:
-        for chara_id in range(50):
-            chara = XMLNode.void("chara_param")
+        for chara_id in range(56):
+            chara = XMLNode.void("chara_param_old")
             chara.append("chara_id", Type.U16, chara_id)
             chara.append("friendship", Type.U16, 0)
             root.children.append(chara)
@@ -304,7 +285,8 @@ class PopnHiCheers(PopnJamFizz):
         customize = customize if isinstance(customize, dict) else {}
         custom = XMLNode.void("customize")
         for field in (
-            "seal_0", "seal_1", "seal_2", "seal_3", "seal_4", "seal_5",
+            "effect_left", "effect_center", "effect_right", "hukidashi",
+            "comment_1", "comment_2", "seal_0", "seal_1", "seal_2", "seal_3", "seal_4", "seal_5",
             "seal_6", "seat", "touch_th", "lane_cover", "stage_bk", "highlight",
         ):
             custom.append(field, Type.U16, customize.get(field, 0))
@@ -321,9 +303,12 @@ class PopnHiCheers(PopnJamFizz):
     ) -> None:
         self._append_account(root, row, fresh)
 
+        eaappli = XMLNode.void("eaappli")
+        eaappli.append("relation", Type.S8, 1)
+        root.children.append(eaappli)
+
         info = XMLNode.void("info")
         info.append("ep", Type.U16, self._row_value(row, "ep", 0))
-        info.append("estatus", Type.U16, 0)
         root.children.append(info)
 
         config = XMLNode.void("config")
@@ -387,6 +372,8 @@ class PopnHiCheers(PopnJamFizz):
         custom_cate.append("score_flg", Type.S8, 0)
         root.children.append(custom_cate)
 
+        self._append_navi_data(root)
+
         setting_user_id = await self._get_setting_user_id(user_id)
         force_unlock_songs = await self._get_option(
             setting_user_id, self.FORCE_UNLOCK_SONGS_OPTION, 1
@@ -402,23 +389,23 @@ class PopnHiCheers(PopnJamFizz):
         if force_unlock_deco != 0:
             self._append_force_unlocked_deco(root)
         self._append_chara_params(root)
-        self._append_customize(root, row)
-        self._append_netvs(root, row)
-        self._append_navi_data(root)
         self._append_missions(root, fresh)
+        self._append_netvs(root, row)
+        self._append_customize(root, row)
+        self._append_stamp(root, row)
         self._append_event_p29(root)
 
     async def _profile_response(
         self, row, user_id: int, fresh: bool = False
     ) -> XMLNode:
-        root = XMLNode("player")
-        root.append("con_type", Type.S16, 0)
+        root = XMLNode("player24", attributes={"status": "0"})
+        root.append("result", Type.S8, 0)
         await self._append_profile_sections(root, row, user_id, fresh)
         return root
 
     def _info_response(
         self,
-        root_name: str = "info",
+        root_name: str = "info24",
         include_play_id: bool = False,
         music_phase: int = 7,
         extra_stage_phase: int = 0,
@@ -480,20 +467,20 @@ class PopnHiCheers(PopnJamFizz):
         return root
 
     async def handle_pcb_boot(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("pcb")
+        return XMLNode.void("pcb24", status="0")
 
     async def handle_pcb_error(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("pcb")
+        return XMLNode.void("pcb24", status="0")
 
     async def handle_pcb_write(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("pcb")
+        return XMLNode.void("pcb24", status="0")
 
     async def handle_info_common(self, request: XMLNode) -> XMLNode:
         setting_user_id = await self._get_setting_user_id()
         return await self._configured_info_response(setting_user_id)
 
     async def _configured_info_response(
-        self, setting_user_id: Optional[int], root_name: str = "info", include_play_id: bool = False
+        self, setting_user_id: Optional[int], root_name: str = "info24", include_play_id: bool = False
     ) -> XMLNode:
         music_phase = await self._get_option(setting_user_id, self.MUSIC_PHASE_OPTION, 7)
         extra_stage_phase = await self._get_option(
@@ -558,17 +545,17 @@ class PopnHiCheers(PopnJamFizz):
             )
         setting_user_id = await self._get_setting_user_id(user_id)
         return await self._configured_info_response(
-            setting_user_id, "player", include_play_id=True
+            setting_user_id, "player24", include_play_id=True
         )
 
     async def handle_player_end(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player", status="0")
+        return XMLNode.void("player24", status="0")
 
     async def handle_player_logout(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player", status="0")
+        return XMLNode.void("player24", status="0")
 
     async def handle_player_read_option(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player", status="0")
+        return XMLNode.void("player24", status="0")
 
     @staticmethod
     def _children(node: Optional[XMLNode], name: str) -> List[XMLNode]:
@@ -717,10 +704,10 @@ class PopnHiCheers(PopnJamFizz):
                         option_values[name] = value
                 if option_values:
                     await self.data.profile.update_profile(user_id, option_values)
-        return XMLNode.void("player", status="0")
+        return XMLNode.void("player24", status="0")
 
     def _score_response(self, scores) -> XMLNode:
-        root = XMLNode("player")
+        root = XMLNode("player24")
         for record in scores:
             music = XMLNode.void("music")
             for name, type_ in (
@@ -728,16 +715,10 @@ class PopnHiCheers(PopnJamFizz):
                 ("sheet_num", Type.U8),
                 ("score", Type.S32),
                 ("clear_type", Type.U8),
-                ("score_ver", Type.S32),
-                ("clear_type_ver", Type.U8),
                 ("clear_rank", Type.U8),
                 ("cnt", Type.S16),
             ):
                 value = record.get(name, 0)
-                if name == "score_ver":
-                    value = record.get("score", 0)
-                elif name == "clear_type_ver":
-                    value = record.get("clear_type", 0)
                 music.append(name, type_, value)
             root.children.append(music)
         root.attributes["status"] = "0"
@@ -752,7 +733,7 @@ class PopnHiCheers(PopnJamFizz):
         user_id, profile = await self._get_profile(request)
         node = self._player(request)
         if user_id is None or node is None:
-            return XMLNode.void("player", status="0")
+            return XMLNode.void("player24", status="0")
 
         values: Dict[str, Any] = {}
         account_fields = (
@@ -847,22 +828,22 @@ class PopnHiCheers(PopnJamFizz):
         await self.data.profile.update_profile(user_id, values)
         for stage_number, stage in enumerate(self._children(node, "stage"), 1):
             await self._save_music(user_id, stage, node, stage_number, profile)
-        return XMLNode.void("player", status="0")
+        return XMLNode.void("player24", status="0")
 
     async def handle_player_friend(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player", status="0")
+        return XMLNode.void("player24", status="0")
 
     async def handle_player_write_course(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player", status="0")
+        return XMLNode.void("player24", status="0")
 
     async def handle_player_update_ranking(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player", status="0")
+        return XMLNode.void("player24", status="0")
 
     async def handle_player_buy(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player", status="0")
+        return XMLNode.void("player24", status="0")
 
     async def handle_player_tsumtsum(self, request: XMLNode) -> XMLNode:
-        return XMLNode.void("player", status="0")
+        return XMLNode.void("player24", status="0")
 
     async def handle_loctest24_log(self, request: XMLNode) -> XMLNode:
         return XMLNode.void("loctest24")
