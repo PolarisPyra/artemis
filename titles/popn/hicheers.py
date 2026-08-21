@@ -50,6 +50,25 @@ class PopnHiCheers(PopnJamFizz):
         2320,
         2321,
     )
+    # These High☆Cheers song IDs are present in the native M39 response but
+    # are absent from the imported static chart table. Keep them in the
+    # force-unlock catalog so the profile item list matches the cabinet.
+    FORCE_UNLOCK_CATALOG_GAPS = (
+        1, 6, 7, 11, 19, 22, 36, 37, 39, 41, 42, 46, 54, 56, 58, 59, 60,
+        67, 75, 77, 80, 82, 87, 91, 99, 102, 109, 112, 114, 117, 141, 175,
+        190, 198, 232, 233, 234, 236, 237, 238, 239, 240, 241, 242, 243,
+        244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 256, 257,
+        258, 259, 260, 261, 262, 263, 264, 265, 270, 280, 281, 282, 296,
+        297, 301, 302, 303, 304, 305, 306, 324, 325, 326, 327, 328, 329,
+        330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 358, 359,
+        363, 366, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400,
+        401, 404, 407, 414, 428, 430, 437, 438, 439, 440, 441, 442, 443,
+        444, 445, 450, 457, 461, 465, 472, 473, 474, 480, 481, 482, 493,
+        494, 508, 510, 516, 523, 531, 538, 540, 541, 542, 543, 564, 595,
+        596, 598, 599, 600, 657, 673, 700, 701, 725, 753, 755, 763, 764,
+        766, 768, 769, 770, 816, 817, 837, 838, 897, 898, 900, 902, 903,
+        905, 906, 919, 1912, 1929, 2149, 5171,
+    )
 
     def __init__(
         self,
@@ -210,7 +229,7 @@ class PopnHiCheers(PopnJamFizz):
                 int(self._row_value(song, "songId"))
                 for song in songs
                 if self._row_value(song, "songId") is not None
-            }
+            }.union(self.FORCE_UNLOCK_CATALOG_GAPS)
         ):
             if song_id in existing_item_ids:
                 continue
