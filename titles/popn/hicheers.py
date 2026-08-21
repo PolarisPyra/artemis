@@ -386,13 +386,14 @@ class PopnHiCheers(PopnJamFizz):
         custom_cate.append("score_flg", Type.S8, 0)
         root.children.append(custom_cate)
 
-        self._append_static_items(root)
         setting_user_id = await self._get_setting_user_id(user_id)
         force_unlock_songs = await self._get_option(
             setting_user_id, self.FORCE_UNLOCK_SONGS_OPTION, 1
         )
         if force_unlock_songs != 0:
             await self._append_force_unlocked_songs(root)
+        else:
+            self._append_static_items(root)
 
         force_unlock_deco = await self._get_option(
             setting_user_id, self.FORCE_UNLOCK_DECO_OPTION, 1
