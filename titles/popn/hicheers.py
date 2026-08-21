@@ -436,7 +436,7 @@ class PopnHiCheers(PopnJamFizz):
             root.children.append(node)
 
         if enable_licenses:
-            root.append("license_music", Type.S16, self.LICENSE_MUSIC)
+            root.append("license_music", Type.S16, list(self.LICENSE_MUSIC))
         return root
 
     async def handle_pcb_boot(self, request: XMLNode) -> XMLNode:
