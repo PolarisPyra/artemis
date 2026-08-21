@@ -1013,12 +1013,19 @@ class EamuseServlet:
             if "status" not in resp.attributes:
                 resp.attributes['status'] = "0"
             
-            resp_root = XMLNode("response", Type.Void)
+            response_attributes = (
+                {"dstid": proto.pcbid} if proto.pcbid is not None else None
+            )
+            resp_root = XMLNode(
+                "response", Type.Void, attributes=response_attributes
+            )
             resp_root.children.append(resp)
             proto.set_resp(resp_root)
             return self.gen_resp(proto.get_resp_packet(), eainfo)
         
         else:
+            if proto.pcbid is not None and "dstid" not in resp.attributes:
+                resp.attributes["dstid"] = proto.pcbid
             proto.set_resp(resp)
             return self.gen_resp(proto.get_resp_packet(), eainfo) 
     
