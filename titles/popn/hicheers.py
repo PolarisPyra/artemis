@@ -50,6 +50,12 @@ class PopnHiCheers(PopnJamFizz):
         2320,
         2321,
     )
+    # M39's song-eligibility predicate checks every music record carrying
+    # mask bit 0x00020000 against the license_music arrays. These four IDs are
+    # present in that masked set but absent from the normal live-license list.
+    FORCE_UNLOCK_LICENSE_MUSIC = tuple(
+        sorted(set(LICENSE_MUSIC).union((670, 2208, 2236, 2257)))
+    )
     POPULAR_CHARA = (
         2449, 2502, 2463, 2475, 1879, 2457, 2474, 2495, 2506, 2453,
         2317, 996, 577, 891, 2290, 1892, 2033, 1000, 2437, 1216,
@@ -432,6 +438,7 @@ class PopnHiCheers(PopnJamFizz):
         extra_stage_phase: int = 0,
         tataite_ponpon_phase: int = 0,
         enable_licenses: bool = True,
+        force_unlock_songs: bool = False,
     ) -> XMLNode:
         root = XMLNode(root_name)
         if include_play_id:
@@ -483,7 +490,11 @@ class PopnHiCheers(PopnJamFizz):
             popular_music.append("music_num", Type.S16, music_num)
             root.children.append(popular_music)
 
-        if enable_licenses:
+        if force_unlock_songs:
+            force_licenses = list(self.FORCE_UNLOCK_LICENSE_MUSIC)
+            root.append("license_music", Type.S16, force_licenses)
+            root.append("license_music_new", Type.S16, force_licenses)
+        elif enable_licenses:
             root.append("license_music", Type.S16, list(self.LICENSE_MUSIC))
         return root
 
@@ -513,6 +524,12 @@ class PopnHiCheers(PopnJamFizz):
         enable_licenses = (
             await self._get_option(setting_user_id, self.ENABLE_LICENSES_OPTION, 1) != 0
         )
+        force_unlock_songs = (
+            await self._get_option(
+                setting_user_id, self.FORCE_UNLOCK_SONGS_OPTION, 1
+            )
+            != 0
+        )
         return self._info_response(
             root_name,
             include_play_id=include_play_id,
@@ -520,6 +537,7 @@ class PopnHiCheers(PopnJamFizz):
             extra_stage_phase=extra_stage_phase,
             tataite_ponpon_phase=tataite_ponpon_phase,
             enable_licenses=enable_licenses,
+            force_unlock_songs=force_unlock_songs,
         )
 
     async def handle_player_read(self, request: XMLNode) -> XMLNode:
