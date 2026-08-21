@@ -73,6 +73,7 @@ class EAProtocol:
         self.__shared_secret = shared_secret
         self.__key = None
         self.__xml_encoding = None
+        self.__is_xml_string = False
 
         self.logger = logging.getLogger("eamuse")
 
@@ -97,7 +98,12 @@ class EAProtocol:
 
         if self.__is_compressed:
             data = lz77_decompress(data)
-        
+
+        # Reply in the same representation used by the cabinet. Some games send
+        # text XML and expect a text XML response, while others use the packed
+        # e-amusement binary representation.
+        self.__is_xml_string = data.startswith(b"<")
+
         self.logger.log(5, f"Eamuse request data: {data.hex()}")
 
         xml = Decoder(data).unpack()
@@ -124,7 +130,7 @@ class EAProtocol:
                 )
 
             self.logger.debug(f"Eamuse response: {self.__resp.to_str()}")
-            enc = Encoder().encode(self.__resp)
+            enc = Encoder().encode(self.__resp, xml_string=self.__is_xml_string)
             self.logger.log(5, f"Eamuse raw response {enc.hex()}")
 
             if self.__ea_info is not None:
