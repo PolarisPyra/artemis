@@ -169,7 +169,7 @@ def _defaults(name: str, pref: int) -> Dict[str, Any]:
         "my_best": [-1] * 20,
         "latest_music": [-1] * 30,
         "nice": [-1] * 100,
-        "favorite_chara": [-1] * 100,
+        "favorite_chara": [-1] * 20,
         "special_area": [-1] * 8,
         "chocolate_charalist": [-1] * 5,
         "chocolate_sp_chara": 0,
