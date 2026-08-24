@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy import Column, Table, UniqueConstraint, and_, select
 from sqlalchemy.engine import Row
 from sqlalchemy.dialects.mysql import insert
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Boolean, Integer, String
 
 from core.data.schema import BaseData, metadata
 
@@ -20,6 +20,7 @@ music = Table(
     Column("genre", String(255)),
     Column("category", String(255)),
     Column("difficulty", Integer),
+    Column("isLicense", Boolean, nullable=False, server_default="0"),
     UniqueConstraint("version", "songId", "chartId", name="popn_static_music_uk"),
     mysql_charset="utf8mb4",
 )
@@ -36,6 +37,7 @@ class PopnStaticData(BaseData):
         genre: str,
         category: str,
         difficulty: int,
+        is_license: bool = False,
     ) -> Optional[int]:
         sql = insert(music).values(
             version=version,
@@ -46,6 +48,7 @@ class PopnStaticData(BaseData):
             genre=genre,
             category=category,
             difficulty=difficulty,
+            isLicense=is_license,
         )
         conflict = sql.on_duplicate_key_update(
             title=title,
@@ -53,6 +56,7 @@ class PopnStaticData(BaseData):
             genre=genre,
             category=category,
             difficulty=difficulty,
+            isLicense=is_license,
         )
 
         result = await self.execute(conflict)
@@ -71,6 +75,15 @@ class PopnStaticData(BaseData):
         if result is None:
             return None
         return result.fetchall()
+
+    async def get_license_music(self, version: int) -> Optional[List[int]]:
+        sql = select(music.c.songId).where(
+            and_(music.c.version == version, music.c.isLicense.is_(True))
+        )
+        result = await self.execute(sql)
+        if result is None:
+            return None
+        return sorted({int(row[0]) for row in result.fetchall() if row[0] is not None})
 
     async def get_music_chart(
         self, version: int, song_id: int, chart_id: int

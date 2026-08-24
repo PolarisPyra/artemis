@@ -149,7 +149,14 @@ class PopnReader(BaseReader):
 
                 title = song["title_en"] or song["title"]
                 artist = song["artist_en"] or song["artist"]
-                for chart_id, difficulty in enumerate(song["difficulty"]):
+                difficulty_data = song["difficulty"]
+                if isinstance(difficulty_data, dict):
+                    difficulties = difficulty_data["standard"].values()
+                else:
+                    # Legacy and older modern tables still expose the four
+                    # standard charts as a flat list.
+                    difficulties = difficulty_data
+                for chart_id, difficulty in enumerate(difficulties):
                     result = await self.data.static.put_music(
                         self.version,
                         song["id"],
@@ -159,6 +166,7 @@ class PopnReader(BaseReader):
                         song["genre"],
                         str(song["folder"]),
                         difficulty,
+                        bool(song.get("is_license", False)),
                     )
                     if result is not None:
                         self.logger.info(
@@ -286,7 +294,7 @@ class PopnReader(BaseReader):
                 music_id += 1
                 continue
 
-            songs.append(self._fix_song_text({
+            song = self._fix_song_text({
                 "id": music_id,
                 "genre": genre,
                 "title": title,
@@ -296,20 +304,23 @@ class PopnReader(BaseReader):
                 "title_en": title_en,
                 "artist_en": artist_en,
                 "folder": values[10],
-                "difficulty": [
-                    difficulties[0] if chart_mask & 0x0080000 else 0,
-                    difficulties[1],
-                    difficulties[2] if chart_mask & 0x1000000 else 0,
-                    difficulties[3] if chart_mask & 0x2000000 else 0,
-                ],
-                "battle_difficulty": [
-                    difficulties[4],
-                    difficulties[5] if chart_mask & 0x4000000 else 0,
-                ],
-                "jumbo_difficulty": [
-                    difficulties[6] if chart_mask & 0x200000 else 0,
-                    0,
-                ],
+                "is_license": bool(chart_mask & 0x00020000),
+                "difficulty": {
+                    "standard": {
+                        "easy": difficulties[0] if chart_mask & 0x0080000 else 0,
+                        "normal": difficulties[1],
+                        "hyper": difficulties[2] if chart_mask & 0x1000000 else 0,
+                        "ex": difficulties[3] if chart_mask & 0x2000000 else 0,
+                    },
+                    "battle": {
+                        "normal": difficulties[4],
+                        "hyper": difficulties[5] if chart_mask & 0x4000000 else 0,
+                    },
+                    "jumbo": {
+                        "normal": difficulties[6] if chart_mask & 0x200000 else 0,
+                        "hyper": 0,
+                    },
+                },
                 "file": {
                     "standard": {
                         "easy": read_file(values[21]) if chart_mask & 0x0080000 else "",
@@ -322,7 +333,14 @@ class PopnReader(BaseReader):
                         "hyper": read_file(values[26]) if chart_mask & 0x4000000 else "",
                     },
                 },
-            }))
+            })
+            if not (
+                song["title"] in ["-", "‐"]
+                and song["genre"] in ["-", "‐"]
+                and song["artist"] in ["-", "‐"]
+                and song["comment"] in ["-", "‐"]
+            ):
+                songs.append(song)
             offset += step
             music_id += 1
 
@@ -426,7 +444,7 @@ class PopnReader(BaseReader):
             "title_en",
             "artist_en",
         ):
-            value = song[field]
+            value = song.get(field)
             if isinstance(value, str):
                 for original, replacement in cls.ACCENT_LUT.items():
                     value = value.replace(original, replacement)
