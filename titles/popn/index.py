@@ -56,6 +56,7 @@ class PopnDispatch(BaseDispatcher):
             PopnKaimei,
             PopnUnilab,
             PopnJamFizz,
+            None,
             PopnHiCheers,
         ]
 
