@@ -521,15 +521,18 @@ class BaseHandler:
         else:
             for last_game, last_version in self.get_previous_versions():
                 oldref = await self.data.user.get_refid_by_user(
-                    card["user"], last_game, last_version
+                    card["user"], last_game, last_version, card["id"]
                 )
                 if oldref is not None:
                     binded = "1" if await self.check_succession_profile(oldref) else "0"
+                    refid = oldref
+                    await self.data.user.update_refid_version(refid, self.version)
                     break
-            
-            refid = await self.data.user.create_refid(
-                user["id"], self.game, self.version, card["id"]
-            )
+
+            if refid is None:
+                refid = await self.data.user.create_refid(
+                    user["id"], self.game, self.version, card["id"]
+                )
 
         attribs = dict(  # Order matters here for some reason
             binded=binded,

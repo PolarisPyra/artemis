@@ -225,6 +225,12 @@ class UserData(BaseData):
         result = await self.execute(refid.select(refid.c.id == refid_))
         if result is not None:
             return result.fetchone()
+
+    async def update_refid_version(self, refid_: str, version: int) -> bool:
+        result = await self.execute(
+            refid.update(refid.c.id == refid_).values(version=version)
+        )
+        return result is not None
     
     async def get_user_id_by_refid(self, refid_: str) -> Optional[int]:
         sql = refid.select(refid.c.id == refid_)
