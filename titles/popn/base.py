@@ -31,6 +31,15 @@ class PopnBase(BaseHandler):
 
         return await self.data.profile.get_profile(user_id) is not None
 
+    def get_previous_versions(self):
+        return [
+            (self.game, version)
+            for version in range(self.version - 1, PopnConstants.VER_BASE - 1, -1)
+        ]
+
+    async def check_succession_profile(self, refid: str) -> bool:
+        return await self.check_profile(refid)
+
     async def bind_profile(self, refid: str) -> None:
         user_id = await self.data.user.get_user_id_by_refid(refid)
         if user_id is None:

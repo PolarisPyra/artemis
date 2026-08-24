@@ -276,6 +276,10 @@ class BaseHandler:
             return (self.game, self.version - 1)
         return (None, None)
 
+    def get_previous_versions(self) -> List[Tuple[str, int]]:
+        previous = self.get_previous_version()
+        return [previous] if previous[0] is not None else []
+
     def decode_paseli_item(self, event: str) -> str:
         if not event: return "Unknown"
         event_spt = event.split("/")
@@ -515,11 +519,13 @@ class BaseHandler:
             binded = "1" if await self.check_profile(refid) else "0"
         
         else:
-            last_game, last_version = self.get_previous_version()
-            if last_game is not None and last_version is not None:
-                oldref = await self.data.user.get_refid_by_user(card["user"], last_game, last_version)
+            for last_game, last_version in self.get_previous_versions():
+                oldref = await self.data.user.get_refid_by_user(
+                    card["user"], last_game, last_version
+                )
                 if oldref is not None:
                     binded = "1" if await self.check_succession_profile(oldref) else "0"
+                    break
             
             refid = await self.data.user.create_refid(
                 user["id"], self.game, self.version, card["id"]
