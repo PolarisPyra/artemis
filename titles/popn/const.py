@@ -1,6 +1,3 @@
-from typing import Dict, Optional, Tuple
-
-
 class PopnConstants:
     GAME_CODE = "M39"
     GAME_ABVR = "popn"
@@ -41,15 +38,6 @@ class PopnConstants:
     VER_JAM_FIZZ = 31
     VER_HI_CHEERS = 32
 
-    VERSION_DATECODES: Dict[int, Tuple[int, Optional[int]]] = {
-        VER_USANEKO: (2016121400, 2018082100),
-        VER_PEACE: (2018082101, 2020092800),
-        VER_KAIMEI: (2020092801, 2022090500),
-        VER_UNILAB: (2022090501, 2023123123),
-        VER_JAM_FIZZ: (2024010100, 2024123123),
-        VER_HI_CHEERS: (2025010100, None),
-    }
-
     VERSION_NAMES = [
         "Pop'n Music",
         "Pop'n Music 2",
@@ -89,10 +77,3 @@ class PopnConstants:
     @classmethod
     def game_ver_to_string(cls, ver: int):
         return cls.VERSION_NAMES[ver]
-
-    @classmethod
-    def datecode_to_version(cls, datecode: int) -> int:
-        for version, (start, end) in cls.VERSION_DATECODES.items():
-            if datecode >= start and (end is None or datecode <= end):
-                return version
-        return -1 if datecode < min(start for start, _ in cls.VERSION_DATECODES.values()) else -2
