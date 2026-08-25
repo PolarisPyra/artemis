@@ -3,12 +3,11 @@ from core.eamuse import EAProtocol
 import yaml
 from os import path
 from typing import Tuple
-import logging, coloredlogs
+import logging
+import coloredlogs
 from logging.handlers import TimedRotatingFileHandler
 
 from core.eamuse import BaseDispatcher
-from core.eaapi.node import XMLNode
-from .base import PopnBase
 from .unilab import PopnUnilab
 from .jamfizz import PopnJamFizz
 from .hicheers import PopnHiCheers
@@ -27,41 +26,14 @@ class PopnDispatch(BaseDispatcher):
             self.game_cfg.update(
                 yaml.safe_load(open(f"{config_dir}/{PopnConstants.CONFIG_NAME}"))
             )
-        self.versions = [
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnBase,
-            PopnUsaneko,
-            PopnPeace,
-            PopnKaimei,
-            PopnUnilab,
-            PopnJamFizz,
-            PopnHiCheers,
-        ]
+        self.handlers = {
+            PopnConstants.VER_USANEKO: PopnUsaneko,
+            PopnConstants.VER_PEACE: PopnPeace,
+            PopnConstants.VER_KAIMEI: PopnKaimei,
+            PopnConstants.VER_UNILAB: PopnUnilab,
+            PopnConstants.VER_JAM_FIZZ: PopnJamFizz,
+            PopnConstants.VER_HI_CHEERS: PopnHiCheers,
+        }
 
         self.logger = logging.getLogger("popn")
         if not hasattr(self.logger, "initted"):
@@ -100,6 +72,24 @@ class PopnDispatch(BaseDispatcher):
             )
 
         return (game_cfg.server.enable, "", "")
+
+    async def dispatch(self, protocol: EAProtocol, internal_ver: int):
+        handler_cls = self.handlers.get(internal_ver)
+        if handler_cls is None:
+            self.logger.error(
+                "Pop'n version %s has no implemented handler", internal_ver
+            )
+            return None
+
+        handler = handler_cls(self.core_cfg, self.game_cfg, protocol)
+        func_to_find = f"handle_{protocol.method.replace('.', '_')}"
+        handler_method = getattr(handler, func_to_find, None)
+        if handler_method is None:
+            self.logger.warning(
+                "%s does not dispatch %s", protocol.model.gamecode, protocol.method
+            )
+            return None
+        return await handler_method(protocol.get_request_node())
     
     def get_game_version(self, proto: EAProtocol) -> int:
         if proto.model.datecode < 2016121400:
