@@ -102,19 +102,4 @@ class PopnDispatch(BaseDispatcher):
         return (game_cfg.server.enable, "", "")
     
     def get_game_version(self, proto: EAProtocol) -> int:
-        if proto.model.datecode < 2016121400:
-            return -1
-        elif proto.model.datecode >= 2016121400 and proto.model.datecode <= 2018082100:
-            return PopnConstants.VER_USANEKO
-        elif proto.model.datecode > 2018082100 and proto.model.datecode <= 2020092800:
-            return PopnConstants.VER_PEACE
-        elif proto.model.datecode > 2020092800 and proto.model.datecode <= 2022090500:
-            return PopnConstants.VER_KAIMEI
-        elif proto.model.datecode > 2022090500 and proto.model.datecode < 2024010100:
-            return PopnConstants.VER_UNILAB
-        elif proto.model.datecode >= 2024010100 and proto.model.datecode < 2025010100:
-            return PopnConstants.VER_JAM_FIZZ
-        elif proto.model.datecode >= 2025010100:
-            return PopnConstants.VER_HI_CHEERS
-        else:
-            return -2
+        return PopnConstants.datecode_to_version(proto.model.datecode)
