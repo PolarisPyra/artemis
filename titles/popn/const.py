@@ -7,45 +7,39 @@ class PopnConstants:
     VER_BASE = 0
     VER_2 = 1
     VER_3 = 2
-    VER_ANIMELO = 3
-    VER_4 = 4
-    VER_MICKEY_TUNES = 5
-    VER_ANIMELO_2 = 6
-    VER_5 = 7
-    VER_6 = 8
-    VER_7 = 9
-    VER_8 = 10
-    VER_9 = 11
-    VER_10 = 12
-    VER_11 = 13
-    VER_IROHA = 14
-    VER_CARNIVAL = 15
-    VER_FEVER = 16
-    VER_ADVENTURE = 17
-    VER_PARTY = 18
-    VER_MOVIE = 19
-    VER_SENGOKU = 20
-    VER_TUNE_STREET = 21
-    VER_HELLO_POPN = 22
-    VER_FANTASIA = 23
-    VER_PARK = 24
-    VER_LAPISTORIA = 25
-    VER_ECLALE = 26
-    VER_USANEKO = 27
-    VER_PEACE = 28
-    VER_KAIMEI = 29
-    VER_UNILAB = 30
-    VER_JAM_FIZZ = 31
-    VER_HI_CHEERS = 32
+    VER_4 = 3
+    VER_5 = 4
+    VER_6 = 5
+    VER_7 = 6
+    VER_8 = 7
+    VER_9 = 8
+    VER_10 = 9
+    VER_11 = 10
+    VER_IROHA = 11
+    VER_CARNIVAL = 12
+    VER_FEVER = 13
+    VER_ADVENTURE = 14
+    VER_PARTY = 15
+    VER_MOVIE = 16
+    VER_SENGOKU = 17
+    VER_TUNE_STREET = 18
+    VER_HELLO_POPN = 19
+    VER_FANTASIA = 20
+    VER_PARK = 21
+    VER_LAPISTORIA = 22
+    VER_ECLALE = 23
+    VER_USANEKO = 24
+    VER_PEACE = 25
+    VER_KAIMEI = 26
+    VER_UNILAB = 27
+    VER_JAM_FIZZ = 28
+    VER_HI_CHEERS = 29
 
     VERSION_NAMES = [
         "Pop'n Music",
         "Pop'n Music 2",
         "Pop'n Music 3",
-        "Pop'n Music アニメロ",
         "Pop'n Music 4",
-        "Pop'n Music MICKEY TUNES",
-        "Pop'n Music アニメロ2号",
         "Pop'n Music 5",
         "Pop'n Music 6",
         "Pop'n Music 7",
