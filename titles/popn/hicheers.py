@@ -18,43 +18,16 @@ class PopnHiCheers(PopnJamFizz):
     persist the state that is sent by the game.
     """
 
-    FORCE_UNLOCK_SONGS_OPTION = "popn_force_unlock_songs"
-    FORCE_UNLOCK_DECO_OPTION = "popn_force_unlock_deco"
-    MUSIC_PHASE_OPTION = "popn_music_phase"
-    EXTRA_STAGE_PHASE_OPTION = "popn_extra_stage_phase"
-    TATAITE_PONPON_PHASE_OPTION = "popn_tataite_ponpon_phase"
-    ENABLE_LICENSES_OPTION = "popn_enable_licenses"
     EVENT_PHASES = {
-        0: 7,
-        1: 1,
-        2: 0,
-        3: -1,
-        4: 0,
-        5: 2,
-        7: 1,
+        0: 8,
+        1: 2,
+        2: 4,
+        3: 0,
+        4: 12,
+        5: 3,
+        6: 2,
+        7: 2,
     }
-    LICENSE_MUSIC = (
-        1186,
-        2272,
-        2286,
-        2288,
-        2289,
-        2290,
-        2309,
-        2312,
-        2313,
-        2314,
-        2316,
-        2318,
-        2319,
-        2320,
-        2321,
-    )
-    POPULAR_CHARA = (
-        2449, 2502, 2463, 2475, 1879, 2457, 2474, 2495, 2506, 2453,
-        2317, 996, 577, 891, 2290, 1892, 2033, 1000, 2437, 1216,
-    )
-    POPULAR_MUSIC = (748,1089,808,1272,1976,690,1763,1241,1683,1567,1764,2150,2072,1628,1042,1024,1229,89,2025,2028,1110,1741,875,449,1119,1586,1748,1804,1429,1109,2136,1410,1945,1682,1812,1593,1236,1765,2209,1191,2094,781,820,1404,1403,1549,1495,1488,1130,2073,747,1487,1829,2002,1116,1729,1739,1469,1025,2127,1232,223,1270,1271,1430,1349,2071,1364,2162,181,2221,1623,1547,1103,1662,314,1102,888,1085,1346,2111,25,579,417,1718,1746,1044,1214,818,1169,601,1752,1786,1120,1986,1216,388,1525,1031,2137,1598,2118,1003,946,616,1568,1087,1377,1419,1400,1611,1234,2088,1674,1701,1800,1009,1226,1022,2013,2206,1754,1630,1352,0,1944,1728,2049,551,2210,1778,1983,712,1588,1965,1833,962,1604,947,370,354,1731,284,1956,1167,1742,1111,436,1514,1520,1243,1408,1624,1392,561,2016,1923,1388,539,2203,1166,1974,1730,991,1215,754,2160,1698,2096,1158,2015,1310,1326,1795,1788,594,787,2041,967,1561,1714,1187,1484,1165,1197,1548,963,1678,851,1721,1621,1592,188,1127,1703,1803,1794,1750,1112,2158,1801,1096,821,2084,88,1667,846,1209,1168,294,1242,1194,2045,499,1697,699,2108,1964,2017,1104,1321,1164,1507,2107,1065,1892,142,1928,819,2060,373,1677,2117,2087,735,2021,1200,1737,172,2076,822,341,171,912,1952,668,1126,487,1399,663,1267,871,2126,1028,147,1196,2047,1426,1049,1506,1726,1563,2079,215,115,1874,1186,1307,1876,1978,1798,1444,1827,1917,1749,1725,2099,1438,1862,1039,1589,670,1008,1811,2014,1244,1617,1521,1250,1263,1524,2115,1747,1848,2101,1824,1114,1515,1796,1898,645,697,1505,148,1001,1207,1733,1360,1550,938,945,2185,869,1401,752,2106,2089,1922,1185,1047,823,1012,1808,353,1046,2123,1118,1977,1450,985,1834,2030,655,1650,1370,1324,1569,1670,2082,1368,1906,1080,2061,1037,1946,1830,1276,2066,833,1576,882,618,1607,1359,374,1357,1625,1814,1787,1890,572,1522,1551,1992,2144,567,125,1014,743,2207,2213,1010,187,1545,1602,1402,1679,1656,1823,1499,1676,2146,809,195,1350,1021,1433,1668,1774,2009,2184,1231,95,320,1190,2211,647,684,1380,1351,2095,1279,810,692,1245,803,1391,1653,1704,2128,1988,1381,285,1160,1091,847,421,1064,1546,2008,877,999,1777,1311,1870,1325,2193,2114,723,1990,1264,620,1239,1128,1202,784,1953,2238,660,836,1850,1492,491,1768,1708,1694,675,646,778,1732,534,943,1354,1825,43,1206,1664,1179,1555,1695,1378,1033,1210,1319,914,857,1756,1789,2152,2027,2093,1987,983,705,1646,1212,1171,1799,1575,795,1680,2018,577,2086,1641,936,1663,1322,1775,1412,1633,1414,2138,680,874,1880,2256,1417,1266,1390)
     def __init__(
         self,
         core_config: CoreConfig,
@@ -182,6 +155,16 @@ class PopnHiCheers(PopnJamFizz):
         account.append("popn_class", Type.S8, self._row_value(row, "popn_class", 1))
         root.children.append(account)
 
+    @staticmethod
+    def _append_item(root: XMLNode, item_type: int, item_id: int, param: int) -> None:
+        item = XMLNode.void("item")
+        item.append("type", Type.U8, item_type)
+        item.append("id", Type.U16, item_id)
+        item.append("param", Type.U16, param)
+        item.append("is_new", Type.Bool, False)
+        item.append("get_time", Type.U64, 0)
+        root.children.append(item)
+
     def _append_static_items(self, root: XMLNode) -> None:
         item_ids = (
             2171, 2330, 2329, 2168, 2338, 2339, 2165, 2358, 2359, 2369,
@@ -190,13 +173,7 @@ class PopnHiCheers(PopnJamFizz):
             2356, 2357, 2372, 2373, 2303, 2296, 2340, 0,
         )
         for item_id in item_ids:
-            item = XMLNode.void("item")
-            item.append("type", Type.U8, 0)
-            item.append("id", Type.U16, item_id)
-            item.append("param", Type.U16, 15)
-            item.append("is_new", Type.Bool, False)
-            item.append("get_time", Type.U64, 0)
-            root.children.append(item)
+            self._append_item(root, 0, item_id, 15)
 
     async def _append_force_unlocked_songs(self, root: XMLNode) -> None:
         songs = await self.data.static.get_music(self.version)
@@ -222,26 +199,14 @@ class PopnHiCheers(PopnJamFizz):
             if song_id in existing_item_ids:
                 continue
 
-            item = XMLNode.void("item")
-            item.append("type", Type.U8, 0)
-            item.append("id", Type.U16, song_id)
-            item.append("param", Type.U16, 15)
-            item.append("is_new", Type.Bool, False)
-            item.append("get_time", Type.U64, 0)
-            root.children.append(item)
+            self._append_item(root, 0, song_id, 15)
             existing_item_ids.add(song_id)
 
     def _append_force_unlocked_deco(self, root: XMLNode) -> None:
         for deco_id in range(1, 170):
-            item = XMLNode.void("item")
-            item.append("type", Type.U8, 7)
-            item.append("id", Type.U16, deco_id)
-            item.append("param", Type.U16, 0)
-            item.append("is_new", Type.Bool, False)
-            item.append("get_time", Type.U64, 0)
-            root.children.append(item)
+            self._append_item(root, 7, deco_id, 0)
 
-    def _append_missions(self, root: XMLNode, fresh: bool) -> None:
+    def _append_missions(self, root: XMLNode) -> None:
         mission_ids = (42, 117, 192)
         for mission_id in mission_ids:
             mission = XMLNode.void("mission")
@@ -377,7 +342,7 @@ class PopnHiCheers(PopnJamFizz):
 
         setting_user_id = await self._get_setting_user_id(user_id)
         force_unlock_songs = await self._get_option(
-            setting_user_id, self.FORCE_UNLOCK_SONGS_OPTION, 1
+            setting_user_id, "popn_force_unlock_songs", 1
         )
         if force_unlock_songs != 0:
             await self._append_force_unlocked_songs(root)
@@ -385,12 +350,12 @@ class PopnHiCheers(PopnJamFizz):
             self._append_static_items(root)
 
         force_unlock_deco = await self._get_option(
-            setting_user_id, self.FORCE_UNLOCK_DECO_OPTION, 1
+            setting_user_id, "popn_force_unlock_deco", 1
         )
         if force_unlock_deco != 0:
             self._append_force_unlocked_deco(root)
         self._append_chara_params(root)
-        self._append_missions(root, fresh)
+        self._append_missions(root)
         self._append_netvs(root, row)
         self._append_customize(root, row)
         self._append_stamp(root, row)
@@ -406,11 +371,13 @@ class PopnHiCheers(PopnJamFizz):
 
     def _info_response(
         self,
+        popular_chara: List[int],
+        popular_music: List[int],
         root_name: str = "info24",
         include_play_id: bool = False,
-        music_phase: int = 7,
-        extra_stage_phase: int = 0,
-        tataite_ponpon_phase: int = 0,
+        music_phase: int = 8,
+        extra_stage_phase: int = 4,
+        tataite_ponpon_phase: int = 12,
         enable_licenses: bool = True,
         force_unlock_songs: bool = False,
         force_unlock_license_music: Optional[List[int]] = None,
@@ -454,23 +421,23 @@ class PopnHiCheers(PopnJamFizz):
                 goods.append("goods_type", Type.S16, 0)
                 root.children.append(goods)
 
-        for rank, chara_num in enumerate(self.POPULAR_CHARA, start=1):
+        for rank, chara_num in enumerate(popular_chara, start=1):
             popular = XMLNode.void("popular")
             popular.append("rank", Type.S16, rank)
             popular.append("chara_num", Type.S16, chara_num)
             root.children.append(popular)
 
-        for music_num in self.POPULAR_MUSIC:
-            popular_music = XMLNode.void("popular_music")
-            popular_music.append("music_num", Type.S16, music_num)
-            root.children.append(popular_music)
+        for music_num in popular_music:
+            popular_music_node = XMLNode.void("popular_music")
+            popular_music_node.append("music_num", Type.S16, music_num)
+            root.children.append(popular_music_node)
 
         if force_unlock_songs:
             force_licenses = force_unlock_license_music or []
             root.append("license_music", Type.S16, force_licenses)
             root.append("license_music_new", Type.S16, force_licenses)
         elif enable_licenses:
-            root.append("license_music", Type.S16, list(self.LICENSE_MUSIC))
+            root.append("license_music", Type.S16, force_unlock_license_music or [])
         return root
 
     async def handle_pcb_boot(self, request: XMLNode) -> XMLNode:
@@ -489,26 +456,30 @@ class PopnHiCheers(PopnJamFizz):
     async def _configured_info_response(
         self, setting_user_id: Optional[int], root_name: str = "info24", include_play_id: bool = False
     ) -> XMLNode:
-        music_phase = await self._get_option(setting_user_id, self.MUSIC_PHASE_OPTION, 7)
+        music_phase = await self._get_option(setting_user_id, "popn_music_phase", 8)
         extra_stage_phase = await self._get_option(
-            setting_user_id, self.EXTRA_STAGE_PHASE_OPTION, 0
+            setting_user_id, "popn_extra_stage_phase", 4
         )
         tataite_ponpon_phase = await self._get_option(
-            setting_user_id, self.TATAITE_PONPON_PHASE_OPTION, 0
+            setting_user_id, "popn_tataite_ponpon_phase", 12
         )
+        popular_chara = await self.data.score.get_popular_chara(20)
+        popular_music = await self.data.score.get_popular_music(self.version, 500)
         force_unlock_license_music = await self.data.static.get_license_music(
             self.version
         )
         enable_licenses = (
-            await self._get_option(setting_user_id, self.ENABLE_LICENSES_OPTION, 1) != 0
+            await self._get_option(setting_user_id, "popn_enable_licenses", 1) != 0
         )
         force_unlock_songs = (
             await self._get_option(
-                setting_user_id, self.FORCE_UNLOCK_SONGS_OPTION, 1
+                setting_user_id, "popn_force_unlock_songs", 1
             )
             != 0
         )
         return self._info_response(
+            popular_chara,
+            popular_music,
             root_name,
             include_play_id=include_play_id,
             music_phase=music_phase,

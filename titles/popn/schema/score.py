@@ -130,3 +130,36 @@ class PopnScoreData(BaseData):
             mapping["cnt"] = counts[key]
             output.append(mapping)
         return output
+
+    async def get_popular_music(self, version: int, limit: int) -> List[int]:
+        from titles.popn.schema.static import music
+
+        statement = (
+            select(playlog.c.music_num, func.count().label("play_count"))
+            .where(
+                playlog.c.music_num.is_not(None),
+                playlog.c.music_num.in_(
+                    select(music.c.songId).where(music.c.version == version)
+                ),
+            )
+            .group_by(playlog.c.music_num)
+            .order_by(func.count().desc(), playlog.c.music_num.asc())
+            .limit(limit)
+        )
+        result = await self.execute(statement)
+        if result is None:
+            return []
+        return [int(row[0]) for row in result.fetchall()]
+
+    async def get_popular_chara(self, limit: int) -> List[int]:
+        statement = (
+            select(playlog.c.chara_num, func.count().label("play_count"))
+            .where(playlog.c.chara_num.is_not(None), playlog.c.chara_num >= 0)
+            .group_by(playlog.c.chara_num)
+            .order_by(func.count().desc(), playlog.c.chara_num.asc())
+            .limit(limit)
+        )
+        result = await self.execute(statement)
+        if result is None:
+            return []
+        return [int(row[0]) for row in result.fetchall()]
